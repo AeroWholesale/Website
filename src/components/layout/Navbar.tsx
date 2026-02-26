@@ -40,16 +40,20 @@ export default function Navbar() {
     <header
       className={cn(
         'fixed top-0 left-0 right-0 z-50 bg-white transition-all duration-300',
-        scrolled ? 'shadow-md py-2' : 'shadow-sm py-3'
+        scrolled ? 'shadow-md' : 'shadow-sm border-b border-gray-100'
       )}
     >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between h-14">
+        <div className="flex items-center justify-between h-16">
 
           {/* Logo */}
-          <Link href="/" className="flex items-center select-none">
-            <span className="text-xl font-bold text-[#1e3a5f]">Aero</span>
-            <span className="text-xl font-bold text-[#0d9488]">Wholesale</span>
+          <Link href="/" className="select-none">
+            <span
+              style={{ fontFamily: "'DM Sans', sans-serif" }}
+              className="text-xl font-bold text-[#1B2E5E] tracking-tight"
+            >
+              AeroWholesale
+            </span>
           </Link>
 
           {/* Desktop Nav */}
@@ -64,11 +68,12 @@ export default function Navbar() {
                 >
                   <button
                     className={cn(
-                      'flex items-center gap-1 px-3 py-1.5 rounded-full text-sm font-medium transition-all duration-150',
+                      'flex items-center gap-1 px-3 py-1.5 rounded-md text-sm font-medium transition-all duration-150',
                       buyersOpen
-                        ? 'bg-[#ccfbf1] text-[#0d9488]'
-                        : 'text-[#1e3a5f] hover:bg-[#ccfbf1] hover:text-[#0d9488]'
+                        ? 'text-[#1B2E5E] bg-gray-100'
+                        : 'text-gray-600 hover:text-[#1B2E5E] hover:bg-gray-100'
                     )}
+                    style={{ fontFamily: "'DM Sans', sans-serif" }}
                   >
                     {link.label}
                     <ChevronDown className={cn('w-3.5 h-3.5 transition-transform duration-200', buyersOpen && 'rotate-180')} />
@@ -85,12 +90,12 @@ export default function Navbar() {
                       <Link
                         key={item.href}
                         href={item.href}
-                        className="flex items-center gap-3 px-4 py-3 hover:bg-[#f0fdfa] transition-colors group"
+                        className="flex items-center gap-3 px-4 py-3 hover:bg-gray-50 transition-colors group"
                       >
-                        <item.icon className="w-4 h-4 text-[#0d9488] shrink-0" />
+                        <item.icon className="w-4 h-4 text-[#1B2E5E] shrink-0" />
                         <div>
-                          <div className="text-sm font-medium text-[#1e3a5f] group-hover:text-[#0d9488] transition-colors">{item.label}</div>
-                          <div className="text-xs text-gray-500">{item.desc}</div>
+                          <div className="text-sm font-medium text-[#1B2E5E]" style={{ fontFamily: "'DM Sans', sans-serif" }}>{item.label}</div>
+                          <div className="text-xs text-gray-400">{item.desc}</div>
                         </div>
                       </Link>
                     ))}
@@ -101,11 +106,12 @@ export default function Navbar() {
                   key={link.href}
                   href={link.href!}
                   className={cn(
-                    'px-3 py-1.5 rounded-full text-sm font-medium transition-all duration-150',
+                    'px-3 py-1.5 rounded-md text-sm font-medium transition-all duration-150',
                     location === link.href
-                      ? 'bg-[#ccfbf1] text-[#0d9488]'
-                      : 'text-[#1e3a5f] hover:bg-[#ccfbf1] hover:text-[#0d9488]'
+                      ? 'text-[#1B2E5E] bg-gray-100'
+                      : 'text-gray-600 hover:text-[#1B2E5E] hover:bg-gray-100'
                   )}
+                  style={{ fontFamily: "'DM Sans', sans-serif" }}
                 >
                   {link.label}
                 </Link>
@@ -117,19 +123,15 @@ export default function Navbar() {
           <div className="hidden lg:flex items-center gap-2">
             <Link
               href="/login"
-              className="px-4 py-1.5 text-sm font-medium text-[#1e3a5f] hover:text-[#0d9488] transition-colors"
+              className="px-4 py-1.5 text-sm font-medium text-gray-600 hover:text-[#1B2E5E] transition-colors"
+              style={{ fontFamily: "'DM Sans', sans-serif" }}
             >
               Login
             </Link>
             <Link
-              href="/quote"
-              className="px-4 py-2 rounded-full text-sm font-semibold bg-[#ea580c] text-white hover:bg-[#c2410c] transition-all duration-150 hover:scale-105"
-            >
-              Request a Quote
-            </Link>
-            <Link
               href="/apply"
-              className="px-4 py-2 rounded-full text-sm font-semibold bg-[#0d9488] text-white hover:bg-[#0a7c72] transition-all duration-150 hover:scale-105"
+              className="px-4 py-2 rounded-md text-sm font-semibold bg-[#ea580c] text-white hover:bg-[#c2410c] transition-all duration-150"
+              style={{ fontFamily: "'DM Sans', sans-serif" }}
             >
               Apply for Access
             </Link>
@@ -137,7 +139,7 @@ export default function Navbar() {
 
           {/* Mobile hamburger */}
           <button
-            className="lg:hidden p-2 rounded-lg text-[#1e3a5f] hover:bg-gray-100 transition-colors"
+            className="lg:hidden p-2 rounded-lg text-[#1B2E5E] hover:bg-gray-100 transition-colors"
             onClick={() => setMobileOpen(!mobileOpen)}
             aria-label="Toggle menu"
           >
@@ -162,9 +164,10 @@ export default function Navbar() {
                   <Link
                     key={item.href}
                     href={item.href}
-                    className="flex items-center gap-3 px-4 py-2.5 rounded-lg text-sm font-medium text-[#1e3a5f] hover:bg-[#f0fdfa] hover:text-[#0d9488] transition-colors"
+                    className="flex items-center gap-3 px-4 py-2.5 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-50 hover:text-[#1B2E5E] transition-colors"
+                    style={{ fontFamily: "'DM Sans', sans-serif" }}
                   >
-                    <item.icon className="w-4 h-4 text-[#0d9488]" />
+                    <item.icon className="w-4 h-4 text-[#1B2E5E]" />
                     {item.label}
                   </Link>
                 ))}
@@ -176,20 +179,28 @@ export default function Navbar() {
                 className={cn(
                   'block px-3 py-2.5 rounded-lg text-sm font-medium transition-colors',
                   location === link.href
-                    ? 'bg-[#ccfbf1] text-[#0d9488]'
-                    : 'text-[#1e3a5f] hover:bg-[#f0fdfa] hover:text-[#0d9488]'
+                    ? 'bg-gray-100 text-[#1B2E5E]'
+                    : 'text-gray-600 hover:bg-gray-50 hover:text-[#1B2E5E]'
                 )}
+                style={{ fontFamily: "'DM Sans', sans-serif" }}
               >
                 {link.label}
               </Link>
             )
           )}
           <div className="pt-3 border-t border-gray-100 space-y-2">
-            <Link href="/login" className="block px-3 py-2.5 text-sm font-medium text-[#1e3a5f] hover:text-[#0d9488]">Login</Link>
-            <Link href="/quote" className="block w-full text-center px-4 py-2.5 rounded-full text-sm font-semibold bg-[#ea580c] text-white hover:bg-[#c2410c] transition-colors">
-              Request a Quote
+            <Link
+              href="/login"
+              className="block px-3 py-2.5 text-sm font-medium text-gray-600 hover:text-[#1B2E5E]"
+              style={{ fontFamily: "'DM Sans', sans-serif" }}
+            >
+              Login
             </Link>
-            <Link href="/apply" className="block w-full text-center px-4 py-2.5 rounded-full text-sm font-semibold bg-[#0d9488] text-white hover:bg-[#0a7c72] transition-colors">
+            <Link
+              href="/apply"
+              className="block w-full text-center px-4 py-2.5 rounded-md text-sm font-semibold bg-[#ea580c] text-white hover:bg-[#c2410c] transition-colors"
+              style={{ fontFamily: "'DM Sans', sans-serif" }}
+            >
               Apply for Access
             </Link>
           </div>
