@@ -79,7 +79,6 @@ export default function Navbar() {
                     <ChevronDown className={cn('w-3.5 h-3.5 transition-transform duration-200', buyersOpen && 'rotate-180')} />
                   </button>
 
-                  {/* Dropdown */}
                   <div
                     className={cn(
                       'absolute top-full left-0 mt-1 w-56 bg-white rounded-xl shadow-lg border border-gray-100 overflow-hidden transition-all duration-200 origin-top',
@@ -129,8 +128,15 @@ export default function Navbar() {
               Login
             </Link>
             <Link
-              href="/apply"
+              href="/quote"
               className="px-4 py-2 rounded-md text-sm font-semibold bg-[#ea580c] text-white hover:bg-[#c2410c] transition-all duration-150"
+              style={{ fontFamily: "'DM Sans', sans-serif" }}
+            >
+              Request a Quote
+            </Link>
+            <Link
+              href="/apply"
+              className="px-4 py-2 rounded-md text-sm font-semibold bg-[#1B2E5E] text-white hover:bg-[#152448] transition-all duration-150"
               style={{ fontFamily: "'DM Sans', sans-serif" }}
             >
               Apply for Access
@@ -197,8 +203,15 @@ export default function Navbar() {
               Login
             </Link>
             <Link
-              href="/apply"
+              href="/quote"
               className="block w-full text-center px-4 py-2.5 rounded-md text-sm font-semibold bg-[#ea580c] text-white hover:bg-[#c2410c] transition-colors"
+              style={{ fontFamily: "'DM Sans', sans-serif" }}
+            >
+              Request a Quote
+            </Link>
+            <Link
+              href="/apply"
+              className="block w-full text-center px-4 py-2.5 rounded-md text-sm font-semibold bg-[#1B2E5E] text-white hover:bg-[#152448] transition-colors"
               style={{ fontFamily: "'DM Sans', sans-serif" }}
             >
               Apply for Access
