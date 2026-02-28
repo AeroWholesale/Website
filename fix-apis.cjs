@@ -1,59 +1,15 @@
 const fs = require('fs');
 
-fs.writeFileSync('api/upload-info.ts', [
-  "import type { VercelRequest, VercelResponse } from '@vercel/node'",
-  "import { Pool } from '@neondatabase/serverless'",
-  "",
-  "export default async function handler(req: VercelRequest, res: VercelResponse) {",
-  "  if (req.method !== 'GET') return res.status(405).json({ error: 'Method not allowed' })",
-  "  const { token } = req.query",
-  "  if (!token) return res.status(400).json({ error: 'Missing token' })",
-  "  const pool = new Pool({ connectionString: process.env.DATABASE_URL })",
-  "  try {",
-  "    const { rows } = await pool.query('SELECT ur.*, a.company_name, a.first_name, a.last_name FROM upload_requests ur JOIN applications a ON a.id = ur.application_id WHERE ur.token = $1', [token])",
-  "    if (!rows.length) return res.status(404).json({ error: 'Not found' })",
-  "    const row = rows[0]",
-  "    const { rows: uploaded } = await pool.query('SELECT doc_type, file_name FROM uploads WHERE upload_request_id = $1', [row.id])",
-  "    res.status(200).json({ companyName: row.company_name, firstName: row.first_name, documents: row.documents.split(','), status: row.status, uploaded: uploaded.map((u) => ({ docType: u.doc_type, fileName: u.file_name })) })",
-  "  } catch (err) { res.status(500).json({ error: String(err) }) } finally { await pool.end() }",
-  "}",
-].join('\n'));
-
-fs.writeFileSync('api/upload-file.ts', [
-  "import type { VercelRequest, VercelResponse } from '@vercel/node'",
-  "import { put } from '@vercel/blob'",
-  "import { Pool } from '@neondatabase/serverless'",
-  "",
-  "export const config = { api: { bodyParser: false } }",
-  "",
-  "export default async function handler(req: VercelRequest, res: VercelResponse) {",
-  "  if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' })",
-  "  const token = req.query.token as string",
-  "  const docType = req.query.docType as string",
-  "  const fileName = req.query.fileName as string",
-  "  if (!token || !docType || !fileName) return res.status(400).json({ error: 'Missing params' })",
-  "  const pool = new Pool({ connectionString: process.env.DATABASE_URL })",
-  "  try {",
-  "    const { rows } = await pool.query('SELECT id, application_id FROM upload_requests WHERE token = $1', [token])",
-  "    if (!rows.length) return res.status(404).json({ error: 'Invalid link' })",
-  "    const ur = rows[0]",
-  "    const chunks: Buffer[] = []",
-  "    for await (const chunk of req) { chunks.push(typeof chunk === 'string' ? Buffer.from(chunk) : chunk) }",
-  "    const body = Buffer.concat(chunks)",
-  "    const blob = await put('docs/' + ur.application_id + '/' + docType + '/' + fileName, body, { access: 'public' })",
-  "    await pool.query('INSERT INTO uploads (upload_request_id, application_id, doc_type, file_name, file_url, file_size) VALUES ($1,$2,$3,$4,$5,$6)', [ur.id, ur.application_id, docType, fileName, blob.url, body.length])",
-  "    const { rows: allUp } = await pool.query('SELECT DISTINCT doc_type FROM uploads WHERE upload_request_id = $1', [ur.id])",
-  "    const { rows: rd } = await pool.query('SELECT documents FROM upload_requests WHERE id = $1', [ur.id])",
-  "    const needed = rd[0].documents.split(',')",
-  "    const done = needed.every((d) => allUp.some((u) => u.doc_type === d))",
-  "    if (done) {",
-  "      await pool.query('UPDATE upload_requests SET status = $1 WHERE id = $2', ['completed', ur.id])",
-  "      await pool.query('UPDATE applications SET status = $1 WHERE id = $2', ['docs_received', ur.application_id])",
-  "    }",
-  "    res.status(200).json({ success: true, url: blob.url, allComplete: done })",
-  "  } catch (err) { res.status(500).json({ error: String(err) }) } finally { await pool.end() }",
-  "}",
-].join('\n'));
-
-console.log('upload-info.ts:', fs.readFileSync('api/upload-info.ts','utf8').split('\n').length, 'lines');
-console.log('upload-file.ts:', fs.readFileSync('api/upload-file.ts','utf8').split('\n').length, 'lines');
+// Fix Upload.tsx - move @import to a link tag instead of inside template literal
+let upload = fs.readFileSync('src/pages/Upload.tsx', 'utf8');
+upload = upload.replace(
+  /@import url\([^)]+\);\n/,
+  ''
+);
+// Add the font link via a different method - prepend to the component
+upload = upload.replace(
+  '<><style>{css}</style>',
+  '<><link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600;9..40,700;9..40,800;9..40,900&display=swap" rel="stylesheet" /><style>{css}</style>'
+);
+fs.writeFileSync('src/pages/Upload.tsx', upload);
+console.log('Upload.tsx fixed - ' + upload.split('\n').length + ' lines');

@@ -2,8 +2,7 @@ import { useState, useEffect } from 'react'
 import { useParams } from 'wouter'
 
 const css = 
-  @import url('https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600;9..40,700;9..40,800;9..40,900&display=swap');
-  .aw-upload{font-family:'DM Sans',sans-serif;background:#f8fafc;min-height:100vh}
+    .aw-upload{font-family:'DM Sans',sans-serif;background:#f8fafc;min-height:100vh}
   .aw-upload-header{background:#132347;padding:32px 40px;text-align:center}
   .aw-upload-logo{font-size:18px;font-weight:800;color:#fff;margin-bottom:4px}
   .aw-upload-header-sub{font-size:13px;color:#a8c0d8}
@@ -80,7 +79,7 @@ export default function Upload() {
   }
 
   return (
-    <><style>{css}</style>
+    <><link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600;9..40,700;9..40,800;9..40,900&display=swap" rel="stylesheet" /><style>{css}</style>
       <div className="aw-upload">
         <div className="aw-upload-header"><div className="aw-upload-logo">AeroWholesale</div><div className="aw-upload-header-sub">Secure Document Upload</div></div>
         <div className="aw-upload-main">
