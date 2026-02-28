@@ -9,4 +9,14 @@ export default defineConfig({
       '@': path.resolve(__dirname, './src'),
     },
   },
+  build: {
+    outDir: 'dist',
+  },
 })
+```
+
+Save it, then push:
+```
+git add .
+git commit -m "Fix vite config remove tailwindcss plugin"
+git push origin main
