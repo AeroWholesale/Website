@@ -3,6 +3,10 @@
   "outputDirectory": "dist",
   "routes": [
     {
+      "src": "/v2/hooks",
+      "dest": "/api/v2/hooks"
+    },
+    {
       "src": "/api/(.*)",
       "dest": "/api/$1"
     },
