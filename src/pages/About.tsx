@@ -102,7 +102,7 @@ const IconArrow = () => <svg width="14" height="14" fill="none" stroke="currentC
 const DIFFS = [
   { icon: IconCheck, title: 'Rigorous Grading', desc: 'Every device is individually inspected across 50+ checkpoints. Our 8-tier grading system means you always know exactly what you\'re buying — no vague "Grade A/B/C" labels.' },
   { icon: IconBolt, title: 'Speed & Reliability', desc: 'Orders are processed and shipped fast. We maintain real-time inventory so what you see is what\'s available — no backorders, no phantom stock.' },
-  { icon: IconShield, title: 'Trusted by Enterprises', desc: 'From insurance fulfillment programs to large-scale enterprise deployments, we deliver the volume, consistency, and documentation that serious buyers require.' },
+  { icon: IconShield, title: 'Trusted by Enterprises', desc: 'From high-volume B2B partnerships to enterprise deployment programs, we deliver the volume, consistency, and documentation that serious buyers require.' },
   { icon: IconEye, title: 'Full Transparency', desc: 'No surprises. Every listing shows the grade, condition specs, and stock count. Approved buyers see real pricing — no hidden fees, no bait and switch.' },
   { icon: IconBox, title: 'Deep Inventory', desc: 'iPhones, iPads, MacBooks, Samsung — across all major models, storage configs, and grades. Whether you need 10 units or 1,000, we have the stock to back it up.' },
   { icon: IconUsers, title: 'Dedicated Support', desc: 'You\'re not a ticket number. Our team works directly with wholesale buyers to handle custom orders, bulk quotes, and ongoing supply needs.' },
@@ -111,8 +111,8 @@ const DIFFS = [
 const TIMELINE = [
   { year: '1997', title: 'Industry Roots', desc: 'Began building deep expertise in the electronics industry, developing the supplier relationships and market knowledge that would become AeroWholesale\'s foundation.' },
   { year: '2015', title: 'AeroWholesale Founded', desc: 'Launched AeroWholesale to bring a quality-first approach to refurbished device wholesale — sourcing, grading, and selling direct.' },
-  { year: '2017', title: 'Scaled Operations', desc: 'Expanded into multi-channel sales across Back Market, eBay, and Walmart. Built a dedicated QC and grading process.' },
-  { year: '2020', title: 'Enterprise Partnerships', desc: 'Began fulfilling large-scale insurance claims and enterprise device programs, processing thousands of units monthly.' },
+  { year: '2017', title: 'Scaled Operations', desc: 'Invested in facility infrastructure, quality control systems, and streamlined fulfillment processes.' },
+  { year: '2020', title: 'Enterprise Partnerships', desc: 'Began fulfilling corporate refresh programs, processing thousands of units monthly.' },
   { year: '2024', title: 'B2B Wholesale Platform', desc: 'Launched the direct wholesale channel — giving approved buyers real-time inventory access, transparent grading, and competitive pricing.' },
 ]
 
@@ -147,7 +147,7 @@ export default function About() {
                 AeroWholesale was founded in 2015, backed by nearly two decades of hands-on experience in the electronics industry. The idea was straightforward: businesses deserve a better way to source refurbished electronics. No guesswork on condition. No surprises on delivery. No inconsistency between what's listed and what shows up.
               </div>
               <div className="aw-about-mission-text">
-                What started as a small operation has grown into a trusted wholesale partner for enterprises, insurance fulfillment programs, resellers, and marketplace sellers across the country. We've processed tens of thousands of devices — iPhones, iPads, MacBooks, and Samsung — each one inspected, graded, and verified before it ever reaches a buyer.
+                What started as a small operation has grown into a trusted wholesale partner for enterprises, high-volume B2B partnerships, resellers, and enterprise deployment programs across the country. We've processed tens of thousands of phones, tablets, and computers — each one inspected, graded, and verified before it ever reaches a buyer.
               </div>
               <div className="aw-about-highlight">
                 <div className="aw-about-highlight-text">"From one device to one thousand — we've got you covered."</div>
