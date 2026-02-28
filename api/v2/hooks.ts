@@ -1,16 +1,12 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node'
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
-  if (req.method !== 'POST') {
-    return res.status(405).json({ error: 'Method not allowed' })
-  }
-
   try {
     const payload = req.body
 
-    console.log('SC Webhook received:', JSON.stringify(payload).slice(0, 500))
-
-    // TODO: Process the SellerCloud cart/order data here
+    if (req.method === 'POST') {
+      console.log('SC Webhook received:', JSON.stringify(payload).slice(0, 500))
+    }
 
     res.status(200).json({
       data: {
