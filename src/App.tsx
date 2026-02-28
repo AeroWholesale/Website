@@ -7,6 +7,7 @@ import Contact from '@/pages/Contact'
 import Grading from '@/pages/Grading'
 import Apply from '@/pages/Apply'
 import Login from '@/pages/Login'
+import Admin from '@/pages/Admin'
 import Enterprise from '@/pages/buyers/Enterprise'
 import Wholesale from '@/pages/buyers/Wholesale'
 import Resellers from '@/pages/buyers/Resellers'
@@ -22,6 +23,7 @@ export default function App() {
         <Route path="/grading" component={Grading} />
         <Route path="/apply" component={Apply} />
         <Route path="/login" component={Login} />
+        <Route path="/admin" component={Admin} />
         <Route path="/buyers/enterprise" component={Enterprise} />
         <Route path="/buyers/wholesale" component={Wholesale} />
         <Route path="/buyers/resellers" component={Resellers} />
