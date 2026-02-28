@@ -557,7 +557,10 @@ export default function Admin() {
                   </>
                 )}
                 {detail.status === 'docs_requested' && (
-                  <button className="aw-admin-btn aw-admin-btn-approve" disabled={approving === detail.id} onClick={() => approveApp(detail)}>{approving === detail.id ? '...' : '✓ Approve'}</button>
+                  <>
+                    <button className="aw-admin-btn aw-admin-btn-approve" disabled={approving === detail.id} onClick={() => approveApp(detail)}>{approving === detail.id ? '...' : '✓ Approve'}</button>
+                    <button className="aw-admin-btn aw-admin-btn-docs" onClick={() => { setDocsModal(detail); setSelectedDocs([]) }}>📄 Request Docs Again</button>
+                  </>
                 )}
                 <button className="aw-admin-btn aw-admin-detail-close" onClick={() => setDetail(null)}>Close</button>
               </div>
