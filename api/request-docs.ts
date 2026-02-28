@@ -1,11 +1,14 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node'
 import { Pool } from '@neondatabase/serverless'
+import crypto from 'crypto'
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' })
 
   const { applicationId, email, companyName, firstName, documents } = req.body || {}
   if (!applicationId || !email || !documents?.length) return res.status(400).json({ error: 'Missing fields' })
+
+  const pool = new Pool({ connectionString: process.env.DATABASE_URL })
 
   const docLabels: Record<string, string> = {
     w9: 'W-9 Form',
@@ -17,10 +20,45 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     insurance: 'Certificate of Insurance',
   }
 
-  const docList = documents.map((d: string) => docLabels[d] || d)
-  const docHtml = docList.map((d: string) => `<li style="padding: 6px 0; color: #1a1a2e;">${d}</li>`).join('')
-
   try {
+    // Create tables if needed
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS upload_requests (
+        id SERIAL PRIMARY KEY,
+        application_id INTEGER NOT NULL,
+        token TEXT UNIQUE NOT NULL,
+        documents TEXT NOT NULL,
+        status TEXT DEFAULT 'pending',
+        created_at TIMESTAMPTZ DEFAULT NOW()
+      )
+    `)
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS uploads (
+        id SERIAL PRIMARY KEY,
+        upload_request_id INTEGER NOT NULL,
+        application_id INTEGER NOT NULL,
+        doc_type TEXT NOT NULL,
+        file_name TEXT NOT NULL,
+        file_url TEXT NOT NULL,
+        file_size INTEGER,
+        uploaded_at TIMESTAMPTZ DEFAULT NOW()
+      )
+    `)
+
+    // Generate unique token
+    const token = crypto.randomBytes(16).toString('hex')
+
+    // Save upload request
+    await pool.query(
+      'INSERT INTO upload_requests (application_id, token, documents) VALUES ($1, $2, $3)',
+      [applicationId, token, documents.join(',')]
+    )
+
+    const uploadUrl = `https://www.aerowholesale.com/upload/${token}`
+    const docList = documents.map((d: string) => docLabels[d] || d)
+    const docHtml = docList.map((d: string) => `<li style="padding: 6px 0; color: #1a1a2e;">${d}</li>`).join('')
+
+    // Send email
     const response = await fetch('https://api.resend.com/emails', {
       method: 'POST',
       headers: {
@@ -49,8 +87,11 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
                   ${docHtml}
                 </ul>
               </div>
-              <p style="font-size: 15px; line-height: 1.6; margin: 0 0 16px;">
-                Please reply to this email with the documents attached, or send them directly to <strong>sales@aerowholesale.com</strong>.
+              <div style="text-align: center; margin: 24px 0;">
+                <a href="${uploadUrl}" style="display: inline-block; background: #c2410c; color: #fff; font-size: 15px; font-weight: 700; padding: 14px 32px; border-radius: 8px; text-decoration: none;">Upload Documents</a>
+              </div>
+              <p style="font-size: 13px; color: #64748b; line-height: 1.6; margin: 0 0 16px; text-align: center;">
+                Or copy this link: <a href="${uploadUrl}" style="color: #c2410c;">${uploadUrl}</a>
               </p>
               <p style="font-size: 15px; line-height: 1.6; margin: 0 0 24px;">
                 Once we receive and verify your documents, we'll activate your account and send you login credentials.
@@ -71,15 +112,15 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     }
 
     // Update application status
-    const pool = new Pool({ connectionString: process.env.DATABASE_URL })
     await pool.query(
       'UPDATE applications SET status = $1 WHERE id = $2',
       ['docs_requested', applicationId]
     )
-    await pool.end()
 
-    res.status(200).json({ success: true })
+    res.status(200).json({ success: true, uploadUrl })
   } catch (err) {
     res.status(500).json({ error: String(err) })
+  } finally {
+    await pool.end()
   }
 }
