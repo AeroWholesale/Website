@@ -1,7 +1,5 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node'
-import { neon } from '@neondatabase/serverless'
-
-const sql = neon(process.env.DATABASE_URL!)
+import { sql } from '@vercel/postgres'
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   try {
@@ -20,11 +18,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       VALUES (${req.method}, ${req.url}, ${JSON.stringify(req.body)})
     `
 
-    // Respond like BigCommerce for every request
-    res.status(200).json({
-      data: [{ id: 1, name: "AeroWholesale", domain: "aerowholesale.com" }],
-      meta: { pagination: { total: 1, count: 1, per_page: 50, current_page: 1, total_pages: 1 }}
-    })
+    res.status(200).json({ success: true })
 
   } catch (err) {
     res.status(500).json({ error: String(err) })
