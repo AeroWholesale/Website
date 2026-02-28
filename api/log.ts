@@ -1,9 +1,11 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node'
-import { sql } from '@vercel/postgres'
+import { Pool } from '@neondatabase/serverless'
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
+  const pool = new Pool({ connectionString: process.env.DATABASE_URL })
+
   try {
-    await sql`
+    await pool.query(`
       CREATE TABLE IF NOT EXISTS sc_log (
         id SERIAL PRIMARY KEY,
         method TEXT,
@@ -11,16 +13,18 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         body TEXT,
         received_at TIMESTAMPTZ DEFAULT NOW()
       )
-    `
+    `)
 
-    await sql`
-      INSERT INTO sc_log (method, path, body)
-      VALUES (${req.method}, ${req.url}, ${JSON.stringify(req.body)})
-    `
+    await pool.query(
+      'INSERT INTO sc_log (method, path, body) VALUES ($1, $2, $3)',
+      [req.method, req.url, JSON.stringify(req.body)]
+    )
 
     res.status(200).json({ success: true })
 
   } catch (err) {
     res.status(500).json({ error: String(err) })
+  } finally {
+    await pool.end()
   }
 }
