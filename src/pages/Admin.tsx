@@ -98,6 +98,22 @@ const css = `
   .aw-admin-detail-actions { display: flex; gap: 8px; padding-top: 20px; border-top: 1px solid #1e2d4a; }
   .aw-admin-detail-close { margin-left: auto; background: #1e2d4a; color: #94a3b8; border-color: #334155; }
 
+  /* REPLY FORM */
+  .aw-admin-reply-textarea { width: 100%; min-height: 100px; padding: 12px; background: #0a0f1a; border: 1px solid #1e2d4a; border-radius: 8px; font-size: 13px; color: #e2e8f0; font-family: 'DM Sans', sans-serif; outline: none; resize: vertical; margin-top: 12px; }
+  .aw-admin-reply-textarea:focus { border-color: #334155; }
+
+  /* DOC CHECKLIST */
+  .aw-admin-doc-list { margin: 16px 0; }
+  .aw-admin-doc-item { display: flex; align-items: center; gap: 10px; padding: 10px 0; border-bottom: 1px solid #1e2d4a; font-size: 13px; color: #e2e8f0; cursor: pointer; }
+  .aw-admin-doc-item:last-child { border-bottom: none; }
+  .aw-admin-doc-item input { width: 16px; height: 16px; accent-color: #ea580c; }
+  .aw-admin-doc-desc { font-size: 11px; color: #475569; margin-left: auto; }
+
+  /* TOAST */
+  .aw-admin-toast { position: fixed; bottom: 24px; right: 24px; background: #052e16; border: 1px solid #166534; color: #22c55e; padding: 12px 20px; border-radius: 8px; font-size: 13px; font-weight: 600; z-index: 200; animation: toastIn 0.2s; }
+  .aw-admin-toast.error { background: #1c0606; border-color: #7f1d1d; color: #ef4444; }
+  @keyframes toastIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
   /* MESSAGE CARD */
   .aw-admin-msg { background: #0a0f1a; border: 1px solid #1e2d4a; border-radius: 10px; padding: 18px 20px; margin-bottom: 10px; cursor: pointer; transition: border-color 0.12s; }
   .aw-admin-msg:hover { border-color: #334155; }
@@ -178,6 +194,13 @@ export default function Admin() {
   const [detail, setDetail] = useState<Application | null>(null)
   const [msgDetail, setMsgDetail] = useState<Message | null>(null)
   const [appTab, setAppTab] = useState<'pending' | 'all'>('pending')
+  const [replyText, setReplyText] = useState('')
+  const [replySending, setReplySending] = useState(false)
+  const [docsModal, setDocsModal] = useState<Application | null>(null)
+  const [selectedDocs, setSelectedDocs] = useState<string[]>([])
+  const [docsSending, setDocsSending] = useState(false)
+  const [approving, setApproving] = useState<number | null>(null)
+  const [toast, setToast] = useState<{ text: string; error?: boolean } | null>(null)
 
   const handleLogin = async () => {
     setPwLoading(true)
@@ -254,6 +277,83 @@ export default function Admin() {
   const pendingApps = apps.filter(a => a.status === 'pending')
   const unreadMsgs = msgs.filter(m => !m.read)
   const filteredApps = appTab === 'pending' ? pendingApps : apps
+
+  const showToast = (text: string, error = false) => {
+    setToast({ text, error })
+    setTimeout(() => setToast(null), 3000)
+  }
+
+  const sendReply = async () => {
+    if (!msgDetail || !replyText.trim()) return
+    setReplySending(true)
+    try {
+      const res = await fetch('/api/send-email', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          to: msgDetail.email,
+          subject: `Re: ${msgDetail.subject}`,
+          message: replyText,
+          replyToMsgId: msgDetail.id,
+        }),
+      })
+      if (res.ok) {
+        showToast('Reply sent successfully')
+        setMsgDetail(null)
+        setReplyText('')
+        setMsgs(prev => prev.map(m => m.id === msgDetail.id ? { ...m, read: true } : m))
+      } else {
+        showToast('Failed to send reply', true)
+      }
+    } catch { showToast('Failed to send reply', true) }
+    finally { setReplySending(false) }
+  }
+
+  const requestDocs = async () => {
+    if (!docsModal || !selectedDocs.length) return
+    setDocsSending(true)
+    try {
+      const res = await fetch('/api/request-docs', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          applicationId: docsModal.id,
+          email: docsModal.email,
+          companyName: docsModal.company_name,
+          firstName: docsModal.first_name,
+          documents: selectedDocs,
+        }),
+      })
+      if (res.ok) {
+        showToast('Document request sent')
+        setApps(prev => prev.map(a => a.id === docsModal.id ? { ...a, status: 'docs_requested' } : a))
+        setDocsModal(null)
+        setSelectedDocs([])
+        setDetail(null)
+      } else { showToast('Failed to send request', true) }
+    } catch { showToast('Failed to send request', true) }
+    finally { setDocsSending(false) }
+  }
+
+  const approveApp = async (app: Application) => {
+    setApproving(app.id)
+    try {
+      const res = await fetch('/api/approve-application', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ applicationId: app.id }),
+      })
+      if (res.ok) {
+        showToast(`${app.company_name} approved — welcome email sent`)
+        setApps(prev => prev.map(a => a.id === app.id ? { ...a, status: 'approved' } : a))
+        setDetail(null)
+      } else {
+        const data = await res.json()
+        showToast(data.error || 'Approval failed', true)
+      }
+    } catch { showToast('Approval failed', true) }
+    finally { setApproving(null) }
+  }
 
   return (
     <>
@@ -372,8 +472,8 @@ export default function Admin() {
                                 <button className="aw-admin-btn aw-admin-btn-view" onClick={() => setDetail(app)}>View</button>
                                 {app.status === 'pending' && (
                                   <>
-                                    <button className="aw-admin-btn aw-admin-btn-approve" onClick={() => updateAppStatus(app.id, 'approved')}>Approve</button>
-                                    <button className="aw-admin-btn aw-admin-btn-docs" onClick={() => updateAppStatus(app.id, 'docs_requested')}>Req Docs</button>
+                                    <button className="aw-admin-btn aw-admin-btn-approve" onClick={() => approveApp(app)}>{approving === app.id ? '...' : 'Approve'}</button>
+                                    <button className="aw-admin-btn aw-admin-btn-docs" onClick={() => { setDocsModal(app); setSelectedDocs([]) }}>Req Docs</button>
                                     <button className="aw-admin-btn aw-admin-btn-reject" onClick={() => updateAppStatus(app.id, 'rejected')}>Reject</button>
                                   </>
                                 )}
@@ -451,10 +551,13 @@ export default function Admin() {
               <div className="aw-admin-detail-actions">
                 {detail.status === 'pending' && (
                   <>
-                    <button className="aw-admin-btn aw-admin-btn-approve" onClick={() => updateAppStatus(detail.id, 'approved')}>✓ Approve</button>
-                    <button className="aw-admin-btn aw-admin-btn-docs" onClick={() => updateAppStatus(detail.id, 'docs_requested')}>📄 Request Documents</button>
+                    <button className="aw-admin-btn aw-admin-btn-approve" disabled={approving === detail.id} onClick={() => approveApp(detail)}>{approving === detail.id ? '...' : '✓ Approve'}</button>
+                    <button className="aw-admin-btn aw-admin-btn-docs" onClick={() => { setDocsModal(detail); setSelectedDocs([]) }}>📄 Request Documents</button>
                     <button className="aw-admin-btn aw-admin-btn-reject" onClick={() => updateAppStatus(detail.id, 'rejected')}>✗ Reject</button>
                   </>
+                )}
+                {detail.status === 'docs_requested' && (
+                  <button className="aw-admin-btn aw-admin-btn-approve" disabled={approving === detail.id} onClick={() => approveApp(detail)}>{approving === detail.id ? '...' : '✓ Approve'}</button>
                 )}
                 <button className="aw-admin-btn aw-admin-detail-close" onClick={() => setDetail(null)}>Close</button>
               </div>
@@ -464,7 +567,7 @@ export default function Admin() {
 
         {/* MESSAGE DETAIL MODAL */}
         {msgDetail && (
-          <div className="aw-admin-detail-overlay" onClick={() => setMsgDetail(null)}>
+          <div className="aw-admin-detail-overlay" onClick={() => { setMsgDetail(null); setReplyText('') }}>
             <div className="aw-admin-detail" onClick={e => e.stopPropagation()}>
               <div className="aw-admin-detail-title">{msgDetail.subject}</div>
               <div className="aw-admin-detail-sub">From {msgDetail.name}{msgDetail.company && ` at ${msgDetail.company}`} · {timeAgo(msgDetail.created_at)}</div>
@@ -477,13 +580,65 @@ export default function Admin() {
               <div className="aw-admin-detail-label">Message</div>
               <div style={{ fontSize: 14, color: '#e2e8f0', lineHeight: 1.7, marginTop: 8, padding: 16, background: '#0a0f1a', borderRadius: 8, border: '1px solid #1e2d4a' }}>{msgDetail.message}</div>
 
-              <div className="aw-admin-detail-actions" style={{ marginTop: 20 }}>
-                <a className="aw-admin-btn aw-admin-btn-primary" href={`mailto:${msgDetail.email}?subject=Re: ${msgDetail.subject}`} style={{ textDecoration: 'none' }}>Reply via Email</a>
-                <button className="aw-admin-btn aw-admin-detail-close" onClick={() => setMsgDetail(null)}>Close</button>
+              <div className="aw-admin-detail-label" style={{ marginTop: 20 }}>Reply</div>
+              <textarea
+                className="aw-admin-reply-textarea"
+                placeholder="Type your reply..."
+                value={replyText}
+                onChange={e => setReplyText(e.target.value)}
+              />
+
+              <div className="aw-admin-detail-actions" style={{ marginTop: 16 }}>
+                <button className="aw-admin-btn aw-admin-btn-primary" disabled={replySending || !replyText.trim()} onClick={sendReply}>
+                  {replySending ? 'Sending...' : '📧 Send Reply'}
+                </button>
+                <button className="aw-admin-btn aw-admin-detail-close" onClick={() => { setMsgDetail(null); setReplyText('') }}>Close</button>
               </div>
             </div>
           </div>
         )}
+
+        {/* DOCUMENT REQUEST MODAL */}
+        {docsModal && (
+          <div className="aw-admin-detail-overlay" onClick={() => setDocsModal(null)}>
+            <div className="aw-admin-detail" onClick={e => e.stopPropagation()}>
+              <div className="aw-admin-detail-title">Request Documents</div>
+              <div className="aw-admin-detail-sub">Select which documents to request from {docsModal.company_name}</div>
+
+              <div className="aw-admin-doc-list">
+                {[
+                  { id: 'w9', label: 'W-9 Form', desc: 'Tax identification' },
+                  { id: 'st3', label: 'ST-3 Sales Tax Exemption', desc: 'NJ tax exempt' },
+                  { id: 'resale', label: 'Resale Certificate', desc: 'Other states' },
+                  { id: 'ein', label: 'EIN Verification Letter', desc: 'IRS letter' },
+                  { id: 'formation', label: 'Business Formation Docs', desc: 'LLC/Corp docs' },
+                  { id: 'id', label: 'Government-Issued Photo ID', desc: 'Drivers license etc' },
+                  { id: 'insurance', label: 'Certificate of Insurance', desc: 'If applicable' },
+                ].map(doc => (
+                  <label key={doc.id} className="aw-admin-doc-item">
+                    <input
+                      type="checkbox"
+                      checked={selectedDocs.includes(doc.id)}
+                      onChange={() => setSelectedDocs(prev => prev.includes(doc.id) ? prev.filter(d => d !== doc.id) : [...prev, doc.id])}
+                    />
+                    {doc.label}
+                    <span className="aw-admin-doc-desc">{doc.desc}</span>
+                  </label>
+                ))}
+              </div>
+
+              <div className="aw-admin-detail-actions">
+                <button className="aw-admin-btn aw-admin-btn-primary" disabled={docsSending || !selectedDocs.length} onClick={requestDocs}>
+                  {docsSending ? 'Sending...' : `📧 Send Request (${selectedDocs.length} docs)`}
+                </button>
+                <button className="aw-admin-btn aw-admin-detail-close" onClick={() => setDocsModal(null)}>Cancel</button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* TOAST */}
+        {toast && <div className={`aw-admin-toast${toast.error ? ' error' : ''}`}>{toast.text}</div>}
 
       </div>
       )}
