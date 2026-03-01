@@ -187,7 +187,7 @@ export default function Admin() {
   const [pw, setPw] = useState('')
   const [pwError, setPwError] = useState('')
   const [pwLoading, setPwLoading] = useState(false)
-  const [page, setPage] = useState<'applications' | 'messages' | 'sync'>('applications')
+  const [page, setPage] = useState<'applications' | 'messages' | 'sync' | 'families' | 'grades'>('applications')
   const [apps, setApps] = useState<Application[]>([])
   const [msgs, setMsgs] = useState<Message[]>([])
   const [loading, setLoading] = useState(true)
@@ -531,8 +531,8 @@ export default function Admin() {
           <div className="aw-admin-sb-label">Coming Soon</div>
           <div className="aw-admin-sb-item" style={{ opacity: 0.4, cursor: 'default' }}><span>👥</span> User Management</div>
           <div className={`aw-admin-sb-item${page === 'sync' ? ' active' : ''}`} onClick={() => setPage('sync')}><span>🔄</span> Sync Dashboard</div>
-          <div className="aw-admin-sb-item" style={{ opacity: 0.4, cursor: 'default' }}><span>📦</span> Product Families</div>
-          <div className="aw-admin-sb-item" style={{ opacity: 0.4, cursor: 'default' }}><span>⚙️</span> Grade Multipliers</div>
+          <div className={`aw-admin-sb-item${page === 'families' ? ' active' : ''}`} onClick={() => { setPage('families'); if (!familiesData) loadFamilies() }}><span>📦</span> Product Families</div>
+          <div className={`aw-admin-sb-item${page === 'grades' ? ' active' : ''}`} onClick={() => { setPage('grades'); if (!gradesData) loadGrades() }}><span>⚙️</span> Grade Multipliers</div>
           <div className="aw-admin-sb-item" style={{ opacity: 0.4, cursor: 'default' }}><span>📋</span> Quote Requests</div>
 
           <div className="aw-admin-sb-footer">
@@ -547,10 +547,10 @@ export default function Admin() {
         {/* CONTENT */}
         <div className="aw-admin-content">
           <div className="aw-admin-topbar">
-            <div className="aw-admin-topbar-title">{page === 'applications' ? 'Account Applications' : page === 'messages' ? 'Contact Messages' : 'SellerCloud Sync'}</div>
+            <div className="aw-admin-topbar-title">{page === 'applications' ? 'Account Applications' : page === 'messages' ? 'Contact Messages' : page === 'families' ? 'Product Families' : page === 'grades' ? 'Grade Multipliers' : 'SellerCloud Sync'}</div>
           </div>
 
-         {page !== 'sync' && <div className="aw-admin-page">
+         {page !== 'sync' && page !== 'families' && page !== 'grades' && <div className="aw-admin-page">
             {loading ? (
               <div className="aw-admin-loading">Loading...</div>
             ) : page === 'applications' ? (
@@ -1189,6 +1189,208 @@ export default function Admin() {
           </div>
         )}
 
+        {/* ═══ PRODUCT FAMILIES PAGE ═══ */}
+        {page === 'families' && (
+          <div className="aw-admin-page">
+            {/* Edit Modal */}
+            {editingFamily && (
+              <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.5)', zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <div style={{ background: '#fff', borderRadius: 12, padding: 24, width: 500, maxHeight: '85vh', overflow: 'auto' }}>
+                  <div style={{ fontSize: 16, fontWeight: 700, marginBottom: 16 }}>{editingFamily.id ? 'Edit' : 'Add'} Product Family</div>
+                  <div style={{ display: 'grid', gap: 12 }}>
+                    <div>
+                      <label style={{ fontSize: 12, fontWeight: 600, color: '#64748b', display: 'block', marginBottom: 4 }}>Model Code</label>
+                      <input style={{ width: '100%', padding: '8px 12px', border: '1px solid #e2e8f0', borderRadius: 6, fontSize: 14, fontFamily: 'inherit', boxSizing: 'border-box' }} value={editingFamily.model_code} onChange={e => setEditingFamily({...editingFamily, model_code: e.target.value})} />
+                    </div>
+                    <div>
+                      <label style={{ fontSize: 12, fontWeight: 600, color: '#64748b', display: 'block', marginBottom: 4 }}>Display Name</label>
+                      <input style={{ width: '100%', padding: '8px 12px', border: '1px solid #e2e8f0', borderRadius: 6, fontSize: 14, fontFamily: 'inherit', boxSizing: 'border-box' }} value={editingFamily.name} onChange={e => setEditingFamily({...editingFamily, name: e.target.value})} />
+                    </div>
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+                      <div>
+                        <label style={{ fontSize: 12, fontWeight: 600, color: '#64748b', display: 'block', marginBottom: 4 }}>Brand</label>
+                        <input style={{ width: '100%', padding: '8px 12px', border: '1px solid #e2e8f0', borderRadius: 6, fontSize: 14, fontFamily: 'inherit', boxSizing: 'border-box' }} value={editingFamily.brand} onChange={e => setEditingFamily({...editingFamily, brand: e.target.value})} />
+                      </div>
+                      <div>
+                        <label style={{ fontSize: 12, fontWeight: 600, color: '#64748b', display: 'block', marginBottom: 4 }}>Category</label>
+                        <select style={{ width: '100%', padding: '8px 12px', border: '1px solid #e2e8f0', borderRadius: 6, fontSize: 14, fontFamily: 'inherit' }} value={editingFamily.category} onChange={e => setEditingFamily({...editingFamily, category: e.target.value})}>
+                          <option value="Phones">Phones</option>
+                          <option value="Tablets">Tablets</option>
+                          <option value="Laptops">Laptops</option>
+                          <option value="Wearables">Wearables</option>
+                          <option value="Accessories">Accessories</option>
+                        </select>
+                      </div>
+                    </div>
+                    <div>
+                      <label style={{ fontSize: 12, fontWeight: 600, color: '#64748b', display: 'block', marginBottom: 4 }}>Image URL</label>
+                      <input style={{ width: '100%', padding: '8px 12px', border: '1px solid #e2e8f0', borderRadius: 6, fontSize: 14, fontFamily: 'inherit', boxSizing: 'border-box' }} value={editingFamily.image_url || ''} onChange={e => setEditingFamily({...editingFamily, image_url: e.target.value})} placeholder="https://..." />
+                    </div>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                      <input type="checkbox" checked={editingFamily.visible !== false} onChange={e => setEditingFamily({...editingFamily, visible: e.target.checked})} />
+                      <label style={{ fontSize: 13, color: '#334155' }}>Visible on catalog</label>
+                    </div>
+                  </div>
+                  <div style={{ display: 'flex', gap: 8, marginTop: 20, justifyContent: 'flex-end' }}>
+                    <button onClick={() => setEditingFamily(null)} style={{ padding: '8px 16px', border: '1px solid #e2e8f0', borderRadius: 6, background: '#fff', cursor: 'pointer', fontFamily: 'inherit', fontSize: 13 }}>Cancel</button>
+                    <button onClick={() => saveFamily(editingFamily)} disabled={familySaving} style={{ padding: '8px 16px', border: 'none', borderRadius: 6, background: '#132347', color: '#fff', cursor: 'pointer', fontFamily: 'inherit', fontSize: 13, fontWeight: 600 }}>{familySaving ? 'Saving...' : 'Save'}</button>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {familiesLoading ? (
+              <div style={{ padding: 40, textAlign: 'center', color: '#64748b' }}>Loading product families...</div>
+            ) : familiesData ? (
+              <>
+                {/* Summary Stats */}
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 16, marginBottom: 20 }}>
+                  <div className="aw-admin-stat"><div className="aw-admin-stat-label">Mapped Families</div><div className="aw-admin-stat-val">{familiesData.totals.families}</div></div>
+                  <div className="aw-admin-stat"><div className="aw-admin-stat-label">Unmapped Groups</div><div className="aw-admin-stat-val" style={{ color: familiesData.totals.unmappedGroups > 0 ? '#f59e0b' : '#10b981' }}>{familiesData.totals.unmappedGroups}</div></div>
+                  <div className="aw-admin-stat"><div className="aw-admin-stat-label">Unmapped SKUs</div><div className="aw-admin-stat-val">{familiesData.totals.unmappedSkus}</div></div>
+                  <div className="aw-admin-stat"><div className="aw-admin-stat-label">Unmapped Units</div><div className="aw-admin-stat-val">{familiesData.totals.unmappedQty?.toLocaleString()}</div></div>
+                </div>
+
+                {/* Unmapped SKUs Alert */}
+                {familiesData.unmapped?.length > 0 && (
+                  <div className="aw-admin-table-card" style={{ background: '#1a1f2e', border: '1px solid #f59e0b33', marginBottom: 20 }}>
+                    <div className="aw-admin-table-header">
+                      <div className="aw-admin-table-title" style={{ color: '#f59e0b' }}>⚠️ Unmapped Product Groups ({familiesData.totals.unmappedGroups})</div>
+                    </div>
+                    <div style={{ fontSize: 12, color: '#94a3b8', padding: '0 0 12px' }}>These SKUs from SellerCloud don't match any product family. Click "Map" to add them, or ignore accessories/cables.</div>
+                    <div style={{ overflowX: 'auto', maxHeight: 400, overflowY: 'auto' }}>
+                      <table className="aw-admin-table" style={{ fontSize: 12 }}>
+                        <thead><tr><th>Code</th><th>SC Name</th><th>Type</th><th>Units</th><th>SKUs</th><th></th></tr></thead>
+                        <tbody>
+                          {familiesData.unmapped.map((u: any) => (
+                            <tr key={u.modelCode}>
+                              <td style={{ fontFamily: 'monospace', fontWeight: 600 }}>{u.modelCode}</td>
+                              <td style={{ maxWidth: 300, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{u.scName}</td>
+                              <td><span style={{ fontSize: 10, padding: '2px 6px', borderRadius: 3, background: '#1e293b', color: '#94a3b8' }}>{u.deviceType || '?'}</span></td>
+                              <td><b>{u.totalQty}</b></td>
+                              <td>{u.skuCount}</td>
+                              <td><button onClick={() => mapUnmapped(u)} style={{ padding: '3px 10px', fontSize: 11, fontWeight: 600, border: '1px solid #f59e0b', color: '#f59e0b', borderRadius: 4, background: 'transparent', cursor: 'pointer', fontFamily: 'inherit' }}>Map</button></td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                )}
+
+                {/* Mapped Families Table */}
+                <div className="aw-admin-table-card">
+                  <div className="aw-admin-table-header">
+                    <div className="aw-admin-table-title">Mapped Product Families ({familiesData.totals.families})</div>
+                    <div style={{ display: 'flex', gap: 8 }}>
+                      <input placeholder="Filter..." value={familyFilter} onChange={e => setFamilyFilter(e.target.value)} style={{ padding: '6px 10px', border: '1px solid #2d3548', borderRadius: 6, fontSize: 12, fontFamily: 'inherit', width: 180, background: '#0f1729', color: '#e2e8f0' }} />
+                      <button onClick={() => setEditingFamily({ model_code: '', name: '', brand: '', category: 'Phones', image_url: '', visible: true })} className="aw-admin-btn aw-admin-btn-primary" style={{ fontSize: 12 }}>+ Add Family</button>
+                      <button onClick={loadFamilies} className="aw-admin-btn aw-admin-btn-view" style={{ fontSize: 12 }}>Refresh</button>
+                    </div>
+                  </div>
+                  <div style={{ overflowX: 'auto' }}>
+                    <table className="aw-admin-table">
+                      <thead><tr><th>Code</th><th>Name</th><th>Brand</th><th>Category</th><th>Stock</th><th>SKUs</th><th>Visible</th><th></th></tr></thead>
+                      <tbody>
+                        {familiesData.families
+                          .filter((f: any) => {
+                            if (!familyFilter) return true
+                            const q = familyFilter.toLowerCase()
+                            return f.name.toLowerCase().includes(q) || f.brand.toLowerCase().includes(q) || f.model_code.toLowerCase().includes(q) || f.category.toLowerCase().includes(q)
+                          })
+                          .map((f: any) => (
+                          <tr key={f.id} style={{ opacity: f.visible ? 1 : 0.5 }}>
+                            <td style={{ fontFamily: 'monospace', fontSize: 12, fontWeight: 600 }}>{f.model_code}</td>
+                            <td style={{ fontWeight: 600 }}>{f.name}</td>
+                            <td>{f.brand}</td>
+                            <td><span style={{ fontSize: 10, padding: '2px 6px', borderRadius: 3, background: '#1e293b', color: '#94a3b8' }}>{f.category}</span></td>
+                            <td style={{ fontWeight: 600 }}>{f.stock || 0}</td>
+                            <td>{f.skuCount || 0}</td>
+                            <td>{f.visible ? <span style={{ color: '#10b981' }}>✓</span> : <span style={{ color: '#ef4444' }}>✗</span>}</td>
+                            <td style={{ display: 'flex', gap: 4 }}>
+                              <button onClick={() => setEditingFamily(f)} style={{ padding: '3px 8px', fontSize: 11, border: '1px solid #2d3548', borderRadius: 4, background: 'transparent', color: '#e2e8f0', cursor: 'pointer', fontFamily: 'inherit' }}>Edit</button>
+                              <button onClick={() => deleteFamily(f.id)} style={{ padding: '3px 8px', fontSize: 11, border: '1px solid #7f1d1d', borderRadius: 4, background: 'transparent', color: '#ef4444', cursor: 'pointer', fontFamily: 'inherit' }}>Del</button>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              </>
+            ) : (
+              <div style={{ padding: 40, textAlign: 'center', color: '#64748b' }}>Loading...</div>
+            )}
+          </div>
+        )}
+
+        {/* ═══ GRADES PAGE ═══ */}
+        {page === 'grades' && (
+          <div className="aw-admin-page">
+            {/* Edit Modal */}
+            {editingGrade && (
+              <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.5)', zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <div style={{ background: '#fff', borderRadius: 12, padding: 24, width: 420 }}>
+                  <div style={{ fontSize: 16, fontWeight: 700, marginBottom: 16 }}>Edit Grade: {editingGrade.grade_code}</div>
+                  <div style={{ display: 'grid', gap: 12 }}>
+                    <div>
+                      <label style={{ fontSize: 12, fontWeight: 600, color: '#64748b', display: 'block', marginBottom: 4 }}>Display Label</label>
+                      <input style={{ width: '100%', padding: '8px 12px', border: '1px solid #e2e8f0', borderRadius: 6, fontSize: 14, fontFamily: 'inherit', boxSizing: 'border-box' }} value={editingGrade.label} onChange={e => setEditingGrade({...editingGrade, label: e.target.value})} />
+                    </div>
+                    <div>
+                      <label style={{ fontSize: 12, fontWeight: 600, color: '#64748b', display: 'block', marginBottom: 4 }}>Multiplier (e.g. 1.35 = 35% margin)</label>
+                      <input type="number" step="0.01" style={{ width: '100%', padding: '8px 12px', border: '1px solid #e2e8f0', borderRadius: 6, fontSize: 14, fontFamily: 'inherit', boxSizing: 'border-box' }} value={editingGrade.multiplier} onChange={e => setEditingGrade({...editingGrade, multiplier: parseFloat(e.target.value) || 1})} />
+                    </div>
+                    <div>
+                      <label style={{ fontSize: 12, fontWeight: 600, color: '#64748b', display: 'block', marginBottom: 4 }}>Sort Order</label>
+                      <input type="number" style={{ width: '100%', padding: '8px 12px', border: '1px solid #e2e8f0', borderRadius: 6, fontSize: 14, fontFamily: 'inherit', boxSizing: 'border-box' }} value={editingGrade.sort_order} onChange={e => setEditingGrade({...editingGrade, sort_order: parseInt(e.target.value) || 0})} />
+                    </div>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                      <input type="checkbox" checked={editingGrade.visible !== false} onChange={e => setEditingGrade({...editingGrade, visible: e.target.checked})} />
+                      <label style={{ fontSize: 13, color: '#334155' }}>Visible on catalog</label>
+                    </div>
+                  </div>
+                  <div style={{ display: 'flex', gap: 8, marginTop: 20, justifyContent: 'flex-end' }}>
+                    <button onClick={() => setEditingGrade(null)} style={{ padding: '8px 16px', border: '1px solid #e2e8f0', borderRadius: 6, background: '#fff', cursor: 'pointer', fontFamily: 'inherit', fontSize: 13 }}>Cancel</button>
+                    <button onClick={() => saveGrade(editingGrade)} disabled={gradeSaving} style={{ padding: '8px 16px', border: 'none', borderRadius: 6, background: '#132347', color: '#fff', cursor: 'pointer', fontFamily: 'inherit', fontSize: 13, fontWeight: 600 }}>{gradeSaving ? 'Saving...' : 'Save'}</button>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {gradesLoading ? (
+              <div style={{ padding: 40, textAlign: 'center', color: '#64748b' }}>Loading grade config...</div>
+            ) : gradesData ? (
+              <div className="aw-admin-table-card">
+                <div className="aw-admin-table-header">
+                  <div className="aw-admin-table-title">Grade Configuration</div>
+                  <button onClick={loadGrades} className="aw-admin-btn aw-admin-btn-view" style={{ fontSize: 12 }}>Refresh</button>
+                </div>
+                <div style={{ fontSize: 12, color: '#94a3b8', padding: '0 0 16px', lineHeight: 1.5 }}>
+                  Site Price = SKU Cost × Multiplier. Change multipliers here — the catalog updates immediately. No code deploys needed.
+                </div>
+                <table className="aw-admin-table">
+                  <thead><tr><th>Grade Code</th><th>Display Label</th><th>Multiplier</th><th>Margin %</th><th>Sort Order</th><th>Visible</th><th></th></tr></thead>
+                  <tbody>
+                    {gradesData.grades.map((g: any) => (
+                      <tr key={g.id}>
+                        <td style={{ fontFamily: 'monospace', fontWeight: 700, fontSize: 14 }}>{g.grade_code}</td>
+                        <td style={{ fontWeight: 600 }}>{g.label}</td>
+                        <td style={{ fontWeight: 600, fontSize: 14 }}>×{parseFloat(g.multiplier).toFixed(2)}</td>
+                        <td style={{ color: '#10b981', fontWeight: 700 }}>{Math.round((parseFloat(g.multiplier) - 1) * 100)}%</td>
+                        <td>{g.sort_order}</td>
+                        <td>{g.visible ? <span style={{ color: '#10b981' }}>✓</span> : <span style={{ color: '#ef4444' }}>✗</span>}</td>
+                        <td><button onClick={() => setEditingGrade(g)} style={{ padding: '3px 8px', fontSize: 11, border: '1px solid #2d3548', borderRadius: 4, background: 'transparent', color: '#e2e8f0', cursor: 'pointer', fontFamily: 'inherit' }}>Edit</button></td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            ) : (
+              <div style={{ padding: 40, textAlign: 'center', color: '#64748b' }}>Loading...</div>
+            )}
+          </div>
+        )}
         {/* TOAST */}
         {toast && <div className={`aw-admin-toast${toast.error ? ' error' : ''}`}>{toast.text}</div>}
 
