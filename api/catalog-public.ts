@@ -297,19 +297,9 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     for (const row of result.rows) {
       const modelCode = getModelCode(row.sku)
       const mapping = MODEL_MAP[modelCode]
+      if (!mapping) continue // Only show products we've mapped with clean names
 
-      // Use SC data as fallback if not in our model map
-      const productName = mapping?.name || row.model || modelCode
-      const productBrand = mapping ? getBrand(modelCode) : (row.brand || getBrand(modelCode))
-      
-      // Infer category from mapping, or from device_type field
-      let productCategory = mapping?.category || 'Phones'
-      if (!mapping) {
-        const dt = (row.device_type || '').toLowerCase()
-        if (dt.includes('tablet') || dt.includes('ipad')) productCategory = 'Tablets'
-        else if (dt.includes('laptop') || dt.includes('computer') || dt.includes('mac')) productCategory = 'Laptops'
-        else if (dt.includes('watch') || dt.includes('wearable')) productCategory = 'Wearables'
-      }
+      const productBrand = getBrand(modelCode)
 
       const rawGrade = row.grade || ''
       const grade = normalizeGrade(rawGrade)
@@ -323,9 +313,9 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       if (!families[modelCode]) {
         families[modelCode] = {
           modelCode,
-          name: productName,
+          name: mapping.name,
           brand: productBrand,
-          category: productCategory,
+          category: mapping.category,
           skus: [],
           totalStock: 0,
           grades: new Set(),
