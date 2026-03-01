@@ -12,7 +12,6 @@ import Upload from '@/pages/Upload'
 import Enterprise from '@/pages/buyers/Enterprise'
 import Wholesale from '@/pages/buyers/Wholesale'
 import Resellers from '@/pages/buyers/Resellers'
-
 export default function App() {
   return (
     <Switch>
