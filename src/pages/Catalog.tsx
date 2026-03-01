@@ -133,7 +133,7 @@ const IconDevice = () => <svg fill="none" stroke="currentColor" strokeWidth="1.2
 interface Product {
   modelCode: string; name: string; brand: string; category: string
   totalStock: number; skuCount: number; grades: string[]; storages: string[]
-  carriers: string[]; colors: string[]; priceFrom: number; priceTo: number
+  carriers: string[]; colors: string[]
   image: string; skus: any[]
 }
 
@@ -238,8 +238,6 @@ export default function Catalog() {
               <span>Sort</span>
               <select value={sort} onChange={e => { setSort(e.target.value); setPage(1) }}>
                 <option value="name">Name A-Z</option>
-                <option value="price-asc">Price: Low → High</option>
-                <option value="price-desc">Price: High → Low</option>
                 <option value="stock">Most Stock</option>
               </select>
             </div>
@@ -371,9 +369,9 @@ export default function Catalog() {
                           ))}
                         </div>
                         <div className="aw-card-footer">
-                          <div>
-                            <div className="aw-price-from">{p.priceFrom !== p.priceTo ? 'from' : 'price'}</div>
-                            <div className="aw-price-value">${Math.round(p.priceFrom)} <em>/ unit</em></div>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: 6, color: '#64748b', fontSize: 12, fontWeight: 600 }}>
+                            <svg fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24" style={{ width: 14, height: 14 }}><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>
+                            Login for pricing
                           </div>
                           <div style={{ textAlign: 'right' }}>
                             <div className="aw-stock-label"><b>{p.totalStock}</b> units · {p.skuCount} SKUs</div>

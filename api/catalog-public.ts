@@ -297,9 +297,20 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     for (const row of result.rows) {
       const modelCode = getModelCode(row.sku)
       const mapping = MODEL_MAP[modelCode]
-      if (!mapping) continue // Skip unmapped SKUs
 
-      const productBrand = getBrand(modelCode)
+      // Use SC data as fallback if not in our model map
+      const productName = mapping?.name || row.model || modelCode
+      const productBrand = mapping ? getBrand(modelCode) : (row.brand || getBrand(modelCode))
+      
+      // Infer category from mapping, or from device_type field
+      let productCategory = mapping?.category || 'Phones'
+      if (!mapping) {
+        const dt = (row.device_type || '').toLowerCase()
+        if (dt.includes('tablet') || dt.includes('ipad')) productCategory = 'Tablets'
+        else if (dt.includes('laptop') || dt.includes('computer') || dt.includes('mac')) productCategory = 'Laptops'
+        else if (dt.includes('watch') || dt.includes('wearable')) productCategory = 'Wearables'
+      }
+
       const rawGrade = row.grade || ''
       const grade = normalizeGrade(rawGrade)
       
@@ -312,9 +323,9 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       if (!families[modelCode]) {
         families[modelCode] = {
           modelCode,
-          name: mapping.name,
+          name: productName,
           brand: productBrand,
-          category: mapping.category,
+          category: productCategory,
           skus: [],
           totalStock: 0,
           grades: new Set(),
@@ -429,9 +440,19 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     const total = products.length
     const paginated = products.slice((pageNum - 1) * pageSize, pageNum * pageSize)
 
-    // Strip cost from SKUs in response (don't expose cost to public)
+    // Strip cost AND prices from public response - prices only visible to logged-in buyers
     const sanitized = paginated.map(p => ({
-      ...p,
+      modelCode: p.modelCode,
+      name: p.name,
+      brand: p.brand,
+      category: p.category,
+      totalStock: p.totalStock,
+      skuCount: p.skuCount,
+      grades: p.grades,
+      storages: p.storages,
+      carriers: p.carriers,
+      colors: p.colors,
+      image: p.image,
       skus: p.skus.map(s => ({
         sku: s.sku,
         grade: s.grade,
@@ -441,7 +462,6 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         color: s.color,
         quantity: s.quantity,
         available: s.available,
-        price: s.price,
       }))
     }))
 
