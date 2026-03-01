@@ -16,7 +16,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     if (req.method === 'GET') {
       const [familyResult, skuResult] = await Promise.all([
         pool.query(`SELECT id, model_code, name, brand, category, image_url, visible, sort_order, created_at, updated_at FROM product_families ORDER BY brand, name`),
-        pool.query(`SELECT sku, model, brand, device_type, grade, quantity, available_quantity, cost, image_url FROM products WHERE is_active = true AND quantity > 0 AND grade NOT IN ('XF', 'XC', 'INTAKE', 'XIMEI')`)
+        pool.query(`SELECT sku, model, brand, device_type, grade, quantity, available_quantity, cost, image_url FROM products WHERE is_active = true AND quantity > 0 AND grade NOT IN ('XF', 'XC', 'INTAKE', 'XIMEI') AND sku NOT LIKE 'XA-%' AND sku NOT LIKE 'XA:%'`)
       ])
 
       const familyMap: Record<string, any> = {}
