@@ -469,7 +469,7 @@ export default function Admin() {
             <div className="aw-admin-topbar-title">{page === 'applications' ? 'Account Applications' : page === 'messages' ? 'Contact Messages' : 'SellerCloud Sync'}</div>
           </div>
 
-          <div className="aw-admin-page">
+         {page !== 'sync' && <div className="aw-admin-page">
             {loading ? (
               <div className="aw-admin-loading">Loading...</div>
             ) : page === 'applications' ? (
@@ -566,7 +566,8 @@ export default function Admin() {
                 )}
               </>
             )}
-          </div>
+         </div>}
+        </div>
         </div>
 
         {/* APPLICATION DETAIL MODAL */}
