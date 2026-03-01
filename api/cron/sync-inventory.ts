@@ -1,6 +1,11 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node'
 import { Pool } from '@neondatabase/serverless'
 
+// Vercel Pro: allow up to 300s for cron sync
+export const config = {
+  maxDuration: 300
+}
+
 const SC_BASE = 'https://bi.api.sellercloud.com/rest'
 
 async function getToken(): Promise<string> {
