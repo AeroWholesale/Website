@@ -221,6 +221,11 @@ export default function Admin() {
   const [familySaving, setFamilySaving] = useState(false)
   const [gradeSaving, setGradeSaving] = useState(false)
   const [familyFilter, setFamilyFilter] = useState('')
+  const [familySort, setFamilySort] = useState<'name' | 'brand' | 'stock' | 'category'>('name')
+  const [familyBrandFilter, setFamilyBrandFilter] = useState('')
+  const [familyCatFilter, setFamilyCatFilter] = useState('')
+  const [familyVisFilter, setFamilyVisFilter] = useState<'' | 'yes' | 'no'>('')
+  const [familyStockFilter, setFamilyStockFilter] = useState<'' | 'instock' | 'nostock'>('')
 
   const loadFamilies = async () => {
     setFamiliesLoading(true)
@@ -243,14 +248,19 @@ export default function Admin() {
   const saveFamily = async (data: any) => {
     setFamilySaving(true)
     try {
-      await fetch('/api/sc/catalog', {
+      const res = await fetch('/api/sc/catalog', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(data),
       })
-      setEditingFamily(null)
-      loadFamilies()
-    } catch (err) { console.error(err) }
+      if (res.ok) {
+        showToast(`${data.name} saved`)
+        setEditingFamily(null)
+        loadFamilies()
+      } else {
+        showToast('Failed to save family', true)
+      }
+    } catch (err) { showToast('Failed to save family', true) }
     setFamilySaving(false)
   }
 
@@ -263,14 +273,19 @@ export default function Admin() {
   const saveGrade = async (data: any) => {
     setGradeSaving(true)
     try {
-      await fetch('/api/sc/grades', {
+      const res = await fetch('/api/sc/grades', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(data),
       })
-      setEditingGrade(null)
-      loadGrades()
-    } catch (err) { console.error(err) }
+      if (res.ok) {
+        showToast(`Grade ${data.grade_code} updated`)
+        setEditingGrade(null)
+        loadGrades()
+      } else {
+        showToast('Failed to save grade', true)
+      }
+    } catch (err) { showToast('Failed to save grade', true) }
     setGradeSaving(false)
   }
 
@@ -279,14 +294,46 @@ export default function Admin() {
     const brandMap: Record<string, string> = {
       'AP': 'Apple', 'SA': 'Samsung', 'GO': 'Google', 'MO': 'Motorola',
       'LG': 'LG', 'TC': 'TCL', 'KY': 'Kyocera', 'AL': 'Alcatel',
-      'ZT': 'ZTE', 'ON': 'OnePlus', 'KA': 'Kazuna',
+      'ZT': 'ZTE', 'ON': 'OnePlus', 'KA': 'Kazuna', 'NV': 'Novatel',
+      'NE': 'Netgear', 'HT': 'HTC', 'PA': 'Pantech', 'GE': 'Generic',
+      'FR': 'Franklin', 'VZ': 'Verizon', 'RE': 'Reliance', 'AS': 'Asus',
+      'OP': 'OnePlus', 'SC': 'Sagecom', 'LU': 'Lucent', 'NK': 'Nokia',
+      'HTC': 'HTC', 'KAZ': 'Kazuna', 'NOV': 'Novatel',
     }
     const prefix = u.modelCode.split('-')[0]
+    const brand = brandMap[prefix] || u.brand || prefix
+
+    // Clean display name: try to make it human-readable
+    let displayName = u.scName || u.modelCode
+    // Remove brand prefix if it matches (e.g. "NOVATEL-MOD-U730L..." → "MOD-U730L...")
+    const scParts = displayName.split('-')
+    const knownBrandNames = ['APPLE', 'SAMSUNG', 'GOOGLE', 'MOTOROLA', 'LGE', 'TCL', 'KYOCERA', 'ALCATEL', 'ZTE', 'ONEPLUS', 'NOVATEL', 'NETGEAR', 'HTC', 'PANTECH', 'GENERIC', 'FRANKLIN', 'VERIZON', 'RELIANCE', 'ASUS', 'SAGECOM', 'LUCENT', 'NOKIA', 'KAZUNA', 'MOTORLA']
+    if (knownBrandNames.includes(scParts[0]?.toUpperCase())) {
+      scParts.shift()
+    }
+    // Remove model numbers, carrier codes, colors, grades from end — keep product name
+    // Also remove XA- prefix, shadow suffixes
+    displayName = displayName.replace(/^XA-/, '').replace(/-ShadowOf.*$/, '').replace(/S\d+$/, '')
+    // If still messy, just use model code with brand
+    if (displayName.length > 50 || displayName.includes('HSO')) {
+      displayName = `${brand} ${u.modelCode.split('-').slice(1).join(' ')}`.trim()
+    }
+
+    // Detect category from device type
+    let category = 'Phones'
+    const dt = (u.deviceType || '').toLowerCase()
+    if (dt.includes('tablet') || dt === 'ta' || dt === 'tka') category = 'Tablets'
+    else if (dt === 'lka' || dt.includes('laptop')) category = 'Laptops'
+    else if (dt === 'aka' || dt === 'ako' || dt.includes('watch') || dt.includes('wearable')) category = 'Wearables'
+    else if (dt === 'ca' || dt === 'cka' || dt.includes('cable') || dt.includes('charg') || dt.includes('accessory')) category = 'Accessories'
+    else if (dt === 'ia' || dt === 'ika' || dt === 'hko' || dt.includes('hotspot') || dt.includes('mifi') || dt.includes('router')) category = 'Accessories'
+    else if (dt === 'aa') category = 'Accessories'
+
     setEditingFamily({
       model_code: u.modelCode,
-      name: u.scName || u.modelCode,
-      brand: brandMap[prefix] || u.brand || prefix,
-      category: (u.deviceType || '').toLowerCase().includes('tablet') ? 'Tablets' : 'Phones',
+      name: displayName,
+      brand,
+      category,
       image_url: '',
       visible: true,
     })
@@ -307,9 +354,10 @@ export default function Admin() {
   const fetchSCCatalog = async (keyword?: string) => {
     setSyncSearching(true)
     try {
-      const url = keyword ? `/api/sc/catalog?size=20&active=false&keyword=${encodeURIComponent(keyword)}` : '/api/sc/catalog?size=20&active=false'
+      const url = keyword ? `/api/catalog-public?size=50&search=${encodeURIComponent(keyword)}` : '/api/catalog-public?size=50'
       const res = await fetch(url)
-      setCatalogData(await res.json())
+      const data = await res.json()
+      setCatalogData({ items: data.products, total: data.total })
     } catch (err) {
       setCatalogData({ error: String(err) })
     } finally {
@@ -901,21 +949,21 @@ export default function Admin() {
                 {/* Edit Modal */}
                 {editingFamily && (
                   <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.5)', zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                    <div style={{ background: '#fff', borderRadius: 12, padding: 24, width: 480, maxHeight: '80vh', overflow: 'auto' }}>
+                    <div style={{ background: '#fff', color: '#1e293b', borderRadius: 12, padding: 24, width: 480, maxHeight: '80vh', overflow: 'auto' }}>
                       <div style={{ fontSize: 16, fontWeight: 700, marginBottom: 16 }}>{editingFamily.id ? 'Edit' : 'Add'} Product Family</div>
                       <div style={{ display: 'grid', gap: 12 }}>
                         <div>
                           <label style={{ fontSize: 12, fontWeight: 600, color: '#64748b', display: 'block', marginBottom: 4 }}>Model Code</label>
-                          <input style={{ width: '100%', padding: '8px 12px', border: '1px solid #e2e8f0', borderRadius: 6, fontSize: 14, fontFamily: 'inherit', boxSizing: 'border-box' }} value={editingFamily.model_code} onChange={e => setEditingFamily({...editingFamily, model_code: e.target.value})} />
+                          <input style={{ width: '100%', padding: '8px 12px', border: '1px solid #cbd5e1', borderRadius: 6, fontSize: 14, fontFamily: 'inherit', boxSizing: 'border-box', color: '#1e293b' }} value={editingFamily.model_code} onChange={e => setEditingFamily({...editingFamily, model_code: e.target.value})} />
                         </div>
                         <div>
                           <label style={{ fontSize: 12, fontWeight: 600, color: '#64748b', display: 'block', marginBottom: 4 }}>Display Name</label>
-                          <input style={{ width: '100%', padding: '8px 12px', border: '1px solid #e2e8f0', borderRadius: 6, fontSize: 14, fontFamily: 'inherit', boxSizing: 'border-box' }} value={editingFamily.name} onChange={e => setEditingFamily({...editingFamily, name: e.target.value})} />
+                          <input style={{ width: '100%', padding: '8px 12px', border: '1px solid #cbd5e1', borderRadius: 6, fontSize: 14, fontFamily: 'inherit', boxSizing: 'border-box', color: '#1e293b' }} value={editingFamily.name} onChange={e => setEditingFamily({...editingFamily, name: e.target.value})} />
                         </div>
                         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
                           <div>
                             <label style={{ fontSize: 12, fontWeight: 600, color: '#64748b', display: 'block', marginBottom: 4 }}>Brand</label>
-                            <input style={{ width: '100%', padding: '8px 12px', border: '1px solid #e2e8f0', borderRadius: 6, fontSize: 14, fontFamily: 'inherit', boxSizing: 'border-box' }} value={editingFamily.brand} onChange={e => setEditingFamily({...editingFamily, brand: e.target.value})} />
+                            <input style={{ width: '100%', padding: '8px 12px', border: '1px solid #cbd5e1', borderRadius: 6, fontSize: 14, fontFamily: 'inherit', boxSizing: 'border-box', color: '#1e293b' }} value={editingFamily.brand} onChange={e => setEditingFamily({...editingFamily, brand: e.target.value})} />
                           </div>
                           <div>
                             <label style={{ fontSize: 12, fontWeight: 600, color: '#64748b', display: 'block', marginBottom: 4 }}>Category</label>
@@ -929,7 +977,7 @@ export default function Admin() {
                         </div>
                         <div>
                           <label style={{ fontSize: 12, fontWeight: 600, color: '#64748b', display: 'block', marginBottom: 4 }}>Image URL</label>
-                          <input style={{ width: '100%', padding: '8px 12px', border: '1px solid #e2e8f0', borderRadius: 6, fontSize: 14, fontFamily: 'inherit', boxSizing: 'border-box' }} value={editingFamily.image_url || ''} onChange={e => setEditingFamily({...editingFamily, image_url: e.target.value})} placeholder="https://..." />
+                          <input style={{ width: '100%', padding: '8px 12px', border: '1px solid #cbd5e1', borderRadius: 6, fontSize: 14, fontFamily: 'inherit', boxSizing: 'border-box', color: '#1e293b' }} value={editingFamily.image_url || ''} onChange={e => setEditingFamily({...editingFamily, image_url: e.target.value})} placeholder="https://..." />
                         </div>
                         <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                           <input type="checkbox" checked={editingFamily.visible !== false} onChange={e => setEditingFamily({...editingFamily, visible: e.target.checked})} />
@@ -1028,20 +1076,20 @@ export default function Admin() {
                 {/* Edit Modal */}
                 {editingGrade && (
                   <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.5)', zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                    <div style={{ background: '#fff', borderRadius: 12, padding: 24, width: 400 }}>
+                    <div style={{ background: '#fff', color: '#1e293b', borderRadius: 12, padding: 24, width: 400 }}>
                       <div style={{ fontSize: 16, fontWeight: 700, marginBottom: 16 }}>Edit Grade: {editingGrade.grade_code}</div>
                       <div style={{ display: 'grid', gap: 12 }}>
                         <div>
                           <label style={{ fontSize: 12, fontWeight: 600, color: '#64748b', display: 'block', marginBottom: 4 }}>Display Label</label>
-                          <input style={{ width: '100%', padding: '8px 12px', border: '1px solid #e2e8f0', borderRadius: 6, fontSize: 14, fontFamily: 'inherit', boxSizing: 'border-box' }} value={editingGrade.label} onChange={e => setEditingGrade({...editingGrade, label: e.target.value})} />
+                          <input style={{ width: '100%', padding: '8px 12px', border: '1px solid #cbd5e1', borderRadius: 6, fontSize: 14, fontFamily: 'inherit', boxSizing: 'border-box', color: '#1e293b' }} value={editingGrade.label} onChange={e => setEditingGrade({...editingGrade, label: e.target.value})} />
                         </div>
                         <div>
                           <label style={{ fontSize: 12, fontWeight: 600, color: '#64748b', display: 'block', marginBottom: 4 }}>Multiplier (e.g. 1.35 = 35% margin)</label>
-                          <input type="number" step="0.01" style={{ width: '100%', padding: '8px 12px', border: '1px solid #e2e8f0', borderRadius: 6, fontSize: 14, fontFamily: 'inherit', boxSizing: 'border-box' }} value={editingGrade.multiplier} onChange={e => setEditingGrade({...editingGrade, multiplier: parseFloat(e.target.value) || 1})} />
+                          <input type="number" step="0.01" style={{ width: '100%', padding: '8px 12px', border: '1px solid #cbd5e1', borderRadius: 6, fontSize: 14, fontFamily: 'inherit', boxSizing: 'border-box', color: '#1e293b' }} value={editingGrade.multiplier} onChange={e => setEditingGrade({...editingGrade, multiplier: parseFloat(e.target.value) || 1})} />
                         </div>
                         <div>
                           <label style={{ fontSize: 12, fontWeight: 600, color: '#64748b', display: 'block', marginBottom: 4 }}>Sort Order</label>
-                          <input type="number" style={{ width: '100%', padding: '8px 12px', border: '1px solid #e2e8f0', borderRadius: 6, fontSize: 14, fontFamily: 'inherit', boxSizing: 'border-box' }} value={editingGrade.sort_order} onChange={e => setEditingGrade({...editingGrade, sort_order: parseInt(e.target.value) || 0})} />
+                          <input type="number" style={{ width: '100%', padding: '8px 12px', border: '1px solid #cbd5e1', borderRadius: 6, fontSize: 14, fontFamily: 'inherit', boxSizing: 'border-box', color: '#1e293b' }} value={editingGrade.sort_order} onChange={e => setEditingGrade({...editingGrade, sort_order: parseInt(e.target.value) || 0})} />
                         </div>
                         <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                           <input type="checkbox" checked={editingGrade.visible !== false} onChange={e => setEditingGrade({...editingGrade, visible: e.target.checked})} />
@@ -1096,36 +1144,31 @@ export default function Admin() {
             {syncTab === 'catalog' && catalogData?.items && (
               <div className="aw-admin-table-card">
                 <div className="aw-admin-table-header">
-                  <div className="aw-admin-table-title">SellerCloud Catalog ({catalogData.total?.toLocaleString()} products)</div>
+                  <div className="aw-admin-table-title">Website Catalog ({catalogData.total?.toLocaleString()} products)</div>
                 </div>
                 <div style={{ overflowX: 'auto' }}>
                   <table className="aw-admin-table">
                     <thead>
                       <tr>
-                        <th>SKU</th>
                         <th>Product</th>
-                        <th>Qty</th>
-                        <th>Avg Cost</th>
-                        <th>Sold 30d</th>
-                        <th>Sold 90d</th>
-                        <th>Channels</th>
+                        <th>Brand</th>
+                        <th>Category</th>
+                        <th>Grades</th>
+                        <th>SKUs</th>
+                        <th>Total Qty</th>
+                        <th>Image</th>
                       </tr>
                     </thead>
                     <tbody>
                       {catalogData.items.map((item: any, i: number) => (
                         <tr key={i}>
-                          <td><span className="aw-admin-td-bold" style={{ fontSize: 11, fontFamily: 'monospace' }}>{item.sku}</span></td>
-                          <td>
-                            <div className="aw-admin-td-bold">{item.name}</div>
-                            {item.parsed && <div className="aw-admin-td-sub">{item.parsed.deviceType} · {item.parsed.manufacturer} · {item.parsed.gradeDescription}</div>}
-                          </td>
-                          <td style={{ color: item.physicalQty > 0 ? '#22c55e' : '#ef4444', fontWeight: 700 }}>{item.physicalQty}</td>
-                          <td>{item.avgCost > 0 ? `${item.avgCost.toFixed(2)}` : '—'}</td>
-                          <td>{item.sold30 || '—'}</td>
-                          <td>{item.sold90 || '—'}</td>
-                          <td style={{ fontSize: 11 }}>
-                            {[item.backMarketEnabled && 'BM', item.ebayEnabled && 'eBay', item.walmartEnabled && 'WM', item.amazonEnabled && 'AMZ'].filter(Boolean).join(', ') || '—'}
-                          </td>
+                          <td className="aw-admin-td-bold">{item.name}</td>
+                          <td>{item.brand}</td>
+                          <td>{item.category}</td>
+                          <td style={{ fontSize: 11 }}>{Array.isArray(item.grades) ? item.grades.join(', ') : '—'}</td>
+                          <td>{item.skuCount || 0}</td>
+                          <td style={{ color: '#22c55e', fontWeight: 700 }}>{item.totalStock || 0}</td>
+                          <td>{item.image && !item.image.includes('NoImage') ? <span style={{ color: '#10b981' }}>✓</span> : <span style={{ color: '#ef4444' }}>✗</span>}</td>
                         </tr>
                       ))}
                     </tbody>
@@ -1137,7 +1180,7 @@ export default function Admin() {
             {syncTab === 'catalog' && !catalogData?.items && (
               <div className="aw-admin-empty">
                 <div className="aw-admin-empty-icon">{'📦'}</div>
-                <div className="aw-admin-empty-text">Click "Load Catalog" or search to see products</div>
+                <div className="aw-admin-empty-text">Click "Load Catalog" to see the public website catalog</div>
               </div>
             )}
 
@@ -1195,21 +1238,21 @@ export default function Admin() {
             {/* Edit Modal */}
             {editingFamily && (
               <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.5)', zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                <div style={{ background: '#fff', borderRadius: 12, padding: 24, width: 500, maxHeight: '85vh', overflow: 'auto' }}>
+                <div style={{ background: '#fff', color: '#1e293b', borderRadius: 12, padding: 24, width: 500, maxHeight: '85vh', overflow: 'auto' }}>
                   <div style={{ fontSize: 16, fontWeight: 700, marginBottom: 16 }}>{editingFamily.id ? 'Edit' : 'Add'} Product Family</div>
                   <div style={{ display: 'grid', gap: 12 }}>
                     <div>
                       <label style={{ fontSize: 12, fontWeight: 600, color: '#64748b', display: 'block', marginBottom: 4 }}>Model Code</label>
-                      <input style={{ width: '100%', padding: '8px 12px', border: '1px solid #e2e8f0', borderRadius: 6, fontSize: 14, fontFamily: 'inherit', boxSizing: 'border-box' }} value={editingFamily.model_code} onChange={e => setEditingFamily({...editingFamily, model_code: e.target.value})} />
+                      <input style={{ width: '100%', padding: '8px 12px', border: '1px solid #cbd5e1', borderRadius: 6, fontSize: 14, fontFamily: 'inherit', boxSizing: 'border-box', color: '#1e293b' }} value={editingFamily.model_code} onChange={e => setEditingFamily({...editingFamily, model_code: e.target.value})} />
                     </div>
                     <div>
                       <label style={{ fontSize: 12, fontWeight: 600, color: '#64748b', display: 'block', marginBottom: 4 }}>Display Name</label>
-                      <input style={{ width: '100%', padding: '8px 12px', border: '1px solid #e2e8f0', borderRadius: 6, fontSize: 14, fontFamily: 'inherit', boxSizing: 'border-box' }} value={editingFamily.name} onChange={e => setEditingFamily({...editingFamily, name: e.target.value})} />
+                      <input style={{ width: '100%', padding: '8px 12px', border: '1px solid #cbd5e1', borderRadius: 6, fontSize: 14, fontFamily: 'inherit', boxSizing: 'border-box', color: '#1e293b' }} value={editingFamily.name} onChange={e => setEditingFamily({...editingFamily, name: e.target.value})} />
                     </div>
                     <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
                       <div>
                         <label style={{ fontSize: 12, fontWeight: 600, color: '#64748b', display: 'block', marginBottom: 4 }}>Brand</label>
-                        <input style={{ width: '100%', padding: '8px 12px', border: '1px solid #e2e8f0', borderRadius: 6, fontSize: 14, fontFamily: 'inherit', boxSizing: 'border-box' }} value={editingFamily.brand} onChange={e => setEditingFamily({...editingFamily, brand: e.target.value})} />
+                        <input style={{ width: '100%', padding: '8px 12px', border: '1px solid #cbd5e1', borderRadius: 6, fontSize: 14, fontFamily: 'inherit', boxSizing: 'border-box', color: '#1e293b' }} value={editingFamily.brand} onChange={e => setEditingFamily({...editingFamily, brand: e.target.value})} />
                       </div>
                       <div>
                         <label style={{ fontSize: 12, fontWeight: 600, color: '#64748b', display: 'block', marginBottom: 4 }}>Category</label>
@@ -1224,7 +1267,7 @@ export default function Admin() {
                     </div>
                     <div>
                       <label style={{ fontSize: 12, fontWeight: 600, color: '#64748b', display: 'block', marginBottom: 4 }}>Image URL</label>
-                      <input style={{ width: '100%', padding: '8px 12px', border: '1px solid #e2e8f0', borderRadius: 6, fontSize: 14, fontFamily: 'inherit', boxSizing: 'border-box' }} value={editingFamily.image_url || ''} onChange={e => setEditingFamily({...editingFamily, image_url: e.target.value})} placeholder="https://..." />
+                      <input style={{ width: '100%', padding: '8px 12px', border: '1px solid #cbd5e1', borderRadius: 6, fontSize: 14, fontFamily: 'inherit', boxSizing: 'border-box', color: '#1e293b' }} value={editingFamily.image_url || ''} onChange={e => setEditingFamily({...editingFamily, image_url: e.target.value})} placeholder="https://..." />
                     </div>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                       <input type="checkbox" checked={editingFamily.visible !== false} onChange={e => setEditingFamily({...editingFamily, visible: e.target.checked})} />
@@ -1283,10 +1326,37 @@ export default function Admin() {
                   <div className="aw-admin-table-header">
                     <div className="aw-admin-table-title">Mapped Product Families ({familiesData.totals.families})</div>
                     <div style={{ display: 'flex', gap: 8 }}>
-                      <input placeholder="Filter..." value={familyFilter} onChange={e => setFamilyFilter(e.target.value)} style={{ padding: '6px 10px', border: '1px solid #2d3548', borderRadius: 6, fontSize: 12, fontFamily: 'inherit', width: 180, background: '#0f1729', color: '#e2e8f0' }} />
                       <button onClick={() => setEditingFamily({ model_code: '', name: '', brand: '', category: 'Phones', image_url: '', visible: true })} className="aw-admin-btn aw-admin-btn-primary" style={{ fontSize: 12 }}>+ Add Family</button>
                       <button onClick={loadFamilies} className="aw-admin-btn aw-admin-btn-view" style={{ fontSize: 12 }}>Refresh</button>
                     </div>
+                  </div>
+                  {/* Filters Row */}
+                  <div style={{ padding: '12px 16px', borderBottom: '1px solid #1e2d4a', display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'center' }}>
+                    <input placeholder="Search name/code..." value={familyFilter} onChange={e => setFamilyFilter(e.target.value)} style={{ padding: '6px 10px', border: '1px solid #2d3548', borderRadius: 6, fontSize: 12, fontFamily: 'inherit', width: 180, background: '#0f1729', color: '#e2e8f0' }} />
+                    <select value={familyBrandFilter} onChange={e => setFamilyBrandFilter(e.target.value)} style={{ padding: '6px 10px', border: '1px solid #2d3548', borderRadius: 6, fontSize: 12, fontFamily: 'inherit', background: '#0f1729', color: '#e2e8f0' }}>
+                      <option value="">All Brands</option>
+                      {[...new Set(familiesData.families.map((f: any) => f.brand))].sort().map((b: any) => <option key={b} value={b}>{b}</option>)}
+                    </select>
+                    <select value={familyCatFilter} onChange={e => setFamilyCatFilter(e.target.value)} style={{ padding: '6px 10px', border: '1px solid #2d3548', borderRadius: 6, fontSize: 12, fontFamily: 'inherit', background: '#0f1729', color: '#e2e8f0' }}>
+                      <option value="">All Categories</option>
+                      {[...new Set(familiesData.families.map((f: any) => f.category))].sort().map((c: any) => <option key={c} value={c}>{c}</option>)}
+                    </select>
+                    <select value={familyStockFilter} onChange={e => setFamilyStockFilter(e.target.value as any)} style={{ padding: '6px 10px', border: '1px solid #2d3548', borderRadius: 6, fontSize: 12, fontFamily: 'inherit', background: '#0f1729', color: '#e2e8f0' }}>
+                      <option value="">All Stock</option>
+                      <option value="instock">In Stock</option>
+                      <option value="nostock">No Stock</option>
+                    </select>
+                    <select value={familyVisFilter} onChange={e => setFamilyVisFilter(e.target.value as any)} style={{ padding: '6px 10px', border: '1px solid #2d3548', borderRadius: 6, fontSize: 12, fontFamily: 'inherit', background: '#0f1729', color: '#e2e8f0' }}>
+                      <option value="">All Visibility</option>
+                      <option value="yes">Visible</option>
+                      <option value="no">Hidden</option>
+                    </select>
+                    <select value={familySort} onChange={e => setFamilySort(e.target.value as any)} style={{ padding: '6px 10px', border: '1px solid #2d3548', borderRadius: 6, fontSize: 12, fontFamily: 'inherit', background: '#0f1729', color: '#e2e8f0' }}>
+                      <option value="name">Sort: Name</option>
+                      <option value="brand">Sort: Brand</option>
+                      <option value="stock">Sort: Stock ↓</option>
+                      <option value="category">Sort: Category</option>
+                    </select>
                   </div>
                   <div style={{ overflowX: 'auto' }}>
                     <table className="aw-admin-table">
@@ -1294,9 +1364,23 @@ export default function Admin() {
                       <tbody>
                         {familiesData.families
                           .filter((f: any) => {
-                            if (!familyFilter) return true
-                            const q = familyFilter.toLowerCase()
-                            return f.name.toLowerCase().includes(q) || f.brand.toLowerCase().includes(q) || f.model_code.toLowerCase().includes(q) || f.category.toLowerCase().includes(q)
+                            if (familyFilter) {
+                              const q = familyFilter.toLowerCase()
+                              if (!f.name.toLowerCase().includes(q) && !f.model_code.toLowerCase().includes(q)) return false
+                            }
+                            if (familyBrandFilter && f.brand !== familyBrandFilter) return false
+                            if (familyCatFilter && f.category !== familyCatFilter) return false
+                            if (familyStockFilter === 'instock' && (f.stock || 0) === 0) return false
+                            if (familyStockFilter === 'nostock' && (f.stock || 0) > 0) return false
+                            if (familyVisFilter === 'yes' && !f.visible) return false
+                            if (familyVisFilter === 'no' && f.visible) return false
+                            return true
+                          })
+                          .sort((a: any, b: any) => {
+                            if (familySort === 'stock') return (b.stock || 0) - (a.stock || 0)
+                            if (familySort === 'brand') return a.brand.localeCompare(b.brand) || a.name.localeCompare(b.name)
+                            if (familySort === 'category') return a.category.localeCompare(b.category) || a.name.localeCompare(b.name)
+                            return a.name.localeCompare(b.name)
                           })
                           .map((f: any) => (
                           <tr key={f.id} style={{ opacity: f.visible ? 1 : 0.5 }}>
@@ -1304,7 +1388,7 @@ export default function Admin() {
                             <td style={{ fontWeight: 600 }}>{f.name}</td>
                             <td>{f.brand}</td>
                             <td><span style={{ fontSize: 10, padding: '2px 6px', borderRadius: 3, background: '#1e293b', color: '#94a3b8' }}>{f.category}</span></td>
-                            <td style={{ fontWeight: 600 }}>{f.stock || 0}</td>
+                            <td style={{ fontWeight: 600, color: (f.stock || 0) > 0 ? '#10b981' : '#64748b' }}>{f.stock || 0}</td>
                             <td>{f.skuCount || 0}</td>
                             <td>{f.visible ? <span style={{ color: '#10b981' }}>✓</span> : <span style={{ color: '#ef4444' }}>✗</span>}</td>
                             <td style={{ display: 'flex', gap: 4 }}>
@@ -1330,20 +1414,20 @@ export default function Admin() {
             {/* Edit Modal */}
             {editingGrade && (
               <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.5)', zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                <div style={{ background: '#fff', borderRadius: 12, padding: 24, width: 420 }}>
+                <div style={{ background: '#fff', color: '#1e293b', borderRadius: 12, padding: 24, width: 420 }}>
                   <div style={{ fontSize: 16, fontWeight: 700, marginBottom: 16 }}>Edit Grade: {editingGrade.grade_code}</div>
                   <div style={{ display: 'grid', gap: 12 }}>
                     <div>
                       <label style={{ fontSize: 12, fontWeight: 600, color: '#64748b', display: 'block', marginBottom: 4 }}>Display Label</label>
-                      <input style={{ width: '100%', padding: '8px 12px', border: '1px solid #e2e8f0', borderRadius: 6, fontSize: 14, fontFamily: 'inherit', boxSizing: 'border-box' }} value={editingGrade.label} onChange={e => setEditingGrade({...editingGrade, label: e.target.value})} />
+                      <input style={{ width: '100%', padding: '8px 12px', border: '1px solid #cbd5e1', borderRadius: 6, fontSize: 14, fontFamily: 'inherit', boxSizing: 'border-box', color: '#1e293b' }} value={editingGrade.label} onChange={e => setEditingGrade({...editingGrade, label: e.target.value})} />
                     </div>
                     <div>
                       <label style={{ fontSize: 12, fontWeight: 600, color: '#64748b', display: 'block', marginBottom: 4 }}>Multiplier (e.g. 1.35 = 35% margin)</label>
-                      <input type="number" step="0.01" style={{ width: '100%', padding: '8px 12px', border: '1px solid #e2e8f0', borderRadius: 6, fontSize: 14, fontFamily: 'inherit', boxSizing: 'border-box' }} value={editingGrade.multiplier} onChange={e => setEditingGrade({...editingGrade, multiplier: parseFloat(e.target.value) || 1})} />
+                      <input type="number" step="0.01" style={{ width: '100%', padding: '8px 12px', border: '1px solid #cbd5e1', borderRadius: 6, fontSize: 14, fontFamily: 'inherit', boxSizing: 'border-box', color: '#1e293b' }} value={editingGrade.multiplier} onChange={e => setEditingGrade({...editingGrade, multiplier: parseFloat(e.target.value) || 1})} />
                     </div>
                     <div>
                       <label style={{ fontSize: 12, fontWeight: 600, color: '#64748b', display: 'block', marginBottom: 4 }}>Sort Order</label>
-                      <input type="number" style={{ width: '100%', padding: '8px 12px', border: '1px solid #e2e8f0', borderRadius: 6, fontSize: 14, fontFamily: 'inherit', boxSizing: 'border-box' }} value={editingGrade.sort_order} onChange={e => setEditingGrade({...editingGrade, sort_order: parseInt(e.target.value) || 0})} />
+                      <input type="number" style={{ width: '100%', padding: '8px 12px', border: '1px solid #cbd5e1', borderRadius: 6, fontSize: 14, fontFamily: 'inherit', boxSizing: 'border-box', color: '#1e293b' }} value={editingGrade.sort_order} onChange={e => setEditingGrade({...editingGrade, sort_order: parseInt(e.target.value) || 0})} />
                     </div>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                       <input type="checkbox" checked={editingGrade.visible !== false} onChange={e => setEditingGrade({...editingGrade, visible: e.target.checked})} />
