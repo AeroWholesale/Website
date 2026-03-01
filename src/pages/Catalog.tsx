@@ -128,7 +128,16 @@ const GRADE_COLORS: Record<string, string> = {
 const GRADE_ORDER = ['CAP1', 'NE', 'CAP', 'CA+', 'CA+1', 'CA', 'CA1', 'CAB', 'SD', 'SD-', 'SDB']
 
 const IconSearch = () => <svg fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
-const IconDevice = () => <svg fill="none" stroke="currentColor" strokeWidth="1.2" viewBox="0 0 24 24"><rect x="5" y="2" width="14" height="20" rx="2"/><circle cx="12" cy="17" r="0.8" fill="currentColor"/></svg>
+const IconPhone = () => <svg fill="none" stroke="currentColor" strokeWidth="1.2" viewBox="0 0 24 24"><rect x="5" y="2" width="14" height="20" rx="2"/><circle cx="12" cy="17" r="0.8" fill="currentColor"/></svg>
+const IconTablet = () => <svg fill="none" stroke="currentColor" strokeWidth="1.2" viewBox="0 0 24 24"><rect x="3" y="2" width="18" height="20" rx="2"/><circle cx="12" cy="18" r="0.8" fill="currentColor"/></svg>
+const IconLaptop = () => <svg fill="none" stroke="currentColor" strokeWidth="1.2" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="12" rx="1.5"/><path d="M1 18h22" strokeLinecap="round"/></svg>
+const IconWatch = () => <svg fill="none" stroke="currentColor" strokeWidth="1.2" viewBox="0 0 24 24"><rect x="6" y="6" width="12" height="12" rx="3"/><path d="M9 6V3h6v3M9 18v3h6v-3"/></svg>
+const IconDevice = ({ category }: { category?: string }) => {
+  if (category === 'Tablets') return <IconTablet />
+  if (category === 'Laptops') return <IconLaptop />
+  if (category === 'Wearables') return <IconWatch />
+  return <IconPhone />
+}
 
 interface Product {
   modelCode: string; name: string; brand: string; category: string
@@ -350,7 +359,7 @@ export default function Catalog() {
                   {data.products.map(p => (
                     <div key={p.modelCode} className="aw-product-card">
                       <div className="aw-card-img">
-                        {p.image && p.image !== noImg ? <img src={p.image} alt={p.name} loading="lazy" /> : <IconDevice />}
+                        {p.image && p.image !== noImg ? <img src={p.image} alt={p.name} loading="lazy" /> : <IconDevice category={p.category} />}
                         {p.totalStock >= 10 && <div className="aw-card-badge">{p.totalStock} in stock</div>}
                       </div>
                       <div className="aw-card-body">
