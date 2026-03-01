@@ -68,6 +68,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       WHERE is_active = true
         AND quantity > 0
         AND grade NOT IN ('XF', 'XC', 'INTAKE', 'XIMEI')
+        AND sku NOT LIKE 'XA-%' AND sku NOT LIKE 'XA:%'
     `)
 
     // ── Group by parent product ────────────────────────────────────────
