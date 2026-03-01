@@ -537,7 +537,7 @@ export default function Admin() {
                   </div>
                 )}
               </>
-            ) : (
+            ) : page === 'messages' ? (
               <>
                 {/* MESSAGES */}
                 <div className="aw-admin-stats" style={{ gridTemplateColumns: 'repeat(3, 1fr)' }}>
