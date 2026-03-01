@@ -90,10 +90,24 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   }
 }
 
+// Generation markers that can appear anywhere in SKU (e.g., AP-IPDP11-A2435-4G-HSO...)
+const GENERATION_MARKERS = ['1G', '2G', '3G', '4G', '5G', '6G', '7G', '8G', '9G', '10G']
+
 function extractModelCode(sku: string, familyMap: Record<string, any>): string {
   const afterColon = sku.includes(':') ? sku.split(':')[1] : sku
   const parts = afterColon.split('-')
   if (parts.length < 2) return afterColon
+
+  // First: check for generation marker families (e.g., AP-IPDP11-4G)
+  const baseCode = parts.slice(0, 2).join('-')
+  for (const part of parts.slice(2)) {
+    if (GENERATION_MARKERS.includes(part)) {
+      const genCode = baseCode + '-' + part
+      if (familyMap[genCode]) return genCode
+    }
+  }
+
+  // Second: try progressively longer prefix matches
   for (let i = parts.length - 1; i >= 2; i--) {
     const candidate = parts.slice(0, i).join('-')
     if (familyMap[candidate]) return candidate
