@@ -17,6 +17,11 @@ const GRADE_MULTIPLIERS: Record<string, number> = {
 // Unsellable grades — never show on public catalog
 const UNSELLABLE_GRADES = ['XF', 'XC', 'INTAKE', 'XIMEI']
 
+// Normalize shadow SKU grades: CAS1 → CA, SDS1 → SD, CA+S1 → CA+, etc.
+function normalizeGrade(grade: string): string {
+  return grade.replace(/S\d+$/, '')
+}
+
 // Parent product name mapping from SKU model codes
 const MODEL_MAP: Record<string, { name: string; category: string }> = {
   // Apple iPhones
@@ -266,13 +271,41 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       image: string
     }> = {}
 
+    // Carrier code normalization
+    const CARRIER_MAP: Record<string, string> = {
+      'UN': 'Unlocked', 'TM': 'T-Mobile', 'AT': 'AT&T',
+      'VZ': 'Verizon', 'SP': 'Sprint', 'US': 'US Cellular',
+      'ST': 'Spectrum', 'FX': 'Xfinity', 'BO': 'Boost Mobile',
+      'CR': 'Cricket', 'Unlocked': 'Unlocked', 'T-Mobile': 'T-Mobile',
+      'AT&T': 'AT&T', 'Verizon': 'Verizon', 'Sprint': 'Sprint',
+      'US Cellular': 'US Cellular', 'Spectrum': 'Spectrum',
+      'Xfinity': 'Xfinity', 'Boost Mobile': 'Boost Mobile',
+      'Cricket': 'Cricket',
+    }
+
+    // Color code normalization
+    const COLOR_MAP: Record<string, string> = {
+      'BLA': 'Black', 'BLU': 'Blue', 'GRA': 'Gray', 'PUR': 'Purple',
+      'PIN': 'Pink', 'WHI': 'White', 'GRE': 'Green', 'SIL': 'Silver',
+      'GLD': 'Gold', 'RED': 'Red', 'YEL': 'Yellow', 'ORG': 'Orange',
+      'TIT': 'Titanium', 'MID': 'Midnight', 'STL': 'Starlight',
+      'SPG': 'Space Gray', 'SBL': 'Space Black', 'NAT': 'Natural',
+      'DES': 'Desert', 'CRM': 'Cream', 'LAV': 'Lavender',
+      'PHN': 'Phantom', 'GRP': 'Graphite', 'COR': 'Coral',
+    }
+
     for (const row of result.rows) {
       const modelCode = getModelCode(row.sku)
       const mapping = MODEL_MAP[modelCode]
       if (!mapping) continue // Skip unmapped SKUs
 
       const productBrand = getBrand(modelCode)
-      const grade = row.grade || ''
+      const rawGrade = row.grade || ''
+      const grade = normalizeGrade(rawGrade)
+      
+      // Skip unsellable even after normalization
+      if (UNSELLABLE_GRADES.includes(grade)) continue
+      
       const multiplier = GRADE_MULTIPLIERS[grade] || 1.30
       const price = Math.round((row.cost || 0) * multiplier * 100) / 100
 
@@ -295,13 +328,16 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       }
 
       const family = families[modelCode]
+      const normalizedCarrier = CARRIER_MAP[row.carrier] || row.carrier || ''
+      const normalizedColor = COLOR_MAP[row.color] || row.color || ''
+
       family.skus.push({
         sku: row.sku,
         grade,
-        gradeDescription: row.grade_description,
+        gradeDescription: GRADE_MULTIPLIERS[grade] ? '' : row.grade_description,
         storage: row.storage,
-        carrier: row.carrier,
-        color: row.color,
+        carrier: normalizedCarrier,
+        color: normalizedColor,
         quantity: row.quantity,
         available: row.available_quantity,
         price,
@@ -310,8 +346,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       family.totalStock += row.quantity || 0
       if (grade) family.grades.add(grade)
       if (row.storage) family.storages.add(row.storage)
-      if (row.carrier) family.carriers.add(row.carrier)
-      if (row.color) family.colors.add(row.color)
+      if (normalizedCarrier) family.carriers.add(normalizedCarrier)
+      if (normalizedColor) family.colors.add(normalizedColor)
       if (price > 0 && price < family.lowestPrice) family.lowestPrice = price
       if (price > family.highestPrice) family.highestPrice = price
       if (!family.image && row.image_url) family.image = row.image_url
