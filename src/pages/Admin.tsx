@@ -565,10 +565,8 @@ export default function Admin() {
                   ))
                 )}
               </>
-            )}
-         </div>}
-        </div>
-        </div>
+            ) : null}
+          </div>}
 
         {/* APPLICATION DETAIL MODAL */}
         {detail && (
@@ -910,6 +908,7 @@ export default function Admin() {
         {/* TOAST */}
         {toast && <div className={`aw-admin-toast${toast.error ? ' error' : ''}`}>{toast.text}</div>}
 
+        </div>
       </div>
       )}
     </>
