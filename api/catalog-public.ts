@@ -9,17 +9,31 @@ function normalizeGrade(grade: string): string {
   return grade.replace(/S\d+$/, '')
 }
 
+// Generation markers that can appear anywhere in SKU (e.g., AP-IPDP11-A2435-4G-HSO...)
+const GENERATION_MARKERS = ['1G', '2G', '3G', '4G', '5G', '6G', '7G', '8G', '9G', '10G']
+
 // Extract model code from full SKU by matching against known families
 function getModelCode(sku: string, familyMap: Record<string, any>): string {
   const afterColon = sku.includes(':') ? sku.split(':')[1] : sku
   const parts = afterColon.split('-')
   if (parts.length < 2) return afterColon
 
-  // Try progressively longer model codes until we find a match
+  // First: check if any family code uses a generation marker (e.g., AP-IPDP11-4G)
+  // Scan SKU parts for generation markers and try base + generation combo
+  const baseCode = parts.slice(0, 2).join('-')
+  for (const part of parts.slice(2)) {
+    if (GENERATION_MARKERS.includes(part)) {
+      const genCode = baseCode + '-' + part
+      if (familyMap[genCode]) return genCode
+    }
+  }
+
+  // Second: try progressively longer prefix matches (existing logic)
   for (let i = parts.length - 1; i >= 2; i--) {
     const candidate = parts.slice(0, i).join('-')
     if (familyMap[candidate]) return candidate
   }
+
   // Default: first two parts
   return parts.slice(0, 2).join('-')
 }
