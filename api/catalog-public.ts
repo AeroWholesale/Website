@@ -110,7 +110,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
           colors: new Set(),
           lowestPrice: Infinity,
           highestPrice: 0,
-          image: mapping.image_url || row.image_url || '',
+          image: mapping.image_url || '',
         }
       }
 
@@ -132,7 +132,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       if (normalizedColor) family.colors.add(normalizedColor)
       if (price > 0 && price < family.lowestPrice) family.lowestPrice = price
       if (price > family.highestPrice) family.highestPrice = price
-      if (!family.image && row.image_url) family.image = row.image_url
+      // Image only comes from product_families.image_url — no random SC fallback
     }
 
     // ── Convert to array and apply filters ────────────────────────────
