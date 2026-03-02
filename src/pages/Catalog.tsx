@@ -114,18 +114,18 @@ const css = `
 
 const GRADE_LABELS: Record<string, string> = {
   'CAP1': 'Premium 100%', 'CAP': 'Premium', 'NE': 'New',
-  'CA+': 'Excellent', 'CA+1': 'Excellent', 'CA1': 'Good',
+  ''CA+': 'Excellent',
   'CA': 'Good', 'CAB': 'Good (Batt<80%)',
   'SD': 'B-Grade', 'SD-': 'C-Grade', 'SDB': 'B/C (Batt<80%)',
 }
 
 const GRADE_COLORS: Record<string, string> = {
   'CAP1': 'green', 'NE': 'green', 'CAP': 'blue',
-  'CA+': 'purple', 'CA+1': 'purple', 'CA': 'yellow', 'CA1': 'yellow',
+  ''CA+': 'purple', 'CA': 'yellow',,
   'CAB': 'orange', 'SD': 'gray', 'SD-': 'gray', 'SDB': 'gray',
 }
 
-const GRADE_ORDER = ['CAP1', 'NE', 'CAP', 'CA+', 'CA+1', 'CA', 'CA1', 'CAB', 'SD', 'SD-', 'SDB']
+const GRADE_ORDER = ['CAP1', 'NE', 'CAP', 'CA+', 'CA', 'CAB', 'SD', 'SD-', 'SDB']
 
 const IconSearch = () => <svg fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
 const IconPhone = () => <svg fill="none" stroke="currentColor" strokeWidth="1.2" viewBox="0 0 24 24"><rect x="5" y="2" width="14" height="20" rx="2"/><circle cx="12" cy="17" r="0.8" fill="currentColor"/></svg>

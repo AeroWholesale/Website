@@ -81,7 +81,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       FROM products
       WHERE is_active = true
         AND quantity > 0
-        AND grade NOT IN ('XF', 'XC', 'INTAKE', 'XIMEI')
+       AND grade NOT IN ('XF', 'XC', 'INTAKE', 'XIMEI', '')
+        AND grade IS NOT NULL
         AND sku NOT LIKE 'XA-%' AND sku NOT LIKE 'XA:%'
     `)
 

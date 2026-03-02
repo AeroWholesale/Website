@@ -45,7 +45,11 @@ function parseSku(sku: string) {
   const prefixPart = prefix.split(':')[0] || ''
   const mfrCode = prefix.split(':')[1]?.split('-')[0] || (parts[0]?.includes(':') ? parts[0].split(':')[1] : '')
 
-  const grade = parts[parts.length - 1] || ''
+ // Validate last segment against known grades
+  const VALID_GRADES = ['NE', 'CAP1', 'CAP', 'CA+', 'CA', 'CAB', 'SD', 'SD-', 'SDB', 'XF', 'XC', 'XIMEI', 'INTAKE']
+  const lastSegment = parts[parts.length - 1] || ''
+  const normalizedLast = lastSegment.replace(/S\d+$/, '')
+  const grade = VALID_GRADES.includes(normalizedLast) ? normalizedLast : ''
   const gradeDesc = grades[grade] || grade
 
   // Try to find carrier, storage, color from parts
