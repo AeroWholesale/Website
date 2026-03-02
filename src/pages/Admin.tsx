@@ -675,8 +675,8 @@ export default function Admin() {
 
           <div className="aw-admin-sb-label">Products</div>
           <div className={`aw-admin-sb-item${page === 'families' ? ' active' : ''}`} onClick={() => { setPage('families'); if (!familiesData) loadFamilies() }}><span>📦</span> Product Families</div>
-          <div className={`aw-admin-sb-item${page === 'grades' ? ' active' : ''}`} onClick={() => { setPage('grades'); if (!gradesData) loadGrades() }}><span>⚙️</span> Grade Multipliers</div>
-          <div className={`aw-admin-sb-item${page === 'review' ? ' active' : ''}`} onClick={() => { setPage('review'); if (!reviewData) loadReview() }}><span>🔍</span> Review Queue{reviewData?.stats?.noGradeWithStock > 0 ? <span className="aw-admin-sb-badge">{reviewData.stats.noGradeWithStock}</span> : null}</div>
+          <div className={`aw-admin-sb-item${page === 'grades' ? ' active' : ''}`} onClick={() => { setPage('grades'); if (!gradesData) loadGrades() }}><span>⚙️</span> Pricing & Grades</div>
+          <div className={`aw-admin-sb-item${page === 'review' ? ' active' : ''}`} onClick={() => { setPage('review'); if (!reviewData) loadReview() }}><span>🔍</span> Unassigned SKUs{reviewData?.stats?.noGradeWithStock > 0 ? <span className="aw-admin-sb-badge">{reviewData.stats.noGradeWithStock}</span> : null}</div>
 
           <div className="aw-admin-sb-label">System</div>
           <div className={`aw-admin-sb-item${page === 'sync' ? ' active' : ''}`} onClick={() => setPage('sync')}><span>🔄</span> Sync Dashboard</div>
@@ -697,7 +697,7 @@ export default function Admin() {
         {/* CONTENT */}
         <div className="aw-admin-content">
           <div className="aw-admin-topbar">
-            <div className="aw-admin-topbar-title">{page === 'applications' ? 'Account Applications' : page === 'messages' ? 'Contact Messages' : page === 'families' ? 'Product Families' : page === 'grades' ? 'Grade Multipliers' : page === 'review' ? 'Review Queue' : page === 'users' ? 'User Management' : 'SellerCloud Sync'}</div>
+            <div className="aw-admin-topbar-title">{page === 'applications' ? 'Account Applications' : page === 'messages' ? 'Contact Messages' : page === 'families' ? 'Product Families' : page === 'grades' ? 'Pricing & Grades' : page === 'review' ? 'Unassigned SKUs' : page === 'users' ? 'User Management' : 'SellerCloud Sync'}</div>
           </div>
 
          {page !== 'sync' && page !== 'families' && page !== 'grades' && page !== 'review' && page !== 'users' && <div className="aw-admin-page">
