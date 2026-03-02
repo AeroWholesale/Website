@@ -1704,7 +1704,6 @@ export default function Admin() {
                     <div style={{ padding: 20, textAlign: 'center', color: '#64748b', fontSize: 13 }}>{previewSearching ? 'Searching...' : 'Type a SKU above to preview its calculated price'}</div>
                   )}
                 </div>
-                </div>
               </>
             ) : (
               <div style={{ padding: 40, textAlign: 'center', color: '#94a3b8' }}>Loading...</div>
