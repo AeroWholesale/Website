@@ -221,7 +221,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
     // Paginate
     const pageNum = parseInt(page) || 1
-    const pageSize = Math.min(parseInt(size) || 24, 100)
+    const pageSize = Math.min(parseInt(size) || 24, 10000)
     const total = products.length
     const paginated = products.slice((pageNum - 1) * pageSize, pageNum * pageSize)
 

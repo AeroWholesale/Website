@@ -241,7 +241,7 @@ export default function Admin() {
   const loadFamilies = async () => {
     setFamiliesLoading(true)
     try {
-      const res = await fetch('/api/sc/catalog?pageSize=9999')
+      const res = await fetch('/api/sc/catalog?size=9999')
       const raw = await res.json()
       if (raw && raw.products) {
         const mapped = raw.products.map((p: any) => ({
