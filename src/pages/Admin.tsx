@@ -242,6 +242,10 @@ export default function Admin() {
   const [skuTab, setSkuTab] = useState<'visible' | 'hidden' | 'all'>('visible')
   const [skuSelected, setSkuSelected] = useState<string[]>([])
   const [skuSearch, setSkuSearch] = useState('')
+  const [pricingData, setPricingData] = useState<any>(null)
+  const [pricingLoading, setPricingLoading] = useState(false)
+  const [editingCell, setEditingCell] = useState<{ category: string; grade: string; value: string } | null>(null)
+  const [previewProduct, setPreviewProduct] = useState<string>('')
 
 
   const loadFamilies = async () => {
@@ -335,11 +339,38 @@ export default function Admin() {
 
   const loadGrades = async () => {
     setGradesLoading(true)
+    setPricingLoading(true)
     try {
-      const res = await fetch('/api/sc/grades')
-      setGradesData(await res.json())
+      const [gradesRes, pricingRes] = await Promise.all([
+        fetch('/api/sc/grades'),
+        fetch('/api/sc/pricing'),
+      ])
+      setGradesData(await gradesRes.json())
+      const pd = await pricingRes.json()
+      if (pd && pd.grid) setPricingData(pd)
     } catch (err) { console.error(err) }
     setGradesLoading(false)
+    setPricingLoading(false)
+  }
+
+  const savePricingCell = async (category: string, grade_code: string, multiplier: number) => {
+    try {
+      const res = await fetch('/api/sc/pricing', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ category, grade_code, multiplier }),
+      })
+      if (res.ok) {
+        showToast(`${category} × ${grade_code} → ×${multiplier.toFixed(2)}`)
+        setEditingCell(null)
+        // Update local state
+        if (pricingData) {
+          const updated = { ...pricingData, grid: { ...pricingData.grid } }
+          updated.grid[category] = { ...updated.grid[category], [grade_code]: multiplier }
+          setPricingData(updated)
+        }
+      } else { showToast('Failed to save', true) }
+    } catch (err) { showToast('Failed to save', true) }
   }
 
   const saveFamily = async (data: any) => {
@@ -1504,70 +1535,133 @@ export default function Admin() {
         {/* ═══ GRADES PAGE ═══ */}
         {page === 'grades' && (
           <div className="aw-admin-page">
-            {/* Edit Modal */}
-            {editingGrade && (
-              <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.5)', zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                <div style={{ background: '#fff', color: '#1e293b', borderRadius: 12, padding: 24, width: 420 }}>
-                  <div style={{ fontSize: 16, fontWeight: 700, marginBottom: 16 }}>Edit Grade: {editingGrade.grade_code}</div>
-                  <div style={{ display: 'grid', gap: 12 }}>
-                    <div>
-                      <label style={{ fontSize: 12, fontWeight: 600, color: '#64748b', display: 'block', marginBottom: 4 }}>Display Label</label>
-                      <input style={{ width: '100%', padding: '8px 12px', border: '1px solid #cbd5e1', borderRadius: 6, fontSize: 14, fontFamily: 'inherit', boxSizing: 'border-box', color: '#1e293b' }} value={editingGrade.label} onChange={e => setEditingGrade({...editingGrade, label: e.target.value})} />
-                    </div>
-                    <div>
-                      <label style={{ fontSize: 12, fontWeight: 600, color: '#64748b', display: 'block', marginBottom: 4 }}>Multiplier (e.g. 1.35 = 35% margin)</label>
-                      <input type="number" step="0.01" style={{ width: '100%', padding: '8px 12px', border: '1px solid #cbd5e1', borderRadius: 6, fontSize: 14, fontFamily: 'inherit', boxSizing: 'border-box', color: '#1e293b' }} value={editingGrade.multiplier} onChange={e => setEditingGrade({...editingGrade, multiplier: parseFloat(e.target.value) || 1})} />
-                    </div>
-                    <div>
-                      <label style={{ fontSize: 12, fontWeight: 600, color: '#64748b', display: 'block', marginBottom: 4 }}>Sort Order</label>
-                      <input type="number" style={{ width: '100%', padding: '8px 12px', border: '1px solid #cbd5e1', borderRadius: 6, fontSize: 14, fontFamily: 'inherit', boxSizing: 'border-box', color: '#1e293b' }} value={editingGrade.sort_order} onChange={e => setEditingGrade({...editingGrade, sort_order: parseInt(e.target.value) || 0})} />
-                    </div>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                      <input type="checkbox" checked={editingGrade.visible !== false} onChange={e => setEditingGrade({...editingGrade, visible: e.target.checked})} />
-                      <label style={{ fontSize: 13, color: '#334155' }}>Visible on catalog</label>
-                    </div>
-                  </div>
-                  <div style={{ display: 'flex', gap: 8, marginTop: 20, justifyContent: 'flex-end' }}>
-                    <button onClick={() => setEditingGrade(null)} style={{ padding: '8px 16px', border: '1px solid #e2e8f0', borderRadius: 6, background: '#fff', cursor: 'pointer', fontFamily: 'inherit', fontSize: 13 }}>Cancel</button>
-                    <button onClick={() => saveGrade(editingGrade)} disabled={gradeSaving} style={{ padding: '8px 16px', border: 'none', borderRadius: 6, background: '#132347', color: '#fff', cursor: 'pointer', fontFamily: 'inherit', fontSize: 13, fontWeight: 600 }}>{gradeSaving ? 'Saving...' : 'Save'}</button>
-                  </div>
+            {gradesLoading || pricingLoading ? (
+              <div style={{ padding: 40, textAlign: 'center', color: '#94a3b8' }}>Loading pricing data...</div>
+            ) : pricingData ? (
+              <>
+                <div style={{ fontSize: 13, color: '#94a3b8', marginBottom: 20 }}>
+                  Site Price = SKU Cost × Multiplier. Click any cell to edit. Changes take effect immediately.
                 </div>
-              </div>
-            )}
 
-            {gradesLoading ? (
-              <div style={{ padding: 40, textAlign: 'center', color: '#64748b' }}>Loading grade config...</div>
-            ) : (gradesData && gradesData.grades) ? (
-              <div className="aw-admin-table-card">
-                <div className="aw-admin-table-header">
-                  <div className="aw-admin-table-title">Grade Configuration</div>
-                  <button onClick={loadGrades} className="aw-admin-btn aw-admin-btn-view" style={{ fontSize: 12 }}>Refresh</button>
+                {/* Category × Grade Grid */}
+                <div className="aw-admin-table-card" style={{ marginBottom: 24 }}>
+                  <div className="aw-admin-table-header">
+                    <div className="aw-admin-table-title">Multiplier Grid</div>
+                    <button onClick={loadGrades} className="aw-admin-btn aw-admin-btn-view" style={{ fontSize: 12 }}>Refresh</button>
+                  </div>
+                  <div style={{ overflowX: 'auto', overflowY: 'auto', maxHeight: '50vh' }}>
+                    <table className="aw-admin-table" style={{ fontSize: 13 }}>
+                      <thead style={{ position: 'sticky', top: 0, zIndex: 3, background: '#111827' }}>
+                        <tr>
+                          <th style={{ color: '#cbd5e1', position: 'sticky', left: 0, background: '#111827', zIndex: 4 }}>Category</th>
+                          {pricingData.grades.map((g: any) => (
+                            <th key={g.code} style={{ color: '#cbd5e1', textAlign: 'center', minWidth: 80 }}>
+                              <div style={{ fontFamily: 'monospace', fontWeight: 700 }}>{g.code}</div>
+                              <div style={{ fontSize: 9, color: '#64748b', fontWeight: 400 }}>{g.label}</div>
+                            </th>
+                          ))}
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {pricingData.categories.filter((c: string) => c !== 'default').map((cat: string) => (
+                          <tr key={cat}>
+                            <td style={{ fontWeight: 700, color: '#fff', position: 'sticky', left: 0, background: '#111827', zIndex: 2 }}>{cat}</td>
+                            {pricingData.grades.map((g: any) => {
+                              const val = pricingData.grid[cat]?.[g.code]
+                              const isEditing = editingCell?.category === cat && editingCell?.grade === g.code
+                              const margin = val ? Math.round((val - 1) * 100) : 0
+                              return (
+                                <td key={g.code} style={{ textAlign: 'center', padding: '6px 8px', cursor: 'pointer' }}
+                                    onClick={() => { if (!isEditing) setEditingCell({ category: cat, grade: g.code, value: val?.toFixed(2) || '1.00' }) }}>
+                                  {isEditing ? (
+                                    <input
+                                      autoFocus
+                                      type="number"
+                                      step="0.01"
+                                      value={editingCell.value}
+                                      onChange={e => setEditingCell({ ...editingCell, value: e.target.value })}
+                                      onBlur={() => {
+                                        const num = parseFloat(editingCell.value)
+                                        if (!isNaN(num) && num >= 1 && num <= 5) savePricingCell(cat, g.code, num)
+                                        else setEditingCell(null)
+                                      }}
+                                      onKeyDown={e => {
+                                        if (e.key === 'Enter') { const num = parseFloat(editingCell.value); if (!isNaN(num) && num >= 1 && num <= 5) savePricingCell(cat, g.code, num); else setEditingCell(null) }
+                                        if (e.key === 'Escape') setEditingCell(null)
+                                      }}
+                                      style={{ width: 60, padding: '4px 6px', textAlign: 'center', background: '#0f1729', border: '2px solid #2563eb', borderRadius: 4, color: '#fff', fontSize: 13, fontFamily: 'monospace', fontWeight: 700, outline: 'none' }}
+                                    />
+                                  ) : (
+                                    <div>
+                                      <div style={{ fontFamily: 'monospace', fontWeight: 700, color: '#fff' }}>×{val?.toFixed(2) || '—'}</div>
+                                      <div style={{ fontSize: 10, color: '#10b981', fontWeight: 600 }}>+{margin}%</div>
+                                    </div>
+                                  )}
+                                </td>
+                              )
+                            })}
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
                 </div>
-                <div style={{ fontSize: 12, color: '#94a3b8', padding: '0 0 16px', lineHeight: 1.5 }}>
-                  Site Price = SKU Cost × Multiplier. Change multipliers here — the catalog updates immediately. No code deploys needed.
+
+                {/* Price Preview */}
+                <div className="aw-admin-table-card">
+                  <div className="aw-admin-table-header">
+                    <div className="aw-admin-table-title">Price Preview</div>
+                    <select value={previewProduct} onChange={e => setPreviewProduct(e.target.value)} style={{ padding: '6px 10px', border: '1px solid #2d3548', borderRadius: 6, fontSize: 12, fontFamily: 'inherit', background: '#0f1729', color: '#e2e8f0' }}>
+                      <option value="">Select a product...</option>
+                      {pricingData.samples?.map((s: any) => <option key={s.name} value={s.name}>{s.name}</option>)}
+                    </select>
+                  </div>
+                  {previewProduct && pricingData.samples ? (() => {
+                    const sample = pricingData.samples.find((s: any) => s.name === previewProduct)
+                    if (!sample) return <div style={{ padding: 16, color: '#64748b' }}>Product not found</div>
+                    return (
+                      <div style={{ overflowX: 'auto' }}>
+                        <table className="aw-admin-table" style={{ fontSize: 13 }}>
+                          <thead><tr>
+                            <th style={{ color: '#cbd5e1' }}>Grade</th>
+                            <th style={{ color: '#cbd5e1' }}>Avg Cost</th>
+                            <th style={{ color: '#cbd5e1' }}>Multiplier</th>
+                            <th style={{ color: '#cbd5e1' }}>Site Price</th>
+                            <th style={{ color: '#cbd5e1' }}>Margin</th>
+                          </tr></thead>
+                          <tbody>
+                            {pricingData.grades.map((g: any) => {
+                              const cost = sample.grades[g.code]
+                              if (!cost) return null
+                              const mult = pricingData.grid[sample.category]?.[g.code] || pricingData.grid['default']?.[g.code] || 1
+                              const price = cost * mult
+                              const margin = price - cost
+                              return (
+                                <tr key={g.code}>
+                                  <td><span style={{ fontFamily: 'monospace', fontSize: 12, fontWeight: 700, color: g.code === 'CAP' || g.code === 'CAP1' ? '#34d399' : g.code === 'CA+' ? '#10b981' : g.code === 'CA' ? '#22c55e' : g.code === 'SD' ? '#f97316' : '#cbd5e1', background: '#1e293b', padding: '2px 6px', borderRadius: 4 }}>{g.code}</span></td>
+                                  <td style={{ fontFamily: 'monospace', color: '#fff' }}>${cost.toFixed(2)}</td>
+                                  <td style={{ fontFamily: 'monospace', color: '#60a5fa' }}>×{mult.toFixed(2)}</td>
+                                  <td style={{ fontFamily: 'monospace', fontWeight: 700, color: '#10b981', fontSize: 15 }}>${price.toFixed(2)}</td>
+                                  <td style={{ fontFamily: 'monospace', color: '#10b981' }}>+${margin.toFixed(2)}</td>
+                                </tr>
+                              )
+                            })}
+                          </tbody>
+                        </table>
+                        <div style={{ padding: '8px 16px', fontSize: 11, color: '#64748b' }}>Category: {sample.category} — using {sample.category} multipliers</div>
+                      </div>
+                    )
+                  })() : (
+                    <div style={{ padding: 20, textAlign: 'center', color: '#64748b', fontSize: 13 }}>Select a product above to preview calculated prices</div>
+                  )}
                 </div>
-                <table className="aw-admin-table">
-                  <thead><tr><th>Grade Code</th><th>Display Label</th><th>Multiplier</th><th>Margin %</th><th>Sort Order</th><th>Visible</th><th></th></tr></thead>
-                  <tbody>
-                    {gradesData.grades.map((g: any) => (
-                      <tr key={g.id}>
-                        <td style={{ fontFamily: 'monospace', fontWeight: 700, fontSize: 14 }}>{g.grade_code}</td>
-                        <td style={{ fontWeight: 600 }}>{g.label}</td>
-                        <td style={{ fontWeight: 600, fontSize: 14 }}>×{parseFloat(g.multiplier).toFixed(2)}</td>
-                        <td style={{ color: '#10b981', fontWeight: 700 }}>{Math.round((parseFloat(g.multiplier) - 1) * 100)}%</td>
-                        <td>{g.sort_order}</td>
-                        <td>{g.visible ? <span style={{ color: '#10b981' }}>✓</span> : <span style={{ color: '#ef4444' }}>✗</span>}</td>
-                        <td><button onClick={() => setEditingGrade(g)} style={{ padding: '3px 8px', fontSize: 11, border: '1px solid #2d3548', borderRadius: 4, background: 'transparent', color: '#e2e8f0', cursor: 'pointer', fontFamily: 'inherit' }}>Edit</button></td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
+              </>
             ) : (
-              <div style={{ padding: 40, textAlign: 'center', color: '#64748b' }}>Loading...</div>
+              <div style={{ padding: 40, textAlign: 'center', color: '#94a3b8' }}>Loading...</div>
             )}
           </div>
         )}
+
         {/* TOAST */}
         {toast && <div className={`aw-admin-toast${toast.error ? ' error' : ''}`}>{toast.text}</div>}
 
