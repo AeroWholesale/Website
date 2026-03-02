@@ -114,8 +114,7 @@ const css = `
 
 const GRADE_LABELS: Record<string, string> = {
   'CAP1': 'Premium 100%', 'CAP': 'Premium', 'NE': 'New',
-  ''CA+': 'Excellent',
-  'CA': 'Good', 'CAB': 'Good (Batt<80%)',
+  'CA+': 'Excellent', 'CA': 'Good', 'CAB': 'Good (Batt<80%)',
   'SD': 'B-Grade', 'SD-': 'C-Grade', 'SDB': 'B/C (Batt<80%)',
 }
 
