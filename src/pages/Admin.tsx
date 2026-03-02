@@ -241,9 +241,29 @@ export default function Admin() {
   const loadFamilies = async () => {
     setFamiliesLoading(true)
     try {
-      const res = await fetch('/api/sc/catalog')
-      setFamiliesData(await res.json())
-    } catch (err) { console.error(err) }
+      const res = await fetch('/api/sc/catalog?pageSize=9999')
+      const raw = await res.json()
+      if (raw && raw.products) {
+        const mapped = raw.products.map((p: any) => ({
+          id: p.modelCode,
+          model_code: p.modelCode,
+          name: p.name,
+          brand: p.brand,
+          category: p.category,
+          stock: p.totalStock || 0,
+          skuCount: p.skuCount || 0,
+          visible: true,
+          image_url: p.image || '',
+          grades: p.grades || [],
+          skus: p.skus || []
+        }))
+        setFamiliesData({
+          families: mapped,
+          unmapped: [],
+          totals: { families: mapped.length, unmappedGroups: 0, unmappedSkus: 0, unmappedQty: 0 }
+        })
+      } else { console.error('Bad catalog response:', raw); setFamiliesData(null) }
+    } catch (err) { console.error(err); setFamiliesData(null) }
     setFamiliesLoading(false)
   }
 
@@ -253,7 +273,8 @@ export default function Admin() {
     try {
       const f = filter || reviewFilter
       const res = await fetch('/api/sc/review-queue?filter=' + f)
-      setReviewData(await res.json())
+      const rdata = await res.json()
+      if (rdata && rdata.stats) { setReviewData(rdata) } else { console.error('Bad review resp:', rdata); setReviewData(null) }
       setReviewSelected([])
     } catch (err) { console.error(err) }
     setReviewLoading(false)
@@ -1333,7 +1354,7 @@ export default function Admin() {
                             <td>{item.brand || '\u2014'}</td>
                             <td>{item.grade ? <span style={{ fontFamily: 'monospace', fontWeight: 700 }}>{item.grade}</span> : <span style={{ color: '#f59e0b' }}>\u2014</span>}</td>
                             <td style={{ fontWeight: 600, color: (item.quantity || 0) > 0 ? '#10b981' : '#64748b' }}>{item.quantity || 0}</td>
-                            <td>{'$'}{parseFloat(item.cost || 0).toFixed(2)}</td>
+                            <td>{'$'}{parseFloatparseFloat(item.cost || 0).toFixed(2)}</td>
                             <td>{item.hidden_from_site ? <span style={{ color: '#ef4444' }}>Hidden</span> : <span style={{ color: '#10b981' }}>Visible</span>}</td>
                             <td><span className={`aw-admin-badge aw-admin-badge-${item.review_status === 'hidden' ? 'red' : item.review_status === 'graded' ? 'green' : 'yellow'}`}>{item.review_status || 'pending'}</span></td>
                             <td style={{ display: 'flex', gap: 4 }}>
