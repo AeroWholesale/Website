@@ -48,7 +48,7 @@ const css = `
   /* STAT CARDS */
   .aw-admin-stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; margin-bottom: 24px; }
   .aw-admin-stat { background: #111827; border: 1px solid #1e2d4a; border-radius: 12px; padding: 18px 20px; }
-  .aw-admin-stat-label { font-size: 11px; font-weight: 600; color: #475569; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 8px; }
+  .aw-admin-stat-label { font-size: 11px; font-weight: 600; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 8px; }
   .aw-admin-stat-val { font-size: 26px; font-weight: 800; color: #fff; line-height: 1; }
 
   /* TABLE */
@@ -56,8 +56,8 @@ const css = `
   .aw-admin-table-header { padding: 14px 20px; border-bottom: 1px solid #1e2d4a; display: flex; align-items: center; justify-content: space-between; }
   .aw-admin-table-title { font-size: 14px; font-weight: 700; color: #fff; }
   .aw-admin-table { width: 100%; border-collapse: collapse; }
-  .aw-admin-table th { font-size: 10px; font-weight: 700; color: #334155; text-transform: uppercase; letter-spacing: 0.08em; padding: 10px 16px; text-align: left; border-bottom: 1px solid #1e2d4a; }
-  .aw-admin-table td { font-size: 13px; color: #94a3b8; padding: 11px 16px; border-bottom: 1px solid #111827; }
+  .aw-admin-table th { font-size: 10px; font-weight: 700; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.08em; padding: 10px 16px; text-align: left; border-bottom: 1px solid #1e2d4a; }
+  .aw-admin-table td { font-size: 13px; color: #cbd5e1; padding: 11px 16px; border-bottom: 1px solid #111827; }
   .aw-admin-table tr:last-child td { border-bottom: none; }
   .aw-admin-table tr:hover td { background: #0f1520; }
   .aw-admin-td-bold { font-weight: 700; color: #e2e8f0; }
@@ -187,7 +187,7 @@ export default function Admin() {
   const [pw, setPw] = useState('')
   const [pwError, setPwError] = useState('')
   const [pwLoading, setPwLoading] = useState(false)
-  const [page, setPage] = useState<'applications' | 'messages' | 'sync' | 'families' | 'grades'>('applications')
+  const [page, setPage] = useState<'applications' | 'messages' | 'sync' | 'families' | 'grades' | 'review' | 'users'>('applications')
   const [apps, setApps] = useState<Application[]>([])
   const [msgs, setMsgs] = useState<Message[]>([])
   const [loading, setLoading] = useState(true)
@@ -227,6 +227,17 @@ export default function Admin() {
   const [familyVisFilter, setFamilyVisFilter] = useState<'' | 'yes' | 'no'>('')
   const [familyStockFilter, setFamilyStockFilter] = useState<'' | 'instock' | 'nostock'>('')
 
+  // Review Queue state
+  const [reviewData, setReviewData] = useState<any>(null)
+  const [reviewLoading, setReviewLoading] = useState(false)
+  const [reviewFilter, setReviewFilter] = useState('all')
+  const [reviewSelected, setReviewSelected] = useState<string[]>([])
+
+  // Collapsible sections
+  const [unmappedOpen, setUnmappedOpen] = useState(true)
+  const [mappedOpen, setMappedOpen] = useState(true)
+
+
   const loadFamilies = async () => {
     setFamiliesLoading(true)
     try {
@@ -234,6 +245,53 @@ export default function Admin() {
       setFamiliesData(await res.json())
     } catch (err) { console.error(err) }
     setFamiliesLoading(false)
+  }
+
+
+  const loadReview = async (filter?: string) => {
+    setReviewLoading(true)
+    try {
+      const f = filter || reviewFilter
+      const res = await fetch('/api/sc/review-queue?filter=' + f)
+      setReviewData(await res.json())
+      setReviewSelected([])
+    } catch (err) { console.error(err) }
+    setReviewLoading(false)
+  }
+
+  const reviewAction = async (action: string, skus: string[], grade?: string) => {
+    try {
+      const body: any = { action, skus, grade }
+      const res = await fetch('/api/sc/review-queue', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body),
+      })
+      if (res.ok) {
+        showToast(action + ' applied to ' + skus.length + ' SKU(s)')
+        loadReview()
+      } else showToast('Action failed', true)
+    } catch (err) { showToast('Action failed', true) }
+  }
+
+  const exportBulk = async (filter: string) => {
+    try {
+      const res = await fetch('/api/sc/bulk?filter=' + filter)
+      const data = await res.json()
+      const headers = ['SKU','Model','Brand','Type','Grade','Carrier','Storage','Color','Cost','Qty','Hidden']
+      const rows = data.products.map((p: any) =>
+        [p.sku, p.model, p.brand, p.device_type, p.grade, p.carrier, p.storage, p.color, p.cost, p.quantity, p.hidden_from_site].map((v: any) => '"' + String(v || '').replace(/"/g, '""') + '"').join(',')
+      )
+      const csv = [headers.join(','), ...rows].join('\n')
+      const blob = new Blob([csv], { type: 'text/csv' })
+      const url = URL.createObjectURL(blob)
+      const a = document.createElement('a')
+      a.href = url
+      a.download = 'aw-products-' + filter + '-' + new Date().toISOString().slice(0,10) + '.csv'
+      a.click()
+      URL.revokeObjectURL(url)
+      showToast('Exported ' + data.count + ' products')
+    } catch (err) { showToast('Export failed', true) }
   }
 
   const loadGrades = async () => {
@@ -579,12 +637,13 @@ export default function Admin() {
           <div className="aw-admin-sb-label">Products</div>
           <div className={`aw-admin-sb-item${page === 'families' ? ' active' : ''}`} onClick={() => { setPage('families'); if (!familiesData) loadFamilies() }}><span>📦</span> Product Families</div>
           <div className={`aw-admin-sb-item${page === 'grades' ? ' active' : ''}`} onClick={() => { setPage('grades'); if (!gradesData) loadGrades() }}><span>⚙️</span> Grade Multipliers</div>
+          <div className={`aw-admin-sb-item${page === 'review' ? ' active' : ''}`} onClick={() => { setPage('review'); if (!reviewData) loadReview() }}><span>🔍</span> Review Queue{reviewData?.stats?.noGradeWithStock > 0 ? <span className="aw-admin-sb-badge">{reviewData.stats.noGradeWithStock}</span> : null}</div>
 
           <div className="aw-admin-sb-label">System</div>
           <div className={`aw-admin-sb-item${page === 'sync' ? ' active' : ''}`} onClick={() => setPage('sync')}><span>🔄</span> Sync Dashboard</div>
 
-          <div className="aw-admin-sb-label">Coming Soon</div>
-          <div className="aw-admin-sb-item" style={{ opacity: 0.4, cursor: 'default' }}><span>👥</span> User Management</div>
+          <div className="aw-admin-sb-label">Admin</div>
+          <div className={`aw-admin-sb-item${page === 'users' ? ' active' : ''}`} onClick={() => setPage('users')}><span>👥</span> Users</div>
           <div className="aw-admin-sb-item" style={{ opacity: 0.4, cursor: 'default' }}><span>📋</span> Quote Requests</div>
 
           <div className="aw-admin-sb-footer">
@@ -599,10 +658,10 @@ export default function Admin() {
         {/* CONTENT */}
         <div className="aw-admin-content">
           <div className="aw-admin-topbar">
-            <div className="aw-admin-topbar-title">{page === 'applications' ? 'Account Applications' : page === 'messages' ? 'Contact Messages' : page === 'families' ? 'Product Families' : page === 'grades' ? 'Grade Multipliers' : 'SellerCloud Sync'}</div>
+            <div className="aw-admin-topbar-title">{page === 'applications' ? 'Account Applications' : page === 'messages' ? 'Contact Messages' : page === 'families' ? 'Product Families' : page === 'grades' ? 'Grade Multipliers' : page === 'review' ? 'Review Queue' : page === 'users' ? 'User Management' : 'SellerCloud Sync'}</div>
           </div>
 
-         {page !== 'sync' && page !== 'families' && page !== 'grades' && <div className="aw-admin-page">
+         {page !== 'sync' && page !== 'families' && page !== 'grades' && page !== 'review' && page !== 'users' && <div className="aw-admin-page">
             {loading ? (
               <div className="aw-admin-loading">Loading...</div>
             ) : page === 'applications' ? (
@@ -928,13 +987,13 @@ export default function Admin() {
                     </tr>
                     <tr>
                       <td className="aw-admin-td-bold">Website Catalog</td>
-                      <td><span className="aw-admin-badge aw-admin-badge-yellow">Pending</span></td>
-                      <td>Not yet wired to live data</td>
+                      <td><span className="aw-admin-badge aw-admin-badge-green">Live</span></td>
+                      <td>Connected — grade validation active, hidden products filtered</td>
                     </tr>
                     <tr>
                       <td className="aw-admin-td-bold">Auto-Sync Schedule</td>
-                      <td><span className="aw-admin-badge aw-admin-badge-gray">Not Set</span></td>
-                      <td>Manual sync only</td>
+                      <td><span className="aw-admin-badge aw-admin-badge-green">Active</span></td>
+                      <td>Runs every hour via Vercel cron</td>
                     </tr>
                   </tbody>
                 </table>
@@ -1100,9 +1159,9 @@ export default function Admin() {
                 {familiesData.unmapped?.length > 0 && (
                   <div className="aw-admin-table-card" style={{ background: '#1a1f2e', border: '1px solid #f59e0b33', marginBottom: 20 }}>
                     <div className="aw-admin-table-header">
-                      <div className="aw-admin-table-title" style={{ color: '#f59e0b' }}>⚠️ Unmapped Product Groups ({familiesData.totals.unmappedGroups})</div>
+                      <div className="aw-admin-table-title" style={{ color: '#f59e0b', cursor: 'pointer' }} onClick={() => setUnmappedOpen(!unmappedOpen)}>⚠️ Unmapped Product Groups ({familiesData.totals.unmappedGroups}) <span style={{ fontSize: 14, marginLeft: 8 }}>{unmappedOpen ? '▾' : '▸'}</span></div>
                     </div>
-                    <div style={{ fontSize: 12, color: '#94a3b8', padding: '0 0 12px' }}>These SKUs from SellerCloud don't match any product family. Click "Map" to add them, or ignore accessories/cables.</div>
+                    {unmappedOpen && <><div style={{ fontSize: 12, color: '#94a3b8', padding: '0 0 12px' }}>These SKUs from SellerCloud don't match any product family. Click "Map" to add them, or ignore accessories/cables.</div>
                     <div style={{ overflowX: 'auto', maxHeight: 400, overflowY: 'auto' }}>
                       <table className="aw-admin-table" style={{ fontSize: 12 }}>
                         <thead><tr><th>Code</th><th>SC Name</th><th>Type</th><th>Units</th><th>SKUs</th><th></th></tr></thead>
@@ -1119,15 +1178,16 @@ export default function Admin() {
                           ))}
                         </tbody>
                       </table>
-                    </div>
+                    </div></>}
                   </div>
                 )}
 
                 {/* Mapped Families Table */}
                 <div className="aw-admin-table-card">
                   <div className="aw-admin-table-header">
-                    <div className="aw-admin-table-title">Mapped Product Families ({familiesData.totals.families})</div>
+                    <div className="aw-admin-table-title" style={{ cursor: 'pointer' }} onClick={() => setMappedOpen(!mappedOpen)}>Mapped Product Families ({familiesData.totals.families}) <span style={{ fontSize: 14, marginLeft: 8 }}>{mappedOpen ? '\u25be' : '\u25b8'}</span></div>
                     <div style={{ display: 'flex', gap: 8 }}>
+                      <button onClick={() => exportBulk('in-stock')} className="aw-admin-btn aw-admin-btn-view" style={{ fontSize: 12 }}>⬇ Export CSV</button>
                       <button onClick={() => setEditingFamily({ model_code: '', name: '', brand: '', category: 'Phones', image_url: '', visible: true })} className="aw-admin-btn aw-admin-btn-primary" style={{ fontSize: 12 }}>+ Add Family</button>
                       <button onClick={loadFamilies} className="aw-admin-btn aw-admin-btn-view" style={{ fontSize: 12 }}>Refresh</button>
                     </div>
@@ -1207,6 +1267,123 @@ export default function Admin() {
             ) : (
               <div style={{ padding: 40, textAlign: 'center', color: '#64748b' }}>Loading...</div>
             )}
+          </div>
+        )}
+
+
+        {/* ═══ REVIEW QUEUE PAGE ═══ */}
+        {page === 'review' && (
+          <div className="aw-admin-page">
+            {reviewLoading ? (
+              <div style={{ padding: 40, textAlign: 'center', color: '#64748b' }}>Loading review queue...</div>
+            ) : reviewData ? (
+              <>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 16, marginBottom: 20 }}>
+                  <div className="aw-admin-stat"><div className="aw-admin-stat-label">No Grade (With Stock)</div><div className="aw-admin-stat-val" style={{ color: '#f59e0b' }}>{reviewData.stats.noGradeWithStock}</div></div>
+                  <div className="aw-admin-stat"><div className="aw-admin-stat-label">No Grade (Total)</div><div className="aw-admin-stat-val">{reviewData.stats.noGrade}</div></div>
+                  <div className="aw-admin-stat"><div className="aw-admin-stat-label">Hidden from Site</div><div className="aw-admin-stat-val">{reviewData.stats.hidden}</div></div>
+                </div>
+
+                <div className="aw-admin-table-card">
+                  <div className="aw-admin-table-header">
+                    <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+                      <div className="aw-admin-table-title">SKUs Needing Review ({reviewData.items.length})</div>
+                      <select value={reviewFilter} onChange={e => { setReviewFilter(e.target.value); loadReview(e.target.value) }} style={{ padding: '4px 8px', border: '1px solid #2d3548', borderRadius: 6, fontSize: 11, background: '#0f1729', color: '#e2e8f0', fontFamily: 'inherit' }}>
+                        <option value="all">All Issues</option>
+                        <option value="no-grade">No Grade</option>
+                        <option value="hidden">Hidden</option>
+                      </select>
+                    </div>
+                    <div style={{ display: 'flex', gap: 8 }}>
+                      {reviewSelected.length > 0 && (
+                        <>
+                          <button onClick={() => reviewAction('hide', reviewSelected)} className="aw-admin-btn aw-admin-btn-reject" style={{ fontSize: 11 }}>Hide ({reviewSelected.length})</button>
+                          <button onClick={() => reviewAction('show', reviewSelected)} className="aw-admin-btn aw-admin-btn-approve" style={{ fontSize: 11 }}>Show ({reviewSelected.length})</button>
+                          <select onChange={e => { if (e.target.value) { reviewAction('set-grade', reviewSelected, e.target.value); e.target.value = '' } }} style={{ padding: '4px 8px', border: '1px solid #2d3548', borderRadius: 6, fontSize: 11, background: '#0f1729', color: '#e2e8f0', fontFamily: 'inherit' }}>
+                            <option value="">Assign Grade...</option>
+                            {(reviewData.validGrades || []).map((g: string) => <option key={g} value={g}>{g}</option>)}
+                          </select>
+                        </>
+                      )}
+                      <button onClick={() => loadReview()} className="aw-admin-btn aw-admin-btn-view" style={{ fontSize: 11 }}>Refresh</button>
+                    </div>
+                  </div>
+                  <div style={{ overflowX: 'auto', maxHeight: 600, overflowY: 'auto' }}>
+                    <table className="aw-admin-table" style={{ fontSize: 12 }}>
+                      <thead>
+                        <tr>
+                          <th><input type="checkbox" checked={reviewSelected.length === reviewData.items.length && reviewData.items.length > 0} onChange={e => setReviewSelected(e.target.checked ? reviewData.items.map((i: any) => i.sku) : [])} /></th>
+                          <th>SKU</th>
+                          <th>Model</th>
+                          <th>Brand</th>
+                          <th>Grade</th>
+                          <th>Qty</th>
+                          <th>Cost</th>
+                          <th>Hidden</th>
+                          <th>Status</th>
+                          <th>Actions</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {reviewData.items.map((item: any) => (
+                          <tr key={item.sku}>
+                            <td><input type="checkbox" checked={reviewSelected.includes(item.sku)} onChange={e => setReviewSelected(e.target.checked ? [...reviewSelected, item.sku] : reviewSelected.filter(s => s !== item.sku))} /></td>
+                            <td style={{ fontFamily: 'monospace', fontSize: 11, fontWeight: 600, maxWidth: 280, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{item.sku}</td>
+                            <td style={{ fontWeight: 600 }}>{item.model || '\u2014'}</td>
+                            <td>{item.brand || '\u2014'}</td>
+                            <td>{item.grade ? <span style={{ fontFamily: 'monospace', fontWeight: 700 }}>{item.grade}</span> : <span style={{ color: '#f59e0b' }}>\u2014</span>}</td>
+                            <td style={{ fontWeight: 600, color: (item.quantity || 0) > 0 ? '#10b981' : '#64748b' }}>{item.quantity || 0}</td>
+                            <td>{'$'}{(item.cost || 0).toFixed(2)}</td>
+                            <td>{item.hidden_from_site ? <span style={{ color: '#ef4444' }}>Hidden</span> : <span style={{ color: '#10b981' }}>Visible</span>}</td>
+                            <td><span className={`aw-admin-badge aw-admin-badge-${item.review_status === 'hidden' ? 'red' : item.review_status === 'graded' ? 'green' : 'yellow'}`}>{item.review_status || 'pending'}</span></td>
+                            <td style={{ display: 'flex', gap: 4 }}>
+                              <button onClick={() => reviewAction('hide', [item.sku])} style={{ padding: '2px 6px', fontSize: 10, border: '1px solid #7f1d1d', borderRadius: 3, background: 'transparent', color: '#ef4444', cursor: 'pointer', fontFamily: 'inherit' }}>Hide</button>
+                              <button onClick={() => reviewAction('show', [item.sku])} style={{ padding: '2px 6px', fontSize: 10, border: '1px solid #166534', borderRadius: 3, background: 'transparent', color: '#22c55e', cursor: 'pointer', fontFamily: 'inherit' }}>Show</button>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              </>
+            ) : (
+              <div style={{ padding: 40, textAlign: 'center', color: '#64748b' }}>Loading...</div>
+            )}
+          </div>
+        )}
+
+        {/* ═══ USER MANAGEMENT PAGE ═══ */}
+        {page === 'users' && (
+          <div className="aw-admin-page">
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 16, marginBottom: 20 }}>
+              <div className="aw-admin-stat"><div className="aw-admin-stat-label">Admin Users</div><div className="aw-admin-stat-val">1</div></div>
+              <div className="aw-admin-stat"><div className="aw-admin-stat-label">Active Sessions</div><div className="aw-admin-stat-val">1</div></div>
+              <div className="aw-admin-stat"><div className="aw-admin-stat-label">Auth Method</div><div className="aw-admin-stat-val" style={{ fontSize: 16 }}>Shared Password</div></div>
+            </div>
+            <div className="aw-admin-table-card">
+              <div className="aw-admin-table-header">
+                <div className="aw-admin-table-title">Admin Users</div>
+                <div style={{ fontSize: 12, color: '#94a3b8' }}>Managed via Vercel environment variables</div>
+              </div>
+              <table className="aw-admin-table">
+                <thead><tr><th>User</th><th>Role</th><th>Access</th><th>Status</th></tr></thead>
+                <tbody>
+                  <tr><td className="aw-admin-td-bold">Isaac</td><td>Owner</td><td>Full Admin</td><td><span className="aw-admin-badge aw-admin-badge-green">Active</span></td></tr>
+                  <tr><td className="aw-admin-td-bold">Linde</td><td>Marketplace Manager</td><td>Products, Families, Grades</td><td><span className="aw-admin-badge aw-admin-badge-yellow">Pending Setup</span></td></tr>
+                  <tr><td className="aw-admin-td-bold">Will</td><td>Warehouse / Ops</td><td>Inventory, Sync</td><td><span className="aw-admin-badge aw-admin-badge-yellow">Pending Setup</span></td></tr>
+                </tbody>
+              </table>
+            </div>
+            <div className="aw-admin-table-card">
+              <div className="aw-admin-table-header"><div className="aw-admin-table-title">Upgrade Path</div></div>
+              <div style={{ padding: 20, fontSize: 13, color: '#94a3b8', lineHeight: 1.8 }}>
+                <p style={{ margin: '0 0 12px' }}>Currently using a shared admin password. To add individual user accounts with role-based access:</p>
+                <p style={{ margin: '0 0 8px' }}><b style={{ color: '#e2e8f0' }}>Phase 1 (Now):</b> Shared password — all admins have full access</p>
+                <p style={{ margin: '0 0 8px' }}><b style={{ color: '#e2e8f0' }}>Phase 2 (Next):</b> Individual logins with email/password stored in the database</p>
+                <p style={{ margin: 0 }}><b style={{ color: '#e2e8f0' }}>Phase 3 (Later):</b> Role-based permissions — Linde sees Products only, Will sees Inventory only</p>
+              </div>
+            </div>
           </div>
         )}
 
