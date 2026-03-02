@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import React, { useState, useEffect } from 'react'
 
 const css = `
   @import url('https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600;9..40,700;9..40,800;9..40,900&display=swap');
@@ -34,7 +34,7 @@ const css = `
   .aw-admin-sb-role { font-size: 10px; color: #475569; }
 
   /* CONTENT */
-  .aw-admin-content { margin-left: 220px; flex: 1; display: flex; flex-direction: column; }
+  .aw-admin-content { margin-left: 220px; flex: 1; display: flex; flex-direction: column; height: 100vh; overflow-y: auto; }
 
   /* TOPBAR */
   .aw-admin-topbar { height: 56px; background: #0a0f1a; border-bottom: 1px solid #1e2d4a; display: flex; align-items: center; padding: 0 28px; gap: 16px; position: sticky; top: 0; z-index: 40; }
@@ -236,37 +236,55 @@ export default function Admin() {
   // Collapsible sections
   const [unmappedOpen, setUnmappedOpen] = useState(true)
   const [mappedOpen, setMappedOpen] = useState(true)
+  const [expandedFamily, setExpandedFamily] = useState<string | null>(null)
+  const [familyDetail, setFamilyDetail] = useState<any>(null)
+  const [familyDetailLoading, setFamilyDetailLoading] = useState(false)
+  const [skuTab, setSkuTab] = useState<'visible' | 'hidden' | 'all'>('visible')
+  const [skuSelected, setSkuSelected] = useState<string[]>([])
+  const [skuSearch, setSkuSearch] = useState('')
 
 
   const loadFamilies = async () => {
     setFamiliesLoading(true)
     try {
-      const res = await fetch('/api/sc/catalog?size=9999')
-      const raw = await res.json()
-      if (raw && raw.products) {
-        const mapped = raw.products.map((p: any) => ({
-          id: p.modelCode,
-          model_code: p.modelCode,
-          name: p.name,
-          brand: p.brand,
-          category: p.category,
-          stock: p.totalStock || 0,
-          skuCount: p.skuCount || 0,
-          visible: true,
-          image_url: p.image || '',
-          grades: p.grades || [],
-          skus: p.skus || []
-        }))
-        setFamiliesData({
-          families: mapped,
-          unmapped: [],
-          totals: { families: mapped.length, unmappedGroups: 0, unmappedSkus: 0, unmappedQty: 0 }
-        })
-      } else { console.error('Bad catalog response:', raw); setFamiliesData(null) }
+      const res = await fetch('/api/sc/admin-families')
+      const data = await res.json()
+      if (data && data.families) {
+        setFamiliesData(data)
+      } else { console.error('Bad families response:', data); setFamiliesData(null) }
     } catch (err) { console.error(err); setFamiliesData(null) }
     setFamiliesLoading(false)
   }
 
+  const loadFamilyDetail = async (modelCode: string) => {
+    if (expandedFamily === modelCode) {
+      setExpandedFamily(null); setFamilyDetail(null); setSkuTab('visible'); setSkuSelected([]); setSkuSearch(''); return
+    }
+    setExpandedFamily(modelCode); setFamilyDetailLoading(true); setSkuTab('visible'); setSkuSelected([]); setSkuSearch('')
+    try {
+      const res = await fetch('/api/sc/admin-families?family=' + encodeURIComponent(modelCode))
+      const data = await res.json()
+      if (data && data.family) { setFamilyDetail(data) } else { setFamilyDetail(null) }
+    } catch (err) { console.error(err); setFamilyDetail(null) }
+    setFamilyDetailLoading(false)
+  }
+
+  const toggleSkuHidden = async (sku: string, hide: boolean) => {
+    try {
+      await fetch('/api/sc/review-queue', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: hide ? 'hide' : 'show', skus: [sku] }) })
+      if (expandedFamily) { setFamilyDetailLoading(true); const res = await fetch('/api/sc/admin-families?family=' + encodeURIComponent(expandedFamily)); const data = await res.json(); if (data && data.family) setFamilyDetail(data); setFamilyDetailLoading(false) }
+    } catch (err) { showToast('Failed to update SKU', true) }
+  }
+
+  const bulkSkuAction = async (action: string) => {
+    if (skuSelected.length === 0) return
+    try {
+      await fetch('/api/sc/review-queue', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action, skus: skuSelected }) })
+      showToast(action + ' applied to ' + skuSelected.length + ' SKU(s)')
+      setSkuSelected([])
+      if (expandedFamily) { const res = await fetch('/api/sc/admin-families?family=' + encodeURIComponent(expandedFamily)); const data = await res.json(); if (data && data.family) setFamilyDetail(data) }
+    } catch (err) { showToast('Bulk action failed', true) }
+  }
 
   const loadReview = async (filter?: string) => {
     setReviewLoading(true)
@@ -1125,7 +1143,7 @@ export default function Admin() {
                   <div style={{ display: 'grid', gap: 12 }}>
                     <div>
                       <label style={{ fontSize: 12, fontWeight: 600, color: '#64748b', display: 'block', marginBottom: 4 }}>Model Code</label>
-                      <input style={{ width: '100%', padding: '8px 12px', border: '1px solid #cbd5e1', borderRadius: 6, fontSize: 14, fontFamily: 'inherit', boxSizing: 'border-box', color: '#1e293b' }} value={editingFamily.model_code} onChange={e => setEditingFamily({...editingFamily, model_code: e.target.value})} />
+                      <input style={{ width: '100%', padding: '8px 12px', border: '1px solid #cbd5e1', borderRadius: 6, fontSize: 14, fontFamily: 'inherit', boxSizing: 'border-box', color: '#1e293b' }} value={editingFamily.model_code || editingFamily.modelCode || ''} onChange={e => setEditingFamily({...editingFamily, model_code: e.target.value})} />
                     </div>
                     <div>
                       <label style={{ fontSize: 12, fontWeight: 600, color: '#64748b', display: 'block', marginBottom: 4 }}>Display Name</label>
@@ -1139,17 +1157,13 @@ export default function Admin() {
                       <div>
                         <label style={{ fontSize: 12, fontWeight: 600, color: '#64748b', display: 'block', marginBottom: 4 }}>Category</label>
                         <select style={{ width: '100%', padding: '8px 12px', border: '1px solid #e2e8f0', borderRadius: 6, fontSize: 14, fontFamily: 'inherit' }} value={editingFamily.category} onChange={e => setEditingFamily({...editingFamily, category: e.target.value})}>
-                          <option value="Phones">Phones</option>
-                          <option value="Tablets">Tablets</option>
-                          <option value="Laptops">Laptops</option>
-                          <option value="Wearables">Wearables</option>
-                          <option value="Accessories">Accessories</option>
+                          <option value="Phones">Phones</option><option value="Tablets">Tablets</option><option value="Laptops">Laptops</option><option value="Wearables">Wearables</option><option value="Accessories">Accessories</option>
                         </select>
                       </div>
                     </div>
                     <div>
                       <label style={{ fontSize: 12, fontWeight: 600, color: '#64748b', display: 'block', marginBottom: 4 }}>Image URL</label>
-                      <input style={{ width: '100%', padding: '8px 12px', border: '1px solid #cbd5e1', borderRadius: 6, fontSize: 14, fontFamily: 'inherit', boxSizing: 'border-box', color: '#1e293b' }} value={editingFamily.image_url || ''} onChange={e => setEditingFamily({...editingFamily, image_url: e.target.value})} placeholder="https://..." />
+                      <input style={{ width: '100%', padding: '8px 12px', border: '1px solid #cbd5e1', borderRadius: 6, fontSize: 14, fontFamily: 'inherit', boxSizing: 'border-box', color: '#1e293b' }} value={editingFamily.image_url || editingFamily.imageUrl || ''} onChange={e => setEditingFamily({...editingFamily, image_url: e.target.value})} placeholder="https://..." />
                     </div>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                       <input type="checkbox" checked={editingFamily.visible !== false} onChange={e => setEditingFamily({...editingFamily, visible: e.target.checked})} />
@@ -1165,120 +1179,199 @@ export default function Admin() {
             )}
 
             {familiesLoading ? (
-              <div style={{ padding: 40, textAlign: 'center', color: '#64748b' }}>Loading product families...</div>
-            ) : (familiesData && familiesData.totals) ? (
+              <div style={{ padding: 40, textAlign: 'center', color: '#94a3b8' }}>Loading product families...</div>
+            ) : (familiesData && familiesData.families) ? (
               <>
-                {/* Summary Stats */}
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 16, marginBottom: 20 }}>
-                  <div className="aw-admin-stat"><div className="aw-admin-stat-label">Mapped Families</div><div className="aw-admin-stat-val">{familiesData.totals.families}</div></div>
-                  <div className="aw-admin-stat"><div className="aw-admin-stat-label">Unmapped Groups</div><div className="aw-admin-stat-val" style={{ color: familiesData.totals.unmappedGroups > 0 ? '#f59e0b' : '#10b981' }}>{familiesData.totals.unmappedGroups}</div></div>
-                  <div className="aw-admin-stat"><div className="aw-admin-stat-label">Unmapped SKUs</div><div className="aw-admin-stat-val">{familiesData.totals.unmappedSkus}</div></div>
-                  <div className="aw-admin-stat"><div className="aw-admin-stat-label">Unmapped Units</div><div className="aw-admin-stat-val">{familiesData.totals.unmappedQty?.toLocaleString()}</div></div>
+                {/* KPI Stats */}
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 14, marginBottom: 20 }}>
+                  <div className="aw-admin-stat" style={{ cursor: 'default' }}><div className="aw-admin-stat-label">Total Families</div><div className="aw-admin-stat-val" style={{ color: '#fff' }}>{familiesData.totals.totalFamilies}</div><div style={{ fontSize: 11, color: '#94a3b8', marginTop: 2 }}>{familiesData.totals.visibleFamilies} visible</div></div>
+                  <div className="aw-admin-stat"><div className="aw-admin-stat-label">Total SKUs</div><div className="aw-admin-stat-val" style={{ color: '#60a5fa' }}>{familiesData.totals.totalSkus?.toLocaleString()}</div></div>
+                  <div className="aw-admin-stat"><div className="aw-admin-stat-label">Total Stock</div><div className="aw-admin-stat-val" style={{ color: '#10b981' }}>{familiesData.totals.totalStock?.toLocaleString()}</div></div>
+                  <div className="aw-admin-stat" style={{ cursor: 'pointer' }} onClick={() => { setPage('review'); if (!reviewData) loadReview() }}><div className="aw-admin-stat-label">Needs Review</div><div className="aw-admin-stat-val" style={{ color: '#f59e0b' }}>{reviewData?.stats?.noGradeWithStock || '—'}</div></div>
                 </div>
 
-                {/* Unmapped SKUs Alert */}
-                {familiesData.unmapped?.length > 0 && (
-                  <div className="aw-admin-table-card" style={{ background: '#1a1f2e', border: '1px solid #f59e0b33', marginBottom: 20 }}>
-                    <div className="aw-admin-table-header">
-                      <div className="aw-admin-table-title" style={{ color: '#f59e0b', cursor: 'pointer' }} onClick={() => setUnmappedOpen(!unmappedOpen)}>⚠️ Unmapped Product Groups ({familiesData.totals.unmappedGroups}) <span style={{ fontSize: 14, marginLeft: 8 }}>{unmappedOpen ? '▾' : '▸'}</span></div>
-                    </div>
-                    {unmappedOpen && <><div style={{ fontSize: 12, color: '#94a3b8', padding: '0 0 12px' }}>These SKUs from SellerCloud don't match any product family. Click "Map" to add them, or ignore accessories/cables.</div>
-                    <div style={{ overflowX: 'auto', maxHeight: 400, overflowY: 'auto' }}>
-                      <table className="aw-admin-table" style={{ fontSize: 12 }}>
-                        <thead><tr><th>Code</th><th>SC Name</th><th>Type</th><th>Units</th><th>SKUs</th><th></th></tr></thead>
-                        <tbody>
-                          {familiesData.unmapped.map((u: any) => (
-                            <tr key={u.modelCode}>
-                              <td style={{ fontFamily: 'monospace', fontWeight: 600 }}>{u.modelCode}</td>
-                              <td style={{ maxWidth: 300, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{u.scName}</td>
-                              <td><span style={{ fontSize: 10, padding: '2px 6px', borderRadius: 3, background: '#1e293b', color: '#94a3b8' }}>{u.deviceType || '?'}</span></td>
-                              <td><b>{u.totalQty}</b></td>
-                              <td>{u.skuCount}</td>
-                              <td><button onClick={() => mapUnmapped(u)} style={{ padding: '3px 10px', fontSize: 11, fontWeight: 600, border: '1px solid #f59e0b', color: '#f59e0b', borderRadius: 4, background: 'transparent', cursor: 'pointer', fontFamily: 'inherit' }}>Map</button></td>
-                            </tr>
-                          ))}
-                        </tbody>
-                      </table>
-                    </div></>}
-                  </div>
-                )}
-
-                {/* Mapped Families Table */}
+                {/* Table Card */}
                 <div className="aw-admin-table-card">
                   <div className="aw-admin-table-header">
-                    <div className="aw-admin-table-title" style={{ cursor: 'pointer' }} onClick={() => setMappedOpen(!mappedOpen)}>Mapped Product Families ({familiesData.totals.families}) <span style={{ fontSize: 14, marginLeft: 8 }}>{mappedOpen ? '\u25be' : '\u25b8'}</span></div>
+                    <div className="aw-admin-table-title">Product Families</div>
                     <div style={{ display: 'flex', gap: 8 }}>
                       <button onClick={() => exportBulk('in-stock')} className="aw-admin-btn aw-admin-btn-view" style={{ fontSize: 12 }}>⬇ Export CSV</button>
                       <button onClick={() => setEditingFamily({ model_code: '', name: '', brand: '', category: 'Phones', image_url: '', visible: true })} className="aw-admin-btn aw-admin-btn-primary" style={{ fontSize: 12 }}>+ Add Family</button>
                       <button onClick={loadFamilies} className="aw-admin-btn aw-admin-btn-view" style={{ fontSize: 12 }}>Refresh</button>
                     </div>
                   </div>
-                  {/* Filters Row */}
+                  {/* Filters */}
                   <div style={{ padding: '12px 16px', borderBottom: '1px solid #1e2d4a', display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'center' }}>
                     <input placeholder="Search name/code..." value={familyFilter} onChange={e => setFamilyFilter(e.target.value)} style={{ padding: '6px 10px', border: '1px solid #2d3548', borderRadius: 6, fontSize: 12, fontFamily: 'inherit', width: 180, background: '#0f1729', color: '#e2e8f0' }} />
                     <select value={familyBrandFilter} onChange={e => setFamilyBrandFilter(e.target.value)} style={{ padding: '6px 10px', border: '1px solid #2d3548', borderRadius: 6, fontSize: 12, fontFamily: 'inherit', background: '#0f1729', color: '#e2e8f0' }}>
                       <option value="">All Brands</option>
-                      {[...new Set(familiesData.families.map((f: any) => f.brand))].sort().map((b: any) => <option key={b} value={b}>{b}</option>)}
+                      {familiesData.filters?.brands?.map((b: string) => <option key={b} value={b}>{b}</option>)}
                     </select>
                     <select value={familyCatFilter} onChange={e => setFamilyCatFilter(e.target.value)} style={{ padding: '6px 10px', border: '1px solid #2d3548', borderRadius: 6, fontSize: 12, fontFamily: 'inherit', background: '#0f1729', color: '#e2e8f0' }}>
                       <option value="">All Categories</option>
-                      {[...new Set(familiesData.families.map((f: any) => f.category))].sort().map((c: any) => <option key={c} value={c}>{c}</option>)}
+                      {familiesData.filters?.categories?.map((c: string) => <option key={c} value={c}>{c}</option>)}
                     </select>
                     <select value={familyStockFilter} onChange={e => setFamilyStockFilter(e.target.value as any)} style={{ padding: '6px 10px', border: '1px solid #2d3548', borderRadius: 6, fontSize: 12, fontFamily: 'inherit', background: '#0f1729', color: '#e2e8f0' }}>
-                      <option value="">All Stock</option>
-                      <option value="instock">In Stock</option>
-                      <option value="nostock">No Stock</option>
+                      <option value="">All Stock</option><option value="instock">In Stock</option><option value="nostock">No Stock</option>
                     </select>
                     <select value={familyVisFilter} onChange={e => setFamilyVisFilter(e.target.value as any)} style={{ padding: '6px 10px', border: '1px solid #2d3548', borderRadius: 6, fontSize: 12, fontFamily: 'inherit', background: '#0f1729', color: '#e2e8f0' }}>
-                      <option value="">All Visibility</option>
-                      <option value="yes">Visible</option>
-                      <option value="no">Hidden</option>
+                      <option value="">All Visibility</option><option value="yes">Visible</option><option value="no">Hidden</option>
                     </select>
                     <select value={familySort} onChange={e => setFamilySort(e.target.value as any)} style={{ padding: '6px 10px', border: '1px solid #2d3548', borderRadius: 6, fontSize: 12, fontFamily: 'inherit', background: '#0f1729', color: '#e2e8f0' }}>
-                      <option value="name">Sort: Name</option>
-                      <option value="brand">Sort: Brand</option>
-                      <option value="stock">Sort: Stock ↓</option>
-                      <option value="category">Sort: Category</option>
+                      <option value="name">Sort: Name</option><option value="brand">Sort: Brand</option><option value="stock">Sort: Stock ↓</option><option value="category">Sort: Category</option>
                     </select>
                   </div>
+
+                  {/* Families Table with Accordion */}
                   <div style={{ overflowX: 'auto' }}>
                     <table className="aw-admin-table">
-                      <thead><tr><th>Code</th><th>Name</th><th>Brand</th><th>Category</th><th>Stock</th><th>SKUs</th><th>Visible</th><th></th></tr></thead>
+                      <thead style={{ position: 'sticky', top: 0, zIndex: 5, background: '#111827' }}><tr>
+                        <th style={{ color: '#cbd5e1' }}>Code</th><th style={{ color: '#cbd5e1' }}>Name</th><th style={{ color: '#cbd5e1' }}>Brand</th><th style={{ color: '#cbd5e1' }}>Category</th><th style={{ color: '#cbd5e1' }}>Stock</th><th style={{ color: '#cbd5e1' }}>SKUs</th><th style={{ color: '#cbd5e1' }}>Visible</th><th></th>
+                      </tr></thead>
                       <tbody>
                         {familiesData.families
                           .filter((f: any) => {
                             if (familyFilter) {
                               const q = familyFilter.toLowerCase()
-                              if (!f.name.toLowerCase().includes(q) && !f.model_code.toLowerCase().includes(q)) return false
+                              if (!f.name.toLowerCase().includes(q) && !f.modelCode.toLowerCase().includes(q)) return false
                             }
                             if (familyBrandFilter && f.brand !== familyBrandFilter) return false
                             if (familyCatFilter && f.category !== familyCatFilter) return false
-                            if (familyStockFilter === 'instock' && (f.stock || 0) === 0) return false
-                            if (familyStockFilter === 'nostock' && (f.stock || 0) > 0) return false
+                            if (familyStockFilter === 'instock' && (f.totalStock || 0) === 0) return false
+                            if (familyStockFilter === 'nostock' && (f.totalStock || 0) > 0) return false
                             if (familyVisFilter === 'yes' && !f.visible) return false
                             if (familyVisFilter === 'no' && f.visible) return false
                             return true
                           })
                           .sort((a: any, b: any) => {
-                            if (familySort === 'stock') return (b.stock || 0) - (a.stock || 0)
+                            if (familySort === 'stock') return (b.totalStock || 0) - (a.totalStock || 0)
                             if (familySort === 'brand') return a.brand.localeCompare(b.brand) || a.name.localeCompare(b.name)
                             if (familySort === 'category') return a.category.localeCompare(b.category) || a.name.localeCompare(b.name)
                             return a.name.localeCompare(b.name)
                           })
                           .map((f: any) => (
-                          <tr key={f.id} style={{ opacity: f.visible ? 1 : 0.5 }}>
-                            <td style={{ fontFamily: 'monospace', fontSize: 12, fontWeight: 600 }}>{f.model_code}</td>
-                            <td style={{ fontWeight: 600 }}>{f.name}</td>
-                            <td>{f.brand}</td>
-                            <td><span style={{ fontSize: 10, padding: '2px 6px', borderRadius: 3, background: '#1e293b', color: '#94a3b8' }}>{f.category}</span></td>
-                            <td style={{ fontWeight: 600, color: (f.stock || 0) > 0 ? '#10b981' : '#64748b' }}>{f.stock || 0}</td>
-                            <td>{f.skuCount || 0}</td>
-                            <td>{f.visible ? <span style={{ color: '#10b981' }}>✓</span> : <span style={{ color: '#ef4444' }}>✗</span>}</td>
-                            <td style={{ display: 'flex', gap: 4 }}>
-                              <button onClick={() => setEditingFamily(f)} style={{ padding: '3px 8px', fontSize: 11, border: '1px solid #2d3548', borderRadius: 4, background: 'transparent', color: '#e2e8f0', cursor: 'pointer', fontFamily: 'inherit' }}>Edit</button>
-                              <button onClick={() => deleteFamily(f.id)} style={{ padding: '3px 8px', fontSize: 11, border: '1px solid #7f1d1d', borderRadius: 4, background: 'transparent', color: '#ef4444', cursor: 'pointer', fontFamily: 'inherit' }}>Del</button>
-                            </td>
-                          </tr>
+                          <React.Fragment key={f.id}>
+                            <tr onClick={() => loadFamilyDetail(f.modelCode)} style={{ opacity: f.visible ? 1 : 0.5, cursor: 'pointer', background: expandedFamily === f.modelCode ? '#1a2234' : 'transparent' }} onMouseEnter={e => { if (expandedFamily !== f.modelCode) e.currentTarget.style.background = '#131b2e' }} onMouseLeave={e => { if (expandedFamily !== f.modelCode) e.currentTarget.style.background = 'transparent' }}>
+                              <td style={{ fontFamily: 'monospace', fontSize: 12, fontWeight: 600, color: '#60a5fa' }}>{f.modelCode}</td>
+                              <td style={{ fontWeight: 600, color: '#fff' }}>{f.name}</td>
+                              <td style={{ color: '#cbd5e1' }}>{f.brand}</td>
+                              <td><span style={{ fontSize: 10, padding: '2px 6px', borderRadius: 3, background: '#1e293b', color: '#cbd5e1' }}>{f.category}</span></td>
+                              <td style={{ fontWeight: 700, color: (f.totalStock || 0) > 0 ? '#10b981' : '#64748b', fontFamily: 'monospace' }}>{(f.totalStock || 0).toLocaleString()}</td>
+                              <td style={{ color: '#cbd5e1' }}>{f.skuCount || 0}</td>
+                              <td>{f.visible ? <span style={{ color: '#10b981' }}>✓</span> : <span style={{ color: '#ef4444' }}>✗</span>}</td>
+                              <td>
+                                <div style={{ display: 'flex', gap: 4, alignItems: 'center' }}>
+                                  <button onClick={(e) => { e.stopPropagation(); setEditingFamily(f) }} style={{ padding: '3px 8px', fontSize: 11, border: '1px solid #2d3548', borderRadius: 4, background: 'transparent', color: '#e2e8f0', cursor: 'pointer', fontFamily: 'inherit' }}>Edit</button>
+                                  <button onClick={(e) => { e.stopPropagation(); deleteFamily(f.id) }} style={{ padding: '3px 8px', fontSize: 11, border: '1px solid #7f1d1d', borderRadius: 4, background: 'transparent', color: '#ef4444', cursor: 'pointer', fontFamily: 'inherit' }}>Del</button>
+                                  <span style={{ color: '#64748b', fontSize: 14, marginLeft: 4 }}>{expandedFamily === f.modelCode ? '▾' : '▸'}</span>
+                                </div>
+                              </td>
+                            </tr>
+
+                            {/* ═══ ACCORDION SKU DETAIL ═══ */}
+                            {expandedFamily === f.modelCode && (
+                              <tr><td colSpan={8} style={{ padding: 0, background: '#0d1321', borderBottom: '2px solid #1e2d4a' }}>
+                                {familyDetailLoading ? (
+                                  <div style={{ padding: 24, textAlign: 'center', color: '#94a3b8' }}>Loading SKUs...</div>
+                                ) : familyDetail ? (
+                                  <div style={{ padding: '16px 20px' }}>
+                                    {/* Stats Row */}
+                                    <div style={{ display: 'flex', gap: 12, marginBottom: 16, flexWrap: 'wrap' }}>
+                                      {[
+                                        { label: 'Total SKUs', val: familyDetail.stats.totalSkus, color: '#fff' },
+                                        { label: 'Visible', val: familyDetail.stats.visibleSkus, color: '#10b981' },
+                                        { label: 'Hidden', val: familyDetail.stats.hiddenSkus, color: '#f59e0b' },
+                                        { label: 'Intake', val: familyDetail.stats.intakeSkus, color: '#64748b' },
+                                        { label: 'Total Stock', val: familyDetail.stats.totalStock.toLocaleString(), color: '#10b981' },
+                                      ].map((s, i) => (
+                                        <div key={i} style={{ background: '#111827', border: '1px solid #1e2d4a', borderRadius: 8, padding: '10px 16px', textAlign: 'center' }}>
+                                          <div style={{ fontSize: 18, fontWeight: 700, color: s.color }}>{s.val}</div>
+                                          <div style={{ fontSize: 10, color: '#94a3b8' }}>{s.label}</div>
+                                        </div>
+                                      ))}
+                                    </div>
+
+                                    {/* Tabs + Bulk Actions + Search */}
+                                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12, flexWrap: 'wrap', gap: 8 }}>
+                                      <div style={{ display: 'flex', gap: 0 }}>
+                                        {(['visible', 'hidden', 'all'] as const).map((tab, ti) => (
+                                          <button key={tab} onClick={() => { setSkuTab(tab); setSkuSelected([]) }} style={{ padding: '6px 16px', fontSize: 12, fontWeight: skuTab === tab ? 700 : 500, border: '1px solid #2d3548', borderRight: tab !== 'all' ? 'none' : '1px solid #2d3548', borderRadius: ti === 0 ? '6px 0 0 6px' : ti === 2 ? '0 6px 6px 0' : '0', background: skuTab === tab ? '#1e293b' : 'transparent', color: skuTab === tab ? '#fff' : '#94a3b8', cursor: 'pointer', fontFamily: 'inherit', textTransform: 'capitalize' as any }}>
+                                            {tab} ({tab === 'visible' ? familyDetail.skus.visible.length : tab === 'hidden' ? familyDetail.skus.hidden.length : familyDetail.skus.visible.length + familyDetail.skus.hidden.length})
+                                          </button>
+                                        ))}
+                                      </div>
+                                      <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+                                        {skuSelected.length > 0 && (<>
+                                          <button onClick={() => bulkSkuAction('hide')} style={{ padding: '5px 12px', fontSize: 11, fontWeight: 600, border: '1px solid #92400e', borderRadius: 5, background: 'transparent', color: '#f59e0b', cursor: 'pointer', fontFamily: 'inherit' }}>Hide Selected ({skuSelected.length})</button>
+                                          <button onClick={() => bulkSkuAction('show')} style={{ padding: '5px 12px', fontSize: 11, fontWeight: 600, border: '1px solid #065f46', borderRadius: 5, background: 'transparent', color: '#10b981', cursor: 'pointer', fontFamily: 'inherit' }}>Show Selected ({skuSelected.length})</button>
+                                        </>)}
+                                        <input placeholder="Search SKUs..." value={skuSearch} onChange={e => setSkuSearch(e.target.value)} style={{ padding: '5px 10px', border: '1px solid #2d3548', borderRadius: 6, fontSize: 11, fontFamily: 'inherit', width: 160, background: '#0f1729', color: '#e2e8f0' }} />
+                                      </div>
+                                    </div>
+
+                                    {/* SKU Table */}
+                                    <div style={{ overflowX: 'auto', border: '1px solid #1e2d4a', borderRadius: 8 }}>
+                                      <table className="aw-admin-table" style={{ fontSize: 12 }}>
+                                        <thead style={{ position: 'sticky', top: 0, zIndex: 3, background: '#111827' }}>
+                                          <tr>
+                                            <th style={{ width: 30, padding: '8px' }}><input type="checkbox" onChange={e => {
+                                              const pool = (skuTab === 'visible' ? familyDetail.skus.visible : skuTab === 'hidden' ? familyDetail.skus.hidden : [...familyDetail.skus.visible, ...familyDetail.skus.hidden]).filter((s: any) => !skuSearch || s.sku.toLowerCase().includes(skuSearch.toLowerCase()))
+                                              setSkuSelected(e.target.checked ? pool.map((s: any) => s.sku) : [])
+                                            }} /></th>
+                                            <th style={{ color: '#cbd5e1' }}>SKU</th><th style={{ color: '#cbd5e1' }}>Grade</th><th style={{ color: '#cbd5e1' }}>Storage</th><th style={{ color: '#cbd5e1' }}>Carrier</th><th style={{ color: '#cbd5e1' }}>Color</th><th style={{ color: '#cbd5e1' }}>Qty</th><th style={{ color: '#cbd5e1' }}>Avail</th><th style={{ color: '#cbd5e1' }}>Cost</th><th style={{ color: '#cbd5e1' }}>Site Price</th><th style={{ color: '#cbd5e1' }}>Actions</th>
+                                          </tr>
+                                        </thead>
+                                        <tbody>
+                                          {(skuTab === 'visible' ? familyDetail.skus.visible : skuTab === 'hidden' ? familyDetail.skus.hidden : [...familyDetail.skus.visible, ...familyDetail.skus.hidden])
+                                            .filter((s: any) => !skuSearch || s.sku.toLowerCase().includes(skuSearch.toLowerCase()) || (s.carrier||'').toLowerCase().includes(skuSearch.toLowerCase()) || (s.color||'').toLowerCase().includes(skuSearch.toLowerCase()) || (s.grade||'').toLowerCase().includes(skuSearch.toLowerCase()))
+                                            .map((s: any) => (
+                                            <tr key={s.sku} style={{ opacity: s.hidden ? 0.5 : 1 }}>
+                                              <td style={{ padding: '8px' }}><input type="checkbox" checked={skuSelected.includes(s.sku)} onChange={e => setSkuSelected(e.target.checked ? [...skuSelected, s.sku] : skuSelected.filter((x: string) => x !== s.sku))} /></td>
+                                              <td style={{ fontFamily: 'monospace', fontSize: 10, color: '#94a3b8', maxWidth: 240, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' as any }} title={s.sku}>{s.sku}</td>
+                                              <td><span style={{ fontFamily: 'monospace', fontSize: 11, fontWeight: 700, color: (s.grade === 'CAP' || s.grade === 'CAP1') ? '#34d399' : s.grade === 'CA+' ? '#10b981' : s.grade === 'CA' ? '#22c55e' : s.grade === 'SD' ? '#f97316' : '#cbd5e1', background: '#1e293b', padding: '2px 6px', borderRadius: 4 }}>{s.grade || '—'}</span></td>
+                                              <td style={{ fontWeight: 600, color: '#fff' }}>{s.storage || '—'}</td>
+                                              <td style={{ color: '#cbd5e1' }}>{s.carrier || '—'}</td>
+                                              <td style={{ color: '#cbd5e1' }}>{s.color || '—'}</td>
+                                              <td style={{ fontFamily: 'monospace', fontWeight: 700, color: '#fff' }}>{s.quantity}</td>
+                                              <td style={{ fontFamily: 'monospace', color: s.available > 0 ? '#10b981' : '#64748b' }}>{s.available}</td>
+                                              <td style={{ fontFamily: 'monospace', color: '#fff' }}>{'$'}{s.cost.toFixed(2)}</td>
+                                              <td style={{ fontFamily: 'monospace', fontWeight: 700, color: s.priceOverride ? '#60a5fa' : '#10b981' }}>{s.calculatedPrice ? ('$' + s.calculatedPrice.toFixed(2)) : '—'}{s.priceOverride ? ' ✎' : ''}</td>
+                                              <td>
+                                                <button onClick={() => toggleSkuHidden(s.sku, !s.hidden)} style={{ padding: '3px 8px', fontSize: 10, fontWeight: 600, border: '1px solid ' + (s.hidden ? '#065f46' : '#92400e'), borderRadius: 4, background: 'transparent', color: s.hidden ? '#10b981' : '#f59e0b', cursor: 'pointer', fontFamily: 'inherit' }}>{s.hidden ? 'Show' : 'Hide'}</button>
+                                              </td>
+                                            </tr>
+                                          ))}
+                                        </tbody>
+                                      </table>
+                                    </div>
+
+                                    {/* INTAKE Section */}
+                                    {familyDetail.skus.intake.length > 0 && (
+                                      <div style={{ marginTop: 16, border: '1px solid #334155', borderRadius: 8, overflow: 'hidden' }}>
+                                        <div style={{ padding: '10px 16px', background: '#1a1f2e', borderBottom: '1px solid #334155' }}>
+                                          <span style={{ fontSize: 12, fontWeight: 700, color: '#cbd5e1' }}>Pre-QC (INTAKE) — {familyDetail.skus.intake.length} SKUs</span>
+                                        </div>
+                                        <table className="aw-admin-table" style={{ fontSize: 12 }}>
+                                          <thead><tr><th style={{ color: '#cbd5e1' }}>SKU</th><th style={{ color: '#cbd5e1' }}>Qty</th><th style={{ color: '#cbd5e1' }}>Cost</th></tr></thead>
+                                          <tbody>
+                                            {familyDetail.skus.intake.map((s: any) => (
+                                              <tr key={s.sku} style={{ opacity: 0.6 }}>
+                                                <td style={{ fontFamily: 'monospace', fontSize: 10, color: '#94a3b8' }}>{s.sku}</td>
+                                                <td style={{ fontFamily: 'monospace', color: '#cbd5e1' }}>{s.quantity}</td>
+                                                <td style={{ fontFamily: 'monospace', color: '#cbd5e1' }}>{'$'}{s.cost.toFixed(2)}</td>
+                                              </tr>
+                                            ))}
+                                          </tbody>
+                                        </table>
+                                      </div>
+                                    )}
+                                  </div>
+                                ) : (
+                                  <div style={{ padding: 24, textAlign: 'center', color: '#ef4444' }}>Failed to load SKU details</div>
+                                )}
+                              </td></tr>
+                            )}
+                          </React.Fragment>
                         ))}
                       </tbody>
                     </table>
@@ -1286,7 +1379,7 @@ export default function Admin() {
                 </div>
               </>
             ) : (
-              <div style={{ padding: 40, textAlign: 'center', color: '#64748b' }}>Loading...</div>
+              <div style={{ padding: 40, textAlign: 'center', color: '#94a3b8' }}>Loading...</div>
             )}
           </div>
         )}
