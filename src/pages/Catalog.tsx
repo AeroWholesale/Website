@@ -120,7 +120,7 @@ const GRADE_LABELS: Record<string, string> = {
 
 const GRADE_COLORS: Record<string, string> = {
   'CAP1': 'green', 'NE': 'green', 'CAP': 'blue',
-  ''CA+': 'purple', 'CA': 'yellow',,
+  'CA+': 'purple', 'CA': 'yellow',
   'CAB': 'orange', 'SD': 'gray', 'SD-': 'gray', 'SDB': 'gray',
 }
 
