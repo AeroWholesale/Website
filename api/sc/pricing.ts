@@ -10,6 +10,27 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   const pool = new Pool({ connectionString: process.env.DATABASE_URL })
 
   try {
+    if (req.method === 'GET' && req.query.search) {
+      const q = '%' + String(req.query.search) + '%'
+      const result = await pool.query(
+        `SELECT sku, model, brand, device_type, grade, carrier, storage, color, cost, quantity, available_quantity
+         FROM products
+         WHERE is_active = true AND quantity > 0
+           AND grade IN ('CAP1','NE','CAP','CA+','CA','CAB','SD','SD-','SDB')
+           AND (sku ILIKE $1 OR model ILIKE $1 OR brand ILIKE $1)
+         ORDER BY quantity DESC
+         LIMIT 8`,
+        [q]
+      )
+      res.status(200).json({ results: result.rows.map(r => ({
+        sku: r.sku, model: r.model, brand: r.brand, category: r.device_type,
+        grade: r.grade, carrier: r.carrier, storage: r.storage, color: r.color,
+        cost: parseFloat(r.cost) || 0, quantity: parseInt(r.quantity) || 0,
+        available: parseInt(r.available_quantity) || 0,
+      })) })
+      return
+    }
+
     if (req.method === 'POST') {
       const { category, grade_code, multiplier } = req.body
       if (!category || !grade_code || multiplier === undefined) {
