@@ -1354,7 +1354,7 @@ export default function Admin() {
                             <td>{item.brand || '\u2014'}</td>
                             <td>{item.grade ? <span style={{ fontFamily: 'monospace', fontWeight: 700 }}>{item.grade}</span> : <span style={{ color: '#f59e0b' }}>\u2014</span>}</td>
                             <td style={{ fontWeight: 600, color: (item.quantity || 0) > 0 ? '#10b981' : '#64748b' }}>{item.quantity || 0}</td>
-                            <td>{'$'}{parseFloatparseFloat(item.cost || 0).toFixed(2)}</td>
+                            <td>{'$'}{parseFloat(item.cost || 0).toFixed(2)}</td>
                             <td>{item.hidden_from_site ? <span style={{ color: '#ef4444' }}>Hidden</span> : <span style={{ color: '#10b981' }}>Visible</span>}</td>
                             <td><span className={`aw-admin-badge aw-admin-badge-${item.review_status === 'hidden' ? 'red' : item.review_status === 'graded' ? 'green' : 'yellow'}`}>{item.review_status || 'pending'}</span></td>
                             <td style={{ display: 'flex', gap: 4 }}>
