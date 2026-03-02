@@ -1145,28 +1145,28 @@ export default function Admin() {
 
             {familiesLoading ? (
               <div style={{ padding: 40, textAlign: 'center', color: '#64748b' }}>Loading product families...</div>
-            ) : familiesData ? (
+            ) : familiesData?.totals ? (
               <>
                 {/* Summary Stats */}
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 16, marginBottom: 20 }}>
-                  <div className="aw-admin-stat"><div className="aw-admin-stat-label">Mapped Families</div><div className="aw-admin-stat-val">{familiesData.totals.families}</div></div>
-                  <div className="aw-admin-stat"><div className="aw-admin-stat-label">Unmapped Groups</div><div className="aw-admin-stat-val" style={{ color: familiesData.totals.unmappedGroups > 0 ? '#f59e0b' : '#10b981' }}>{familiesData.totals.unmappedGroups}</div></div>
-                  <div className="aw-admin-stat"><div className="aw-admin-stat-label">Unmapped SKUs</div><div className="aw-admin-stat-val">{familiesData.totals.unmappedSkus}</div></div>
-                  <div className="aw-admin-stat"><div className="aw-admin-stat-label">Unmapped Units</div><div className="aw-admin-stat-val">{familiesData.totals.unmappedQty?.toLocaleString()}</div></div>
+                  <div className="aw-admin-stat"><div className="aw-admin-stat-label">Mapped Families</div><div className="aw-admin-stat-val">{familiesData?.totals?.families}</div></div>
+                  <div className="aw-admin-stat"><div className="aw-admin-stat-label">Unmapped Groups</div><div className="aw-admin-stat-val" style={{ color: familiesData?.totals?.unmappedGroups > 0 ? '#f59e0b' : '#10b981' }}>{familiesData?.totals?.unmappedGroups}</div></div>
+                  <div className="aw-admin-stat"><div className="aw-admin-stat-label">Unmapped SKUs</div><div className="aw-admin-stat-val">{familiesData?.totals?.unmappedSkus}</div></div>
+                  <div className="aw-admin-stat"><div className="aw-admin-stat-label">Unmapped Units</div><div className="aw-admin-stat-val">{familiesData?.totals?.unmappedQty?.toLocaleString()}</div></div>
                 </div>
 
                 {/* Unmapped SKUs Alert */}
-                {familiesData.unmapped?.length > 0 && (
+                {familiesData?.unmapped?.length > 0 && (
                   <div className="aw-admin-table-card" style={{ background: '#1a1f2e', border: '1px solid #f59e0b33', marginBottom: 20 }}>
                     <div className="aw-admin-table-header">
-                      <div className="aw-admin-table-title" style={{ color: '#f59e0b', cursor: 'pointer' }} onClick={() => setUnmappedOpen(!unmappedOpen)}>⚠️ Unmapped Product Groups ({familiesData.totals.unmappedGroups}) <span style={{ fontSize: 14, marginLeft: 8 }}>{unmappedOpen ? '▾' : '▸'}</span></div>
+                      <div className="aw-admin-table-title" style={{ color: '#f59e0b', cursor: 'pointer' }} onClick={() => setUnmappedOpen(!unmappedOpen)}>⚠️ Unmapped Product Groups ({familiesData?.totals?.unmappedGroups}) <span style={{ fontSize: 14, marginLeft: 8 }}>{unmappedOpen ? '▾' : '▸'}</span></div>
                     </div>
                     {unmappedOpen && <><div style={{ fontSize: 12, color: '#94a3b8', padding: '0 0 12px' }}>These SKUs from SellerCloud don't match any product family. Click "Map" to add them, or ignore accessories/cables.</div>
                     <div style={{ overflowX: 'auto', maxHeight: 400, overflowY: 'auto' }}>
                       <table className="aw-admin-table" style={{ fontSize: 12 }}>
                         <thead><tr><th>Code</th><th>SC Name</th><th>Type</th><th>Units</th><th>SKUs</th><th></th></tr></thead>
                         <tbody>
-                          {familiesData.unmapped.map((u: any) => (
+                          {familiesData?.unmapped.map((u: any) => (
                             <tr key={u.modelCode}>
                               <td style={{ fontFamily: 'monospace', fontWeight: 600 }}>{u.modelCode}</td>
                               <td style={{ maxWidth: 300, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{u.scName}</td>
@@ -1185,7 +1185,7 @@ export default function Admin() {
                 {/* Mapped Families Table */}
                 <div className="aw-admin-table-card">
                   <div className="aw-admin-table-header">
-                    <div className="aw-admin-table-title" style={{ cursor: 'pointer' }} onClick={() => setMappedOpen(!mappedOpen)}>Mapped Product Families ({familiesData.totals.families}) <span style={{ fontSize: 14, marginLeft: 8 }}>{mappedOpen ? '\u25be' : '\u25b8'}</span></div>
+                    <div className="aw-admin-table-title" style={{ cursor: 'pointer' }} onClick={() => setMappedOpen(!mappedOpen)}>Mapped Product Families ({familiesData?.totals?.families}) <span style={{ fontSize: 14, marginLeft: 8 }}>{mappedOpen ? '\u25be' : '\u25b8'}</span></div>
                     <div style={{ display: 'flex', gap: 8 }}>
                       <button onClick={() => exportBulk('in-stock')} className="aw-admin-btn aw-admin-btn-view" style={{ fontSize: 12 }}>⬇ Export CSV</button>
                       <button onClick={() => setEditingFamily({ model_code: '', name: '', brand: '', category: 'Phones', image_url: '', visible: true })} className="aw-admin-btn aw-admin-btn-primary" style={{ fontSize: 12 }}>+ Add Family</button>
@@ -1197,11 +1197,11 @@ export default function Admin() {
                     <input placeholder="Search name/code..." value={familyFilter} onChange={e => setFamilyFilter(e.target.value)} style={{ padding: '6px 10px', border: '1px solid #2d3548', borderRadius: 6, fontSize: 12, fontFamily: 'inherit', width: 180, background: '#0f1729', color: '#e2e8f0' }} />
                     <select value={familyBrandFilter} onChange={e => setFamilyBrandFilter(e.target.value)} style={{ padding: '6px 10px', border: '1px solid #2d3548', borderRadius: 6, fontSize: 12, fontFamily: 'inherit', background: '#0f1729', color: '#e2e8f0' }}>
                       <option value="">All Brands</option>
-                      {[...new Set(familiesData.families.map((f: any) => f.brand))].sort().map((b: any) => <option key={b} value={b}>{b}</option>)}
+                      {[...new Set(familiesData?.families.map((f: any) => f.brand))].sort().map((b: any) => <option key={b} value={b}>{b}</option>)}
                     </select>
                     <select value={familyCatFilter} onChange={e => setFamilyCatFilter(e.target.value)} style={{ padding: '6px 10px', border: '1px solid #2d3548', borderRadius: 6, fontSize: 12, fontFamily: 'inherit', background: '#0f1729', color: '#e2e8f0' }}>
                       <option value="">All Categories</option>
-                      {[...new Set(familiesData.families.map((f: any) => f.category))].sort().map((c: any) => <option key={c} value={c}>{c}</option>)}
+                      {[...new Set(familiesData?.families.map((f: any) => f.category))].sort().map((c: any) => <option key={c} value={c}>{c}</option>)}
                     </select>
                     <select value={familyStockFilter} onChange={e => setFamilyStockFilter(e.target.value as any)} style={{ padding: '6px 10px', border: '1px solid #2d3548', borderRadius: 6, fontSize: 12, fontFamily: 'inherit', background: '#0f1729', color: '#e2e8f0' }}>
                       <option value="">All Stock</option>
@@ -1224,7 +1224,7 @@ export default function Admin() {
                     <table className="aw-admin-table">
                       <thead><tr><th>Code</th><th>Name</th><th>Brand</th><th>Category</th><th>Stock</th><th>SKUs</th><th>Visible</th><th></th></tr></thead>
                       <tbody>
-                        {familiesData.families
+                        {familiesData?.families
                           .filter((f: any) => {
                             if (familyFilter) {
                               const q = familyFilter.toLowerCase()
@@ -1423,7 +1423,7 @@ export default function Admin() {
 
             {gradesLoading ? (
               <div style={{ padding: 40, textAlign: 'center', color: '#64748b' }}>Loading grade config...</div>
-            ) : gradesData ? (
+            ) : gradesData?.grades ? (
               <div className="aw-admin-table-card">
                 <div className="aw-admin-table-header">
                   <div className="aw-admin-table-title">Grade Configuration</div>
@@ -1435,7 +1435,7 @@ export default function Admin() {
                 <table className="aw-admin-table">
                   <thead><tr><th>Grade Code</th><th>Display Label</th><th>Multiplier</th><th>Margin %</th><th>Sort Order</th><th>Visible</th><th></th></tr></thead>
                   <tbody>
-                    {gradesData.grades.map((g: any) => (
+                    {gradesData?.grades.map((g: any) => (
                       <tr key={g.id}>
                         <td style={{ fontFamily: 'monospace', fontWeight: 700, fontSize: 14 }}>{g.grade_code}</td>
                         <td style={{ fontWeight: 600 }}>{g.label}</td>
