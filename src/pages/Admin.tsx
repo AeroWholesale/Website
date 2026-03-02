@@ -246,6 +246,9 @@ export default function Admin() {
   const [pricingLoading, setPricingLoading] = useState(false)
   const [editingCell, setEditingCell] = useState<{ category: string; grade: string; value: string } | null>(null)
   const [previewProduct, setPreviewProduct] = useState<string>('')
+  const [previewResults, setPreviewResults] = useState<any[]>([])
+  const [previewSku, setPreviewSku] = useState<any>(null)
+  const [previewSearching, setPreviewSearching] = useState(false)
 
 
   const loadFamilies = async () => {
@@ -373,6 +376,26 @@ export default function Admin() {
     } catch (err) { showToast('Failed to save', true) }
   }
 
+  const searchPreviewSku = async (query: string) => {
+    setPreviewProduct(query)
+    setPreviewSku(null)
+    if (query.length < 2) { setPreviewResults([]); return }
+    setPreviewSearching(true)
+    try {
+      const res = await fetch('/api/sc/pricing?search=' + encodeURIComponent(query))
+      const data = await res.json()
+      if (data && data.results) {
+        setPreviewResults(data.results)
+      }
+    } catch (err) { setPreviewResults([]) }
+    setPreviewSearching(false)
+  }
+
+  const selectPreviewSku = (sku: any) => {
+    setPreviewSku(sku)
+    setPreviewProduct(sku.sku)
+    setPreviewResults([])
+  }
   const saveFamily = async (data: any) => {
     setFamilySaving(true)
     try {
@@ -1611,49 +1634,76 @@ export default function Admin() {
                 <div className="aw-admin-table-card">
                   <div className="aw-admin-table-header">
                     <div className="aw-admin-table-title">Price Preview</div>
-                    <select value={previewProduct} onChange={e => setPreviewProduct(e.target.value)} style={{ padding: '6px 10px', border: '1px solid #2d3548', borderRadius: 6, fontSize: 12, fontFamily: 'inherit', background: '#0f1729', color: '#e2e8f0' }}>
-                      <option value="">Select a product...</option>
-                      {pricingData.samples?.map((s: any) => <option key={s.name} value={s.name}>{s.name}</option>)}
-                    </select>
                   </div>
-                  {previewProduct && pricingData.samples ? (() => {
-                    const sample = pricingData.samples.find((s: any) => s.name === previewProduct)
-                    if (!sample) return <div style={{ padding: 16, color: '#64748b' }}>Product not found</div>
+                  <div style={{ padding: '12px 16px', borderBottom: '1px solid #1e2d4a', position: 'relative' }}>
+                    <input
+                      placeholder="Search by SKU, model, or brand..."
+                      value={previewProduct}
+                      onChange={e => searchPreviewSku(e.target.value)}
+                      onFocus={() => { if (previewResults.length > 0) setPreviewResults([...previewResults]) }}
+                      style={{ width: '100%', padding: '8px 12px', border: '1px solid #2d3548', borderRadius: 6, fontSize: 13, fontFamily: 'inherit', background: '#0f1729', color: '#e2e8f0', boxSizing: 'border-box' }}
+                    />
+                    {previewResults.length > 0 && !previewSku && (
+                      <div style={{ position: 'absolute', top: '100%', left: 16, right: 16, background: '#1a2234', border: '1px solid #2d3548', borderRadius: 8, zIndex: 20, maxHeight: 300, overflowY: 'auto', boxShadow: '0 8px 24px rgba(0,0,0,0.4)' }}>
+                        {previewResults.map((r: any) => (
+                          <div key={r.sku} onClick={() => selectPreviewSku(r)} style={{ padding: '10px 14px', cursor: 'pointer', borderBottom: '1px solid #1e2d4a', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}
+                               onMouseEnter={e => e.currentTarget.style.background = '#111827'} onMouseLeave={e => e.currentTarget.style.background = 'transparent'}>
+                            <div>
+                              <div style={{ fontSize: 11, fontFamily: 'monospace', color: '#94a3b8' }}>{r.sku}</div>
+                              <div style={{ fontSize: 12, color: '#fff', fontWeight: 600 }}>{r.model || r.brand} — {r.storage} {r.color}</div>
+                            </div>
+                            <div style={{ textAlign: 'right' }}>
+                              <span style={{ fontFamily: 'monospace', fontSize: 11, fontWeight: 700, color: '#34d399', background: '#1e293b', padding: '2px 6px', borderRadius: 4 }}>{r.grade}</span>
+                              <div style={{ fontSize: 11, color: '#64748b', marginTop: 2 }}>Qty: {r.quantity} · ${r.cost.toFixed(2)}</div>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                  {previewSku && pricingData ? (() => {
+                    const s = previewSku
+                    const cat = s.category || 'Phones'
+                    const mult = pricingData.grid[cat]?.[s.grade] || pricingData.grid['default']?.[s.grade] || 1
+                    const price = s.cost * mult
+                    const margin = price - s.cost
                     return (
-                      <div style={{ overflowX: 'auto' }}>
-                        <table className="aw-admin-table" style={{ fontSize: 13 }}>
-                          <thead><tr>
-                            <th style={{ color: '#cbd5e1' }}>Grade</th>
-                            <th style={{ color: '#cbd5e1' }}>Avg Cost</th>
-                            <th style={{ color: '#cbd5e1' }}>Multiplier</th>
-                            <th style={{ color: '#cbd5e1' }}>Site Price</th>
-                            <th style={{ color: '#cbd5e1' }}>Margin</th>
-                          </tr></thead>
-                          <tbody>
-                            {pricingData.grades.map((g: any) => {
-                              const cost = sample.grades[g.code]
-                              if (!cost) return null
-                              const mult = pricingData.grid[sample.category]?.[g.code] || pricingData.grid['default']?.[g.code] || 1
-                              const price = cost * mult
-                              const margin = price - cost
-                              return (
-                                <tr key={g.code}>
-                                  <td><span style={{ fontFamily: 'monospace', fontSize: 12, fontWeight: 700, color: g.code === 'CAP' || g.code === 'CAP1' ? '#34d399' : g.code === 'CA+' ? '#10b981' : g.code === 'CA' ? '#22c55e' : g.code === 'SD' ? '#f97316' : '#cbd5e1', background: '#1e293b', padding: '2px 6px', borderRadius: 4 }}>{g.code}</span></td>
-                                  <td style={{ fontFamily: 'monospace', color: '#fff' }}>${cost.toFixed(2)}</td>
-                                  <td style={{ fontFamily: 'monospace', color: '#60a5fa' }}>×{mult.toFixed(2)}</td>
-                                  <td style={{ fontFamily: 'monospace', fontWeight: 700, color: '#10b981', fontSize: 15 }}>${price.toFixed(2)}</td>
-                                  <td style={{ fontFamily: 'monospace', color: '#10b981' }}>+${margin.toFixed(2)}</td>
-                                </tr>
-                              )
-                            })}
-                          </tbody>
-                        </table>
-                        <div style={{ padding: '8px 16px', fontSize: 11, color: '#64748b' }}>Category: {sample.category} — using {sample.category} multipliers</div>
+                      <div style={{ padding: '16px' }}>
+                        <div style={{ display: 'flex', gap: 16, marginBottom: 16, flexWrap: 'wrap' }}>
+                          <div style={{ background: '#111827', border: '1px solid #1e2d4a', borderRadius: 8, padding: '12px 20px', textAlign: 'center' }}>
+                            <div style={{ fontSize: 10, color: '#94a3b8', marginBottom: 4 }}>Cost</div>
+                            <div style={{ fontSize: 20, fontWeight: 700, color: '#fff', fontFamily: 'monospace' }}>${s.cost.toFixed(2)}</div>
+                          </div>
+                          <div style={{ background: '#111827', border: '1px solid #1e2d4a', borderRadius: 8, padding: '12px 20px', textAlign: 'center' }}>
+                            <div style={{ fontSize: 10, color: '#94a3b8', marginBottom: 4 }}>Multiplier ({cat})</div>
+                            <div style={{ fontSize: 20, fontWeight: 700, color: '#60a5fa', fontFamily: 'monospace' }}>×{mult.toFixed(2)}</div>
+                          </div>
+                          <div style={{ background: '#111827', border: '1px solid #1e2d4a', borderRadius: 8, padding: '12px 20px', textAlign: 'center' }}>
+                            <div style={{ fontSize: 10, color: '#94a3b8', marginBottom: 4 }}>Site Price</div>
+                            <div style={{ fontSize: 20, fontWeight: 700, color: '#10b981', fontFamily: 'monospace' }}>${price.toFixed(2)}</div>
+                          </div>
+                          <div style={{ background: '#111827', border: '1px solid #1e2d4a', borderRadius: 8, padding: '12px 20px', textAlign: 'center' }}>
+                            <div style={{ fontSize: 10, color: '#94a3b8', marginBottom: 4 }}>Margin</div>
+                            <div style={{ fontSize: 20, fontWeight: 700, color: '#10b981', fontFamily: 'monospace' }}>+${margin.toFixed(2)}</div>
+                          </div>
+                        </div>
+                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(140px, 1fr))', gap: 8, fontSize: 12 }}>
+                          <div><span style={{ color: '#64748b' }}>SKU:</span> <span style={{ color: '#94a3b8', fontFamily: 'monospace', fontSize: 10 }}>{s.sku}</span></div>
+                          <div><span style={{ color: '#64748b' }}>Grade:</span> <span style={{ fontFamily: 'monospace', fontWeight: 700, color: '#34d399' }}>{s.grade}</span></div>
+                          <div><span style={{ color: '#64748b' }}>Category:</span> <span style={{ color: '#fff' }}>{cat}</span></div>
+                          <div><span style={{ color: '#64748b' }}>Storage:</span> <span style={{ color: '#fff' }}>{s.storage || '—'}</span></div>
+                          <div><span style={{ color: '#64748b' }}>Carrier:</span> <span style={{ color: '#fff' }}>{s.carrier || '—'}</span></div>
+                          <div><span style={{ color: '#64748b' }}>Color:</span> <span style={{ color: '#fff' }}>{s.color || '—'}</span></div>
+                          <div><span style={{ color: '#64748b' }}>Qty:</span> <span style={{ color: '#fff', fontWeight: 700 }}>{s.quantity}</span></div>
+                          <div><span style={{ color: '#64748b' }}>Avail:</span> <span style={{ color: s.available > 0 ? '#10b981' : '#64748b', fontWeight: 700 }}>{s.available}</span></div>
+                        </div>
+                        <div style={{ marginTop: 12, fontSize: 11, color: '#475569' }}>Using <b style={{ color: '#94a3b8' }}>{cat}</b> × <b style={{ color: '#94a3b8' }}>{s.grade}</b> multiplier = ×{mult.toFixed(2)}</div>
                       </div>
                     )
                   })() : (
-                    <div style={{ padding: 20, textAlign: 'center', color: '#64748b', fontSize: 13 }}>Select a product above to preview calculated prices</div>
+                    <div style={{ padding: 20, textAlign: 'center', color: '#64748b', fontSize: 13 }}>{previewSearching ? 'Searching...' : 'Type a SKU above to preview its calculated price'}</div>
                   )}
+                </div>
                 </div>
               </>
             ) : (
