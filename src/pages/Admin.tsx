@@ -247,7 +247,7 @@ export default function Admin() {
   const loadFamilies = async () => {
     setFamiliesLoading(true)
     try {
-      const res = await fetch('/api/sc/adminFamilies')
+      const res = await fetch('/api/sc/admin-families')
       const data = await res.json()
       if (data && data.families) {
         setFamiliesData(data)
@@ -262,7 +262,7 @@ export default function Admin() {
     }
     setExpandedFamily(modelCode); setFamilyDetailLoading(true); setSkuTab('visible'); setSkuSelected([]); setSkuSearch('')
     try {
-      const res = await fetch('/api/sc/adminFamilies?family=' + encodeURIComponent(modelCode))
+      const res = await fetch('/api/sc/admin-families?family=' + encodeURIComponent(modelCode))
       const data = await res.json()
       if (data && data.family) { setFamilyDetail(data) } else { setFamilyDetail(null) }
     } catch (err) { console.error(err); setFamilyDetail(null) }
@@ -272,7 +272,7 @@ export default function Admin() {
   const toggleSkuHidden = async (sku: string, hide: boolean) => {
     try {
       await fetch('/api/sc/review-queue', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: hide ? 'hide' : 'show', skus: [sku] }) })
-      if (expandedFamily) { setFamilyDetailLoading(true); const res = await fetch('/api/sc/adminFamilies?family=' + encodeURIComponent(expandedFamily)); const data = await res.json(); if (data && data.family) setFamilyDetail(data); setFamilyDetailLoading(false) }
+      if (expandedFamily) { setFamilyDetailLoading(true); const res = await fetch('/api/sc/admin-families?family=' + encodeURIComponent(expandedFamily)); const data = await res.json(); if (data && data.family) setFamilyDetail(data); setFamilyDetailLoading(false) }
     } catch (err) { showToast('Failed to update SKU', true) }
   }
 
@@ -282,7 +282,7 @@ export default function Admin() {
       await fetch('/api/sc/review-queue', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action, skus: skuSelected }) })
       showToast(action + ' applied to ' + skuSelected.length + ' SKU(s)')
       setSkuSelected([])
-      if (expandedFamily) { const res = await fetch('/api/sc/adminFamilies?family=' + encodeURIComponent(expandedFamily)); const data = await res.json(); if (data && data.family) setFamilyDetail(data) }
+      if (expandedFamily) { const res = await fetch('/api/sc/admin-families?family=' + encodeURIComponent(expandedFamily)); const data = await res.json(); if (data && data.family) setFamilyDetail(data) }
     } catch (err) { showToast('Bulk action failed', true) }
   }
 
