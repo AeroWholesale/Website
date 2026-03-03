@@ -87,7 +87,7 @@ const css = `
   .aw-admin-btn-primary:hover { background: #c2410c; }
 
   /* DETAIL PANEL */
-  .aw-admin-detail-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.6); z-index: 200; display: flex; align-items: center; justify-content: center; }
+  .aw-admin-detail-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.6); z-index: 100; display: flex; align-items: center; justify-content: center; }
   .aw-admin-detail { background: #111827; border: 1px solid #1e2d4a; border-radius: 16px; width: 580px; max-height: 80vh; overflow-y: auto; padding: 32px; }
   .aw-admin-detail-title { font-size: 20px; font-weight: 800; color: #fff; margin-bottom: 4px; }
   .aw-admin-detail-sub { font-size: 12px; color: #475569; margin-bottom: 24px; }
@@ -138,87 +138,6 @@ const css = `
 
   /* LOADING */
   .aw-admin-loading { text-align: center; padding: 40px; color: #475569; font-size: 14px; }
-
-
-  /* ── DRAWER ── */
-  .aw-drawer-overlay { position: fixed; inset: 0; background: rgba(0,0,10,0.6); z-index: 100; }
-  .aw-drawer { position: fixed; top: 0; right: 0; bottom: 0; width: 580px; background: #0f1520; border-left: 1px solid #1e2d4a; z-index: 101; display: flex; flex-direction: column; animation: drawerIn 0.22s ease; overflow: hidden; }
-  @keyframes drawerIn { from { transform: translateX(100%); } to { transform: translateX(0); } }
-  .aw-drawer-header { padding: 22px 24px 18px; border-bottom: 1px solid #1e2d4a; display: flex; align-items: flex-start; gap: 12px; flex-shrink: 0; }
-  .aw-drawer-header-info { flex: 1; }
-  .aw-drawer-company { font-size: 18px; font-weight: 900; color: #fff; letter-spacing: -0.02em; }
-  .aw-drawer-meta { font-size: 12px; color: #475569; margin-top: 4px; }
-  .aw-drawer-close { width: 30px; height: 30px; border: 1px solid #1e2d4a; border-radius: 7px; background: transparent; cursor: pointer; color: #64748b; font-size: 14px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
-  .aw-drawer-close:hover { background: #1e2d4a; color: #fff; }
-  .aw-drawer-body { flex: 1; overflow-y: auto; padding: 20px 24px; }
-  .aw-drawer-section { margin-bottom: 22px; }
-  .aw-drawer-section-title { font-size: 10px; font-weight: 800; color: #334155; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 10px; padding-bottom: 8px; border-bottom: 1px solid #1e2d4a; }
-  .aw-drawer-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-  .aw-drawer-field label { font-size: 10px; font-weight: 700; color: #475569; text-transform: uppercase; letter-spacing: 0.06em; display: block; margin-bottom: 3px; }
-  .aw-drawer-field span { font-size: 13px; color: #e2e8f0; font-weight: 500; }
-  .aw-drawer-doc { display: flex; align-items: center; gap: 10px; padding: 9px 12px; background: #0a0f1a; border: 1px solid #1e2d4a; border-radius: 8px; margin-bottom: 6px; }
-  .aw-drawer-doc-icon { width: 30px; height: 30px; background: #111827; border-radius: 6px; display: flex; align-items: center; justify-content: center; font-size: 14px; flex-shrink: 0; }
-  .aw-drawer-doc-info { flex: 1; }
-  .aw-drawer-doc-name { font-size: 12px; font-weight: 700; color: #e2e8f0; }
-  .aw-drawer-doc-meta { font-size: 11px; color: #475569; margin-top: 1px; }
-  .aw-drawer-footer { padding: 16px 24px; border-top: 1px solid #1e2d4a; background: #0a0f1a; flex-shrink: 0; }
-  .aw-drawer-actions { display: flex; gap: 8px; flex-wrap: wrap; }
-  .aw-drawer-action { flex: 1; min-width: 100px; padding: 9px 12px; border-radius: 8px; font-size: 12px; font-weight: 700; font-family: 'DM Sans', sans-serif; cursor: pointer; border: 1.5px solid; display: flex; align-items: center; justify-content: center; gap: 5px; transition: all 0.12s; }
-  .aw-drawer-action-approve { background: #052e16; color: #22c55e; border-color: #166534; }
-  .aw-drawer-action-approve:hover { background: #14532d; }
-  .aw-drawer-action-docs { background: #0c1a3a; color: #60a5fa; border-color: #1e3a8a; }
-  .aw-drawer-action-docs:hover { background: #1e3a8a; }
-  .aw-drawer-action-reject { background: #1c0606; color: #ef4444; border-color: #7f1d1d; }
-  .aw-drawer-action-reject:hover { background: #450a0a; }
-  .aw-reject-panel { background: #1c0606; border: 1px solid #7f1d1d; border-radius: 8px; padding: 14px; margin-top: 10px; }
-  .aw-reject-label { font-size: 11px; font-weight: 700; color: #ef4444; margin-bottom: 8px; }
-  .aw-reject-textarea { width: 100%; padding: 8px 12px; background: #0a0f1a; border: 1.5px solid #7f1d1d; border-radius: 8px; font-size: 13px; color: #e2e8f0; font-family: 'DM Sans', sans-serif; resize: none; outline: none; margin-bottom: 10px; box-sizing: border-box; }
-  .aw-reject-send { width: 100%; padding: 9px; background: #dc2626; color: #fff; border: none; border-radius: 8px; font-size: 13px; font-weight: 700; font-family: 'DM Sans', sans-serif; cursor: pointer; }
-  .aw-reject-send:hover { background: #b91c1c; }
-  .aw-docs-panel { background: #0c1a3a; border: 1px solid #1e3a8a; border-radius: 8px; padding: 14px; margin-top: 10px; }
-  .aw-docs-panel-label { font-size: 11px; font-weight: 700; color: #60a5fa; margin-bottom: 10px; }
-  .aw-docs-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 12px; }
-  .aw-doc-check { display: flex; align-items: center; gap: 8px; padding: 8px 10px; background: #0a0f1a; border: 1px solid #1e3a8a; border-radius: 7px; cursor: pointer; font-size: 12px; font-weight: 600; color: #e2e8f0; }
-  .aw-doc-check input { accent-color: #3b82f6; width: 14px; height: 14px; }
-  .aw-docs-send { width: 100%; padding: 9px; background: #2563eb; color: #fff; border: none; border-radius: 8px; font-size: 13px; font-weight: 700; font-family: 'DM Sans', sans-serif; cursor: pointer; }
-  .aw-docs-send:hover { background: #1d4ed8; }
-  /* notes in drawer */
-  .aw-note-input-row { display: flex; gap: 8px; margin-bottom: 10px; }
-  .aw-note-input { flex: 1; padding: 8px 12px; background: #0a0f1a; border: 1.5px solid #1e2d4a; border-radius: 8px; font-size: 13px; color: #e2e8f0; font-family: 'DM Sans', sans-serif; outline: none; }
-  .aw-note-input:focus { border-color: #334155; }
-  .aw-note-item { padding: 10px 12px; background: #0a0f1a; border: 1px solid #1e2d4a; border-radius: 8px; margin-bottom: 6px; }
-  .aw-note-meta { font-size: 11px; color: #334155; margin-bottom: 4px; }
-  .aw-note-text { font-size: 13px; color: #cbd5e1; line-height: 1.5; }
-  /* toolbar */
-  .aw-toolbar { display: flex; align-items: center; gap: 10px; margin-bottom: 16px; }
-  .aw-search-wrap { position: relative; flex: 1; max-width: 320px; }
-  .aw-search-icon { position: absolute; left: 11px; top: 50%; transform: translateY(-50%); width: 14px; height: 14px; color: #475569; pointer-events: none; }
-  .aw-search-input { width: 100%; padding: 8px 12px 8px 34px; background: #111827; border: 1.5px solid #1e2d4a; border-radius: 8px; font-size: 13px; color: #e2e8f0; font-family: 'DM Sans', sans-serif; outline: none; transition: border-color 0.12s; }
-  .aw-search-input:focus { border-color: #334155; }
-  .aw-filter-select { padding: 8px 28px 8px 12px; background: #111827; border: 1.5px solid #1e2d4a; border-radius: 8px; font-size: 12px; color: #94a3b8; font-family: 'DM Sans', sans-serif; appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='10' viewBox='0 0 24 24' fill='none' stroke='%2364748b' stroke-width='2'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 9px center; outline: none; cursor: pointer; }
-  /* stat cards clickable */
-  .aw-admin-stat { cursor: pointer; transition: border-color 0.12s; }
-  .aw-admin-stat:hover { border-color: #334155; }
-  .aw-admin-stat.active { border-color: #ea580c; box-shadow: 0 0 0 2px rgba(234,88,12,0.15); }
-  /* light mode drawer */
-  .aw-light .aw-drawer { background: #ffffff; border-left-color: #e2e8f0; }
-  .aw-light .aw-drawer-header { border-bottom-color: #e2e8f0; }
-  .aw-light .aw-drawer-company { color: #0f172a; }
-  .aw-light .aw-drawer-meta { color: #94a3b8; }
-  .aw-light .aw-drawer-close { border-color: #e2e8f0; color: #94a3b8; }
-  .aw-light .aw-drawer-close:hover { background: #f1f4f8; }
-  .aw-light .aw-drawer-section-title { color: #94a3b8; border-bottom-color: #e2e8f0; }
-  .aw-light .aw-drawer-field label { color: #94a3b8; }
-  .aw-light .aw-drawer-field span { color: #0f172a; }
-  .aw-light .aw-drawer-doc { background: #f8fafc; border-color: #e2e8f0; }
-  .aw-light .aw-drawer-doc-icon { background: #f1f4f8; }
-  .aw-light .aw-drawer-doc-name { color: #0f172a; }
-  .aw-light .aw-drawer-footer { background: #f8fafc; border-top-color: #e2e8f0; }
-  .aw-light .aw-note-input { background: #f8fafc; border-color: #e2e8f0; color: #0f172a; }
-  .aw-light .aw-note-item { background: #f8fafc; border-color: #e2e8f0; }
-  .aw-light .aw-note-text { color: #334155; }
-  .aw-light .aw-search-input { background: #ffffff; border-color: #e2e8f0; color: #0f172a; }
-  .aw-light .aw-filter-select { background: #ffffff; border-color: #e2e8f0; color: #334155; }
 
   /* ═══════════════════════════════════════════════════
      LIGHT THEME  —  applied via .aw-light on root
@@ -323,6 +242,81 @@ function typeBadge(type: string) {
   return map[type] || 'aw-admin-badge-gray'
 }
 
+function UsersPage() {
+  const [users, setUsers] = React.useState<any[]>([])
+  const [loading, setLoading] = React.useState(true)
+  const [search, setSearch] = React.useState('')
+
+  React.useEffect(() => {
+    fetch('/api/admin-users')
+      .then(r => r.json())
+      .then(data => { if (Array.isArray(data)) setUsers(data) })
+      .finally(() => setLoading(false))
+  }, [])
+
+  const filtered = users.filter(u => {
+    const q = search.toLowerCase()
+    return !q || u.email?.toLowerCase().includes(q) || u.company_name?.toLowerCase().includes(q) || u.first_name?.toLowerCase().includes(q) || u.last_name?.toLowerCase().includes(q)
+  })
+
+  return (
+    <div className="aw-admin-page">
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 16, marginBottom: 20 }}>
+        <div className="aw-admin-stat"><div className="aw-admin-stat-label">Total Dealers</div><div className="aw-admin-stat-val">{users.length}</div></div>
+        <div className="aw-admin-stat"><div className="aw-admin-stat-label">Active</div><div className="aw-admin-stat-val">{users.filter(u => u.active).length}</div></div>
+        <div className="aw-admin-stat"><div className="aw-admin-stat-label">Inactive</div><div className="aw-admin-stat-val">{users.filter(u => !u.active).length}</div></div>
+      </div>
+      <div className="aw-admin-table-card">
+        <div className="aw-admin-table-header">
+          <div className="aw-admin-table-title">Dealer Accounts</div>
+          <input
+            type="text"
+            placeholder="Search dealers..."
+            value={search}
+            onChange={e => setSearch(e.target.value)}
+            style={{ padding: '6px 12px', borderRadius: 6, border: '1px solid #1e2d4a', background: '#0a0f1a', color: '#e2e8f0', fontSize: 13, fontFamily: 'DM Sans,sans-serif', outline: 'none', width: 200 }}
+          />
+        </div>
+        {loading ? (
+          <div style={{ padding: 40, textAlign: 'center', color: '#94a3b8' }}>Loading...</div>
+        ) : (
+          <table className="aw-admin-table">
+            <thead><tr><th>Company</th><th>Name</th><th>Email</th><th>Type</th><th>Status</th><th>Joined</th></tr></thead>
+            <tbody>
+              {filtered.map(u => (
+                <tr key={u.id}>
+                  <td className="aw-admin-td-bold">{u.company_name || '—'}</td>
+                  <td>{u.first_name} {u.last_name}</td>
+                  <td style={{ fontSize: 12 }}>{u.email}</td>
+                  <td><span style={{ textTransform: 'capitalize' }}>{u.account_type || '—'}</span></td>
+                  <td><span className={`aw-admin-badge ${u.active ? 'aw-admin-badge-green' : 'aw-admin-badge-red'}`}>{u.active ? 'Active' : 'Inactive'}</span></td>
+                  <td style={{ fontSize: 12, color: '#64748b' }}>{u.created_at ? new Date(u.created_at).toLocaleDateString() : '—'}</td>
+                </tr>
+              ))}
+              {!filtered.length && (
+                <tr><td colSpan={6} style={{ textAlign: 'center', color: '#64748b', padding: 24 }}>No dealers found</td></tr>
+              )}
+            </tbody>
+          </table>
+        )}
+      </div>
+      <div className="aw-admin-table-card" style={{ marginTop: 20 }}>
+        <div className="aw-admin-table-header">
+          <div className="aw-admin-table-title">Admin Team</div>
+        </div>
+        <table className="aw-admin-table">
+          <thead><tr><th>Name</th><th>Role</th><th>Access</th><th>Status</th></tr></thead>
+          <tbody>
+            <tr><td className="aw-admin-td-bold">Isaac</td><td>Owner</td><td>Full Admin</td><td><span className="aw-admin-badge aw-admin-badge-green">Active</span></td></tr>
+            <tr><td className="aw-admin-td-bold">Linde</td><td>Marketplace Manager</td><td>Products, Families, Grades</td><td><span className="aw-admin-badge aw-admin-badge-yellow">Pending Setup</span></td></tr>
+            <tr><td className="aw-admin-td-bold">Will</td><td>Warehouse / Ops</td><td>Inventory, Sync</td><td><span className="aw-admin-badge aw-admin-badge-yellow">Pending Setup</span></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  )
+}
+
 export default function Admin() {
   const [authed, setAuthed] = useState(false)
   const [pw, setPw] = useState('')
@@ -334,10 +328,7 @@ export default function Admin() {
   const [loading, setLoading] = useState(true)
   const [detail, setDetail] = useState<Application | null>(null)
   const [msgDetail, setMsgDetail] = useState<Message | null>(null)
-  const [appTab, setAppTab] = useState<'pending' | 'all'>('all')
-  const [appSearch, setAppSearch] = useState('')
-  const [appStatusFilter, setAppStatusFilter] = useState('')
-  const [appTypeFilter, setAppTypeFilter] = useState('')
+  const [appTab, setAppTab] = useState<'pending' | 'all'>('pending')
   const [replyText, setReplyText] = useState('')
   const [replySending, setReplySending] = useState(false)
   const [docsModal, setDocsModal] = useState<Application | null>(null)
@@ -825,14 +816,7 @@ export default function Admin() {
 
   const pendingApps = apps.filter(a => ['pending', 'docs_received'].includes(a.status))
   const unreadMsgs = msgs.filter(m => !m.read)
-  const filteredApps = apps.filter(a => {
-    const q = appSearch.toLowerCase()
-    const matchQ = !q || a.company_name?.toLowerCase().includes(q) || a.first_name?.toLowerCase().includes(q) || a.last_name?.toLowerCase().includes(q) || a.email?.toLowerCase().includes(q)
-    const matchStatus = !appStatusFilter || a.status === appStatusFilter
-    const matchType = !appTypeFilter || a.account_type?.toLowerCase() === appTypeFilter.toLowerCase()
-    const matchTab = appTab === 'all' || ['pending','docs_received'].includes(a.status)
-    return matchQ && matchStatus && matchType && matchTab
-  })
+  const filteredApps = appTab === 'pending' ? pendingApps : apps
 
   const showToast = (text: string, error = false) => {
     setToast({ text, error })
@@ -989,70 +973,62 @@ export default function Admin() {
               <div className="aw-admin-loading">Loading...</div>
             ) : page === 'applications' ? (
               <>
-                {/* 5 STAT CARDS */}
-                <div className="aw-admin-stats" style={{ gridTemplateColumns: 'repeat(5,1fr)' }}>
-                  <div className={`aw-admin-stat${appStatusFilter===''&&appTab==='pending'?' active':''}`} onClick={()=>{setAppStatusFilter('');setAppTab('pending')}}><div className="aw-admin-stat-label">Needs Review</div><div className="aw-admin-stat-val">{pendingApps.length}</div></div>
-                  <div className={`aw-admin-stat${appStatusFilter==='docs_requested'?' active':''}`} onClick={()=>{setAppStatusFilter('docs_requested');setAppTab('all')}}><div className="aw-admin-stat-label">Docs Requested</div><div className="aw-admin-stat-val" style={{color:'#60a5fa'}}>{apps.filter(a=>a.status==='docs_requested').length}</div></div>
-                  <div className={`aw-admin-stat${appStatusFilter==='docs_received'?' active':''}`} onClick={()=>{setAppStatusFilter('docs_received');setAppTab('all')}}><div className="aw-admin-stat-label">Docs Received</div><div className="aw-admin-stat-val" style={{color:'#fb923c'}}>{apps.filter(a=>a.status==='docs_received').length}</div></div>
-                  <div className={`aw-admin-stat${appStatusFilter==='approved'?' active':''}`} onClick={()=>{setAppStatusFilter('approved');setAppTab('all')}}><div className="aw-admin-stat-label">Approved</div><div className="aw-admin-stat-val" style={{color:'#22c55e'}}>{apps.filter(a=>a.status==='approved').length}</div></div>
-                  <div className={`aw-admin-stat${appStatusFilter==='rejected'?' active':''}`} onClick={()=>{setAppStatusFilter('rejected');setAppTab('all')}}><div className="aw-admin-stat-label">Rejected</div><div className="aw-admin-stat-val" style={{color:'#ef4444'}}>{apps.filter(a=>a.status==='rejected').length}</div></div>
+                {/* STATS */}
+                <div className="aw-admin-stats">
+                  <div className="aw-admin-stat"><div className="aw-admin-stat-label">Pending Review</div><div className="aw-admin-stat-val">{pendingApps.length}</div></div>
+                  <div className="aw-admin-stat"><div className="aw-admin-stat-label">Total Applications</div><div className="aw-admin-stat-val">{apps.length}</div></div>
+                  <div className="aw-admin-stat"><div className="aw-admin-stat-label">Approved</div><div className="aw-admin-stat-val">{apps.filter(a => a.status === 'approved').length}</div></div>
+                  <div className="aw-admin-stat"><div className="aw-admin-stat-label">Docs Requested</div><div className="aw-admin-stat-val">{apps.filter(a => a.status === 'docs_requested').length}</div></div>
                 </div>
 
-                {/* TOOLBAR */}
-                <div className="aw-toolbar">
-                  <div className="aw-search-wrap">
-                    <svg className="aw-search-icon" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-                    <input className="aw-search-input" placeholder="Search company, name, email…" value={appSearch} onChange={e=>setAppSearch(e.target.value)} />
-                  </div>
-                  <select className="aw-filter-select" value={appStatusFilter} onChange={e=>{setAppStatusFilter(e.target.value);setAppTab('all')}}>
-                    <option value="">All Statuses</option>
-                    <option value="pending">Pending</option>
-                    <option value="docs_requested">Docs Requested</option>
-                    <option value="docs_received">Docs Received</option>
-                    <option value="approved">Approved</option>
-                    <option value="rejected">Rejected</option>
-                  </select>
-                  <select className="aw-filter-select" value={appTypeFilter} onChange={e=>setAppTypeFilter(e.target.value)}>
-                    <option value="">All Types</option>
-                    <option value="enterprise">Enterprise</option>
-                    <option value="wholesale">Wholesale</option>
-                    <option value="reseller">Reseller</option>
-                  </select>
-                  <div style={{flex:1}}/>
-                  <button className="aw-admin-btn aw-admin-btn-primary" style={{fontSize:12}} onClick={()=>{setAppSearch('');setAppStatusFilter('');setAppTypeFilter('');setAppTab('all')}}>Clear Filters</button>
+                {/* TABS */}
+                <div className="aw-admin-tabs">
+                  <div className={`aw-admin-tab${appTab === 'pending' ? ' active' : ''}`} onClick={() => setAppTab('pending')}>Pending ({pendingApps.length})</div>
+                  <div className={`aw-admin-tab${appTab === 'all' ? ' active' : ''}`} onClick={() => setAppTab('all')}>All Applications ({apps.length})</div>
                 </div>
 
                 {/* TABLE */}
                 {filteredApps.length === 0 ? (
                   <div className="aw-admin-empty">
                     <div className="aw-admin-empty-icon">📭</div>
-                    <div className="aw-admin-empty-text">No applications match your filters</div>
+                    <div className="aw-admin-empty-text">{appTab === 'pending' ? 'No pending applications' : 'No applications yet'}</div>
                   </div>
                 ) : (
                   <div className="aw-admin-table-card">
                     <div className="aw-admin-table-header">
-                      <div className="aw-admin-table-title">Applications ({filteredApps.length})</div>
+                      <div className="aw-admin-table-title">{appTab === 'pending' ? 'Pending Applications' : 'All Applications'}</div>
                     </div>
                     <table className="aw-admin-table">
                       <thead>
-                        <tr><th>Company</th><th>Contact</th><th>Type</th><th>Volume</th><th>Applied</th><th>Status</th><th style={{textAlign:'right'}}>Action</th></tr>
+                        <tr><th>Company</th><th>Contact</th><th>Type</th><th>Volume</th><th>Applied</th><th>Status</th><th>Actions</th></tr>
                       </thead>
                       <tbody>
                         {filteredApps.map(app => (
-                          <tr key={app.id} style={{cursor:'pointer'}} onClick={()=>openDetail(app)}>
+                          <tr key={app.id}>
                             <td>
                               <div className="aw-admin-td-bold">{app.company_name}</div>
-                              <div className="aw-admin-td-sub">{app.city ? `${app.city}, ` : ''}{app.state}</div>
+                              <div className="aw-admin-td-sub">{app.state}</div>
                             </td>
                             <td>
-                              <div style={{fontSize:13,color:'#94a3b8',fontWeight:600}}>{app.first_name} {app.last_name}</div>
+                              <div style={{ fontSize: 12, color: '#94a3b8' }}>{app.first_name} {app.last_name}</div>
                               <div className="aw-admin-td-sub">{app.email}</div>
                             </td>
                             <td><span className={`aw-admin-badge ${typeBadge(app.account_type)}`}>{app.account_type}</span></td>
-                            <td style={{fontSize:12,color:'#64748b'}}>{app.monthly_volume}</td>
-                            <td style={{fontSize:12,color:'#64748b'}}>{timeAgo(app.created_at)}</td>
-                            <td><span className={`aw-admin-badge ${statusBadge(app.status)}`}>{app.status.replace(/_/g,' ')}</span></td>
-                            <td style={{textAlign:'right'}}><button className="aw-admin-btn aw-admin-btn-view" onClick={e=>{e.stopPropagation();openDetail(app)}}>View →</button></td>
+                            <td>{app.monthly_volume}</td>
+                            <td>{timeAgo(app.created_at)}</td>
+                            <td><span className={`aw-admin-badge ${statusBadge(app.status)}`}>{app.status.replace('_', ' ')}</span></td>
+                            <td>
+                              <div style={{ display: 'flex', gap: 5 }}>
+                                <button className="aw-admin-btn aw-admin-btn-view" onClick={() => openDetail(app)}>View</button>
+                                {app.status === 'pending' && (
+                                  <>
+                                    <button className="aw-admin-btn aw-admin-btn-approve" onClick={() => approveApp(app)}>{approving === app.id ? '...' : 'Approve'}</button>
+                                    <button className="aw-admin-btn aw-admin-btn-docs" onClick={() => { setDocsModal(app); setSelectedDocs([]) }}>Req Docs</button>
+                                    <button className="aw-admin-btn aw-admin-btn-reject" onClick={() => updateAppStatus(app.id, 'rejected')}>Reject</button>
+                                  </>
+                                )}
+                              </div>
+                            </td>
                           </tr>
                         ))}
                       </tbody>
@@ -1091,42 +1067,32 @@ export default function Admin() {
             ) : null}
           </div>}
 
-        {/* APPLICATION DETAIL DRAWER */}
+        {/* APPLICATION DETAIL MODAL */}
         {detail && (
-          <>
-          <div className="aw-drawer-overlay" onClick={() => setDetail(null)} />
-          <div className="aw-drawer">
-              <div className="aw-drawer-header">
-                <div className="aw-drawer-header-info">
-                  <div className="aw-drawer-company">{detail.company_name}</div>
-                  <div className="aw-drawer-meta">Applied {timeAgo(detail.created_at)} · {detail.city ? `${detail.city}, ` : ''}{detail.state} · <span className={`aw-admin-badge ${statusBadge(detail.status)}`}>{detail.status.replace(/_/g,' ')}</span></div>
-                </div>
-                <button className="aw-drawer-close" onClick={()=>setDetail(null)}>✕</button>
+          <div className="aw-admin-detail-overlay" onClick={() => setDetail(null)}>
+            <div className="aw-admin-detail" style={{ maxWidth: 640, width: '95vw' }} onClick={e => e.stopPropagation()}>
+              <div className="aw-admin-detail-title">{detail.company_name}</div>
+              <div className="aw-admin-detail-sub">Applied {timeAgo(detail.created_at)} · <span className={`aw-admin-badge ${statusBadge(detail.status)}`}>{detail.status.replace(/_/g, ' ')}</span></div>
+
+              <div className="aw-admin-detail-grid">
+                <div className="aw-admin-detail-field"><div className="aw-admin-detail-label">Contact</div><div className="aw-admin-detail-value">{detail.first_name} {detail.last_name}</div></div>
+                <div className="aw-admin-detail-field"><div className="aw-admin-detail-label">Email</div><div className="aw-admin-detail-value">{detail.email}</div></div>
+                <div className="aw-admin-detail-field"><div className="aw-admin-detail-label">Phone</div><div className="aw-admin-detail-value">{detail.phone}</div></div>
+                <div className="aw-admin-detail-field"><div className="aw-admin-detail-label">Job Title</div><div className="aw-admin-detail-value">{detail.job_title || '—'}</div></div>
+                <div className="aw-admin-detail-field"><div className="aw-admin-detail-label">EIN / Tax ID</div><div className="aw-admin-detail-value" style={{ fontFamily: 'monospace' }}>{detail.ein}</div></div>
+                <div className="aw-admin-detail-field"><div className="aw-admin-detail-label">Website</div><div className="aw-admin-detail-value">{detail.website || '—'}</div></div>
+                <div className="aw-admin-detail-field"><div className="aw-admin-detail-label">Location</div><div className="aw-admin-detail-value">{detail.city ? `${detail.city}, ` : ''}{detail.state}</div></div>
+                <div className="aw-admin-detail-field"><div className="aw-admin-detail-label">Years in Business</div><div className="aw-admin-detail-value">{detail.years_in_business || '—'}</div></div>
+                <div className="aw-admin-detail-field"><div className="aw-admin-detail-label">Account Type</div><div className="aw-admin-detail-value" style={{ textTransform: 'capitalize' }}>{detail.account_type}</div></div>
+                <div className="aw-admin-detail-field"><div className="aw-admin-detail-label">Monthly Volume</div><div className="aw-admin-detail-value">{detail.monthly_volume}</div></div>
+                <div className="aw-admin-detail-field"><div className="aw-admin-detail-label">Product Categories</div><div className="aw-admin-detail-value">{detail.product_categories || '—'}</div></div>
+                <div className="aw-admin-detail-field"><div className="aw-admin-detail-label">Sales Channel</div><div className="aw-admin-detail-value">{detail.sales_channel || '—'}</div></div>
+                <div className="aw-admin-detail-field"><div className="aw-admin-detail-label">How They Found Us</div><div className="aw-admin-detail-value">{detail.heard_about || '—'}</div></div>
               </div>
-              <div className="aw-drawer-body">
 
-                <div className="aw-drawer-section">
-                  <div className="aw-drawer-section-title">Contact & Business</div>
-                  <div className="aw-drawer-grid">
-                <div className="aw-drawer-field"><label>Contact</label><span>{detail.first_name} {detail.last_name}</span></div>
-                <div className="aw-drawer-field"><label>Email</label><span>{detail.email}</span></div>
-                <div className="aw-drawer-field"><label>Phone</label><span>{detail.phone}</span></div>
-                <div className="aw-drawer-field"><label>Job Title</label><span>{detail.job_title || '—'}</span></div>
-                <div className="aw-drawer-field"><label>EIN / Tax ID</label><span style={{ fontFamily: 'monospace' }}>{detail.ein}</span></div>
-                <div className="aw-drawer-field"><label>Website</label><span>{detail.website || '—'}</span></div>
-                <div className="aw-drawer-field"><label>Location</label><span>{detail.city ? `${detail.city}, ` : ''}{detail.state}</span></div>
-                <div className="aw-drawer-field"><label>Years in Business</label><span>{detail.years_in_business || '—'}</span></div>
-                <div className="aw-drawer-field"><label>Account Type</label><span style={{ textTransform: 'capitalize' }}>{detail.account_type}</span></div>
-                <div className="aw-drawer-field"><label>Monthly Volume</label><span>{detail.monthly_volume}</span></div>
-                <div className="aw-drawer-field"><label>Product Categories</label><span>{detail.product_categories || '—'}</span></div>
-                <div className="aw-drawer-field"><label>Sales Channel</label><span>{detail.sales_channel || '—'}</span></div>
-                <div className="aw-drawer-field"><label>How They Found Us</label><span>{detail.heard_about || '—'}</span></div>
-                  </div>
-                </div>
-
-                {/* UPLOADED DOCUMENTS */}
-                <div className="aw-drawer-section">
-                  <div className="aw-drawer-section-title">Uploaded Documents</div>
+              {/* UPLOADED DOCUMENTS */}
+              <div style={{ marginBottom: 20 }}>
+                <div className="aw-admin-detail-label" style={{ marginBottom: 8 }}>Uploaded Documents</div>
                 {uploadsLoading ? (
                   <div style={{ fontSize: 12, color: '#475569' }}>Loading documents...</div>
                 ) : appUploads.length === 0 ? (
@@ -1145,48 +1111,73 @@ export default function Admin() {
                 )}
               </div>
 
-                {/* ADMIN NOTES LOG */}
-                <div className="aw-drawer-section">
-                  <div className="aw-drawer-section-title">Notes Log</div>
-                  <div className="aw-note-input-row">
-                    <input className="aw-note-input" value={noteText} onChange={e=>setNoteText(e.target.value)} onKeyDown={e=>e.key==='Enter'&&!e.shiftKey&&saveNote()} placeholder="Add a note… (Enter to save)" />
-                    <button className="aw-admin-btn aw-admin-btn-primary" disabled={savingNote||!noteText.trim()} onClick={saveNote} style={{whiteSpace:'nowrap',fontSize:12}}>{savingNote?'…':'Save'}</button>
-                  </div>
+              {/* ADMIN NOTES LOG */}
+              <div style={{ marginBottom: 20 }}>
+                <div className="aw-admin-detail-label" style={{ marginBottom: 8 }}>Notes Log</div>
+                <div style={{ display: 'flex', gap: 8, marginBottom: 10 }}>
+                  <input
+                    value={noteText}
+                    onChange={e => setNoteText(e.target.value)}
+                    onKeyDown={e => e.key === 'Enter' && !e.shiftKey && saveNote()}
+                    placeholder="Add a note... (Enter to save)"
+                    style={{ flex: 1, padding: '8px 12px', background: '#0a0f1a', border: '1.5px solid #1e2d4a', borderRadius: 8, fontSize: 13, color: '#e2e8f0', fontFamily: 'inherit', outline: 'none' }}
+                  />
+                  <button
+                    className="aw-admin-btn aw-admin-btn-primary"
+                    disabled={savingNote || !noteText.trim()}
+                    onClick={saveNote}
+                    style={{ whiteSpace: 'nowrap', fontSize: 12 }}
+                  >{savingNote ? '...' : 'Save'}</button>
+                </div>
                 {appNotes.length === 0 ? (
                   <div style={{ fontSize: 12, color: '#475569', fontStyle: 'italic' }}>No notes yet.</div>
                 ) : (
                   appNotes.map(n => (
-                    <div key={n.id} className="aw-note-item">
-                      <div className="aw-note-meta">{n.author} · {timeAgo(n.created_at)}</div>
-                      <div className="aw-note-text">{n.note}</div>
+                    <div key={n.id} style={{ padding: '10px 12px', background: '#0a0f1a', border: '1px solid #1e2d4a', borderRadius: 8, marginBottom: 6 }}>
+                      <div style={{ fontSize: 11, color: '#475569', marginBottom: 4 }}>{n.author} · {timeAgo(n.created_at)}</div>
+                      <div style={{ fontSize: 13, color: '#cbd5e1', lineHeight: 1.5 }}>{n.note}</div>
                     </div>
                   ))
                 )}
               </div>
 
-              </div>{/* end drawer-body */}
-              {/* FOOTER ACTIONS */}
-              <div className="aw-drawer-footer">
+              {/* REJECT PANEL */}
               {showRejectPanel && (
-                <div className="aw-reject-panel">
-                  <div class="aw-reject-label">Rejection reason (included in email):</div>
-                  <textarea className="aw-reject-textarea" rows={3} value={rejectReason} onChange={e=>setRejectReason(e.target.value)} placeholder="e.g. Unable to verify business credentials at this time."/>
-                  <button className="aw-reject-send" onClick={rejectApp}>Send Rejection Email →</button>
+                <div style={{ background: '#1c0606', border: '1px solid #7f1d1d', borderRadius: 10, padding: 16, marginBottom: 16 }}>
+                  <div style={{ fontSize: 11, fontWeight: 700, color: '#ef4444', marginBottom: 8 }}>Rejection reason (included in email):</div>
+                  <textarea
+                    value={rejectReason}
+                    onChange={e => setRejectReason(e.target.value)}
+                    rows={3}
+                    placeholder="e.g. Unable to verify business credentials at this time. You may reapply in 90 days."
+                    style={{ width: '100%', padding: '8px 12px', background: '#0a0f1a', border: '1.5px solid #7f1d1d', borderRadius: 8, fontSize: 13, color: '#e2e8f0', fontFamily: 'inherit', resize: 'none', outline: 'none', marginBottom: 10, boxSizing: 'border-box' as const }}
+                  />
+                  <button
+                    className="aw-admin-btn aw-admin-btn-reject"
+                    style={{ width: '100%', justifyContent: 'center', padding: '9px' }}
+                    onClick={rejectApp}
+                  >Send Rejection Email →</button>
                 </div>
               )}
 
-              <div className="aw-drawer-actions">
-                {(detail.status==='pending'||detail.status==='docs_received'||detail.status==='docs_requested') && (
-                  <button className="aw-drawer-action aw-drawer-action-approve" disabled={approving===detail.id} onClick={()=>approveApp(detail)}>{approving===detail.id?'…':'✓ Approve'}</button>
+              <div className="aw-admin-detail-actions">
+                {(detail.status === 'pending' || detail.status === 'docs_received') && (
+                  <>
+                    <button className="aw-admin-btn aw-admin-btn-approve" disabled={approving === detail.id} onClick={() => approveApp(detail)}>{approving === detail.id ? '...' : '✓ Approve'}</button>
+                    <button className="aw-admin-btn aw-admin-btn-docs" onClick={() => { setDocsModal(detail); setSelectedDocs([]) }}>📄 Request Docs</button>
+                    <button className="aw-admin-btn aw-admin-btn-reject" onClick={() => setShowRejectPanel(p => !p)}>✗ Reject</button>
+                  </>
                 )}
-                <button className="aw-drawer-action aw-drawer-action-docs" onClick={()=>{setDocsModal(detail);setSelectedDocs([])}}>📎 Request Docs</button>
-                {detail.status!=='approved'&&detail.status!=='rejected'&&(
-                  <button className="aw-drawer-action aw-drawer-action-reject" onClick={()=>setShowRejectPanel(p=>!p)}>✗ Reject</button>
+                {detail.status === 'docs_requested' && (
+                  <>
+                    <button className="aw-admin-btn aw-admin-btn-approve" disabled={approving === detail.id} onClick={() => approveApp(detail)}>{approving === detail.id ? '...' : '✓ Approve'}</button>
+                    <button className="aw-admin-btn aw-admin-btn-docs" onClick={() => { setDocsModal(detail); setSelectedDocs([]) }}>📄 Request Docs Again</button>
+                  </>
                 )}
+                <button className="aw-admin-btn aw-admin-detail-close" onClick={() => setDetail(null)}>Close</button>
               </div>
-              </div>{/* end footer */}
-            </div>{/* end drawer */}
-          </>
+            </div>
+          </div>
         )}
 
         {/* MESSAGE DETAIL MODAL */}
@@ -1197,8 +1188,8 @@ export default function Admin() {
               <div className="aw-admin-detail-sub">From {msgDetail.name}{msgDetail.company && ` at ${msgDetail.company}`} · {timeAgo(msgDetail.created_at)}</div>
 
               <div className="aw-admin-detail-grid" style={{ marginBottom: 20 }}>
-                <div className="aw-drawer-field"><label>Email</label><span>{msgDetail.email}</span></div>
-                <div className="aw-drawer-field"><label>Company</label><span>{msgDetail.company || '—'}</span></div>
+                <div className="aw-admin-detail-field"><div className="aw-admin-detail-label">Email</div><div className="aw-admin-detail-value">{msgDetail.email}</div></div>
+                <div className="aw-admin-detail-field"><div className="aw-admin-detail-label">Company</div><div className="aw-admin-detail-value">{msgDetail.company || '—'}</div></div>
               </div>
 
               <div className="aw-admin-detail-label">Message</div>
@@ -1809,39 +1800,10 @@ export default function Admin() {
 
         {/* ═══ USER MANAGEMENT PAGE ═══ */}
         {page === 'users' && (
-          <div className="aw-admin-page">
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 16, marginBottom: 20 }}>
-              <div className="aw-admin-stat"><div className="aw-admin-stat-label">Admin Users</div><div className="aw-admin-stat-val">1</div></div>
-              <div className="aw-admin-stat"><div className="aw-admin-stat-label">Active Sessions</div><div className="aw-admin-stat-val">1</div></div>
-              <div className="aw-admin-stat"><div className="aw-admin-stat-label">Auth Method</div><div className="aw-admin-stat-val" style={{ fontSize: 16 }}>Shared Password</div></div>
-            </div>
-            <div className="aw-admin-table-card">
-              <div className="aw-admin-table-header">
-                <div className="aw-admin-table-title">Admin Users</div>
-                <div style={{ fontSize: 12, color: '#94a3b8' }}>Managed via Vercel environment variables</div>
-              </div>
-              <table className="aw-admin-table">
-                <thead><tr><th>User</th><th>Role</th><th>Access</th><th>Status</th></tr></thead>
-                <tbody>
-                  <tr><td className="aw-admin-td-bold">Isaac</td><td>Owner</td><td>Full Admin</td><td><span className="aw-admin-badge aw-admin-badge-green">Active</span></td></tr>
-                  <tr><td className="aw-admin-td-bold">Linde</td><td>Marketplace Manager</td><td>Products, Families, Grades</td><td><span className="aw-admin-badge aw-admin-badge-yellow">Pending Setup</span></td></tr>
-                  <tr><td className="aw-admin-td-bold">Will</td><td>Warehouse / Ops</td><td>Inventory, Sync</td><td><span className="aw-admin-badge aw-admin-badge-yellow">Pending Setup</span></td></tr>
-                </tbody>
-              </table>
-            </div>
-            <div className="aw-admin-table-card">
-              <div className="aw-admin-table-header"><div className="aw-admin-table-title">Upgrade Path</div></div>
-              <div style={{ padding: 20, fontSize: 13, color: '#94a3b8', lineHeight: 1.8 }}>
-                <p style={{ margin: '0 0 12px' }}>Currently using a shared admin password. To add individual user accounts with role-based access:</p>
-                <p style={{ margin: '0 0 8px' }}><b style={{ color: '#e2e8f0' }}>Phase 1 (Now):</b> Shared password — all admins have full access</p>
-                <p style={{ margin: '0 0 8px' }}><b style={{ color: '#e2e8f0' }}>Phase 2 (Next):</b> Individual logins with email/password stored in the database</p>
-                <p style={{ margin: 0 }}><b style={{ color: '#e2e8f0' }}>Phase 3 (Later):</b> Role-based permissions — Linde sees Products only, Will sees Inventory only</p>
-              </div>
-            </div>
-          </div>
+          <UsersPage />
         )}
 
-        {/* ═══ GRADES PAGE ═══ */}
+                {/* ═══ GRADES PAGE ═══ */}
         {page === 'grades' && (
           <div className="aw-admin-page">
             {gradesLoading || pricingLoading ? (
