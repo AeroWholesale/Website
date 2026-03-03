@@ -3,16 +3,19 @@ import { Pool } from '@neondatabase/serverless'
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   const { token } = req.query
+  if (!token) return res.status(400).json({ error: 'Missing token' })
   const pool = new Pool({ connectionString: process.env.DATABASE_URL })
   try {
-    const { rows: allTokens } = await pool.query('SELECT id, token, length(token) as len, application_id FROM upload_requests')
-    const { rows: match } = await pool.query('SELECT ur.*, a.company_name, a.first_name, a.last_name FROM upload_requests ur JOIN applications a ON a.id = ur.application_id WHERE ur.token = $1', [token])
+    const { rows } = await pool.query('SELECT ur.id, ur.documents, ur.status, ur.application_id, a.company_name, a.first_name, a.last_name FROM upload_requests ur JOIN applications a ON a.id = ur.application_id WHERE ur.token = $1', [token])
+    if (!rows.length) return res.status(404).json({ error: 'Not found' })
+    const row = rows[0]
+    const { rows: uploaded } = await pool.query('SELECT doc_type, file_name FROM uploads WHERE upload_request_id = $1', [row.id])
     res.status(200).json({
-      received_token: token,
-      received_length: String(token).length,
-      all_tokens_in_db: allTokens,
-      match_found: match.length > 0,
-      match: match[0] || null
+      companyName: row.company_name,
+      firstName: row.first_name,
+      documents: row.documents.split(','),
+      status: row.status,
+      uploaded: uploaded.map((u: any) => ({ docType: u.doc_type, fileName: u.file_name }))
     })
   } catch (err) {
     res.status(500).json({ error: String(err) })
