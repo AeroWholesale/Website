@@ -14,8 +14,9 @@ const css =
   '.aw-login-btn:hover{background:#0f1b35;}' +
   '.aw-login-btn:disabled{opacity:0.5;cursor:not-allowed;}' +
   '.aw-login-error{background:#fef2f2;border:1px solid #fecaca;border-radius:8px;padding:12px 14px;font-size:13px;color:#dc2626;margin-bottom:16px;}' +
-  '.aw-login-footer{text-align:center;margin-top:24px;font-size:13px;color:#94a3b8;line-height:1.8;}' +
-  '.aw-login-footer a{color:#ea580c;text-decoration:none;font-weight:600;}'
+  '.aw-login-footer{text-align:center;margin-top:24px;font-size:13px;color:#94a3b8;line-height:2;}' +
+  '.aw-login-footer a{color:#ea580c;text-decoration:none;font-weight:600;}' +
+  '.aw-login-forgot{display:block;text-align:center;margin-top:12px;font-size:13px;color:#64748b;text-decoration:none;}'
 
 export default function Login() {
   const [email, setEmail] = useState('')
@@ -90,6 +91,7 @@ export default function Login() {
           >
             {loading ? 'Signing in...' : 'Sign In'}
           </button>
+          <a href="/forgot-password" className="aw-login-forgot">Forgot your password?</a>
           <div className="aw-login-footer">
             Need access? <a href="/apply">Apply for a wholesale account</a><br />
             Questions? <a href="mailto:sales@aerowholesale.com">sales@aerowholesale.com</a>
