@@ -12,18 +12,26 @@ const css =
   '.aw-portal-main{max-width:900px;margin:0 auto;padding:40px 20px;}' +
   '.aw-portal-welcome-title{font-size:24px;font-weight:800;color:#132347;margin-bottom:4px;}' +
   '.aw-portal-welcome-sub{font-size:14px;color:#64748b;margin-bottom:32px;}' +
-  '.aw-portal-cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:16px;margin-bottom:32px;}' +
+  '.aw-portal-cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:16px;margin-bottom:24px;}' +
   '.aw-portal-card{background:#fff;border:1px solid #e2e8f0;border-radius:12px;padding:24px;cursor:pointer;transition:border-color 0.15s,box-shadow 0.15s;}' +
   '.aw-portal-card:hover{border-color:#132347;box-shadow:0 4px 16px rgba(19,35,71,0.08);}' +
   '.aw-portal-card-icon{font-size:28px;margin-bottom:12px;}' +
   '.aw-portal-card-title{font-size:15px;font-weight:800;color:#132347;margin-bottom:4px;}' +
   '.aw-portal-card-sub{font-size:13px;color:#64748b;line-height:1.5;}' +
-  '.aw-portal-account{background:#fff;border:1px solid #e2e8f0;border-radius:12px;padding:24px;}' +
-  '.aw-portal-account-title{font-size:15px;font-weight:800;color:#132347;margin-bottom:16px;padding-bottom:12px;border-bottom:1px solid #f1f4f8;}' +
+  '.aw-portal-section{background:#fff;border:1px solid #e2e8f0;border-radius:12px;padding:24px;margin-bottom:20px;}' +
+  '.aw-portal-section-title{font-size:15px;font-weight:800;color:#132347;margin-bottom:16px;padding-bottom:12px;border-bottom:1px solid #f1f4f8;}' +
   '.aw-portal-account-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;}' +
   '.aw-portal-field label{font-size:11px;font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:0.06em;display:block;margin-bottom:3px;}' +
   '.aw-portal-field span{font-size:14px;color:#132347;font-weight:600;}' +
   '.aw-portal-badge{display:inline-block;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:700;text-transform:capitalize;background:#dbeafe;color:#1e40af;}' +
+  '.aw-portal-pw-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;align-items:end;}' +
+  '.aw-portal-pw-label{font-size:12px;font-weight:700;color:#475569;text-transform:uppercase;letter-spacing:0.06em;display:block;margin-bottom:6px;}' +
+  '.aw-portal-pw-input{width:100%;box-sizing:border-box;padding:10px 12px;border:1.5px solid #e2e8f0;border-radius:8px;font-size:14px;font-family:DM Sans,sans-serif;color:#132347;outline:none;}' +
+  '.aw-portal-pw-input:focus{border-color:#132347;}' +
+  '.aw-portal-pw-btn{padding:10px 20px;background:#132347;color:#fff;font-weight:700;font-size:13px;border:none;border-radius:8px;cursor:pointer;font-family:DM Sans,sans-serif;}' +
+  '.aw-portal-pw-btn:disabled{opacity:0.5;cursor:not-allowed;}' +
+  '.aw-portal-pw-error{font-size:13px;color:#dc2626;margin-top:8px;}' +
+  '.aw-portal-pw-success{font-size:13px;color:#16a34a;margin-top:8px;font-weight:600;}' +
   '.aw-portal-loading{text-align:center;padding:80px 20px;font-size:14px;color:#64748b;}'
 
 type User = { id: number; email: string; firstName: string; lastName: string; companyName: string; accountType: string }
@@ -31,6 +39,12 @@ type User = { id: number; email: string; firstName: string; lastName: string; co
 export default function Portal() {
   const [user, setUser] = useState<User | null>(null)
   const [loading, setLoading] = useState(true)
+  const [currentPw, setCurrentPw] = useState('')
+  const [newPw, setNewPw] = useState('')
+  const [confirmPw, setConfirmPw] = useState('')
+  const [pwLoading, setPwLoading] = useState(false)
+  const [pwError, setPwError] = useState('')
+  const [pwSuccess, setPwSuccess] = useState('')
 
   useEffect(() => {
     const token = localStorage.getItem('aw-token')
@@ -49,6 +63,37 @@ export default function Portal() {
     localStorage.removeItem('aw-token')
     localStorage.removeItem('aw-user')
     window.location.href = '/login'
+  }
+
+  const handleChangePassword = async () => {
+    setPwError('')
+    setPwSuccess('')
+    if (!currentPw || !newPw || !confirmPw) { setPwError('All fields are required'); return }
+    if (newPw !== confirmPw) { setPwError('New passwords do not match'); return }
+    if (newPw.length < 8) { setPwError('New password must be at least 8 characters'); return }
+    if (newPw === currentPw) { setPwError('New password must be different from current password'); return }
+    setPwLoading(true)
+    try {
+      const token = localStorage.getItem('aw-token') || ''
+      const res = await fetch('/api/dealer-change-password', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + token },
+        body: JSON.stringify({ currentPassword: currentPw, newPassword: newPw }),
+      })
+      const data = await res.json()
+      if (data.success) {
+        setPwSuccess('Password updated successfully.')
+        setCurrentPw('')
+        setNewPw('')
+        setConfirmPw('')
+      } else {
+        setPwError(data.error || 'Failed to update password.')
+      }
+    } catch {
+      setPwError('Connection error. Please try again.')
+    } finally {
+      setPwLoading(false)
+    }
   }
 
   if (loading) return <><style>{css}</style><div className="aw-portal"><div className="aw-portal-loading">Loading...</div></div></>
@@ -86,14 +131,38 @@ export default function Portal() {
               <div className="aw-portal-card-sub">Review our device condition and grading criteria.</div>
             </div>
           </div>
-          <div className="aw-portal-account">
-            <div className="aw-portal-account-title">Account Details</div>
+          <div className="aw-portal-section">
+            <div className="aw-portal-section-title">Account Details</div>
             <div className="aw-portal-account-grid">
               <div className="aw-portal-field"><label>Company</label><span>{user.companyName}</span></div>
               <div className="aw-portal-field"><label>Account Type</label><span><span className="aw-portal-badge">{user.accountType}</span></span></div>
               <div className="aw-portal-field"><label>Name</label><span>{user.firstName} {user.lastName}</span></div>
               <div className="aw-portal-field"><label>Email</label><span>{user.email}</span></div>
             </div>
+          </div>
+          <div className="aw-portal-section">
+            <div className="aw-portal-section-title">Change Password</div>
+            <div className="aw-portal-pw-grid">
+              <div>
+                <label className="aw-portal-pw-label">Current Password</label>
+                <input className="aw-portal-pw-input" type="password" placeholder="Current password" value={currentPw} onChange={e => setCurrentPw(e.target.value)} />
+              </div>
+              <div>
+                <label className="aw-portal-pw-label">New Password</label>
+                <input className="aw-portal-pw-input" type="password" placeholder="Min 8 characters" value={newPw} onChange={e => setNewPw(e.target.value)} />
+              </div>
+              <div>
+                <label className="aw-portal-pw-label">Confirm New Password</label>
+                <input className="aw-portal-pw-input" type="password" placeholder="Repeat new password" value={confirmPw} onChange={e => setConfirmPw(e.target.value)} />
+              </div>
+            </div>
+            <div style={{marginTop: 12}}>
+              <button className="aw-portal-pw-btn" onClick={handleChangePassword} disabled={pwLoading}>
+                {pwLoading ? 'Updating...' : 'Update Password'}
+              </button>
+            </div>
+            {pwError && <div className="aw-portal-pw-error">{pwError}</div>}
+            {pwSuccess && <div className="aw-portal-pw-success">{pwSuccess}</div>}
           </div>
         </div>
       </div>
