@@ -29,4 +29,3 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     await pool.end()
   }
 }
-'@ | Set-Content api/dealer-change-password.ts
