@@ -9,6 +9,7 @@ import Apply from '@/pages/Apply'
 import Login from '@/pages/Login'
 import Admin from '@/pages/Admin'
 import Upload from '@/pages/Upload'
+import TermsAccept from '@/pages/TermsAccept'
 import Enterprise from '@/pages/buyers/Enterprise'
 import Wholesale from '@/pages/buyers/Wholesale'
 import Resellers from '@/pages/buyers/Resellers'
@@ -17,6 +18,7 @@ export default function App() {
     <Switch>
       <Route path="/admin" component={Admin} />
       <Route path="/upload/:token" component={Upload} />
+      <Route path="/terms-accept" component={TermsAccept} />
       <Route>
         <Layout>
           <Switch>
