@@ -168,6 +168,15 @@ export default function Catalog() {
   const [page, setPage] = useState(1)
 
   const [openGroups, setOpenGroups] = useState({ category: true, brand: true, grade: true, storage: false, carrier: false })
+  const [dealerToken, setDealerToken] = useState<string | null>(null)
+  const [dealerUser, setDealerUser] = useState<any>(null)
+
+  useEffect(() => {
+    const token = localStorage.getItem('aw-token')
+    const user = localStorage.getItem('aw-user')
+    if (token) setDealerToken(token)
+    if (user) { try { setDealerUser(JSON.parse(user)) } catch {} }
+  }, [])
   const toggleGroup = (key: keyof typeof openGroups) => setOpenGroups(g => ({ ...g, [key]: !g[key] }))
 
   const fetchData = useCallback(async () => {
@@ -183,7 +192,10 @@ export default function Catalog() {
       params.set('sort', sort)
       params.set('page', String(page))
       params.set('size', '24')
-      const res = await fetch(`/api/catalog-public?${params}`)
+      const token = localStorage.getItem('aw-token')
+      const headers: Record<string, string> = {}
+      if (token) headers['Authorization'] = `Bearer ${token}`
+      const res = await fetch(`/api/catalog-public?${params}`, { headers })
       if (!res.ok) throw new Error(`API error: ${res.status}`)
       setData(await res.json())
       setError('')
@@ -377,10 +389,17 @@ export default function Catalog() {
                           ))}
                         </div>
                         <div className="aw-card-footer">
-                          <div style={{ display: 'flex', alignItems: 'center', gap: 6, color: '#64748b', fontSize: 12, fontWeight: 600 }}>
-                            <svg fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24" style={{ width: 14, height: 14 }}><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>
-                            Login for pricing
-                          </div>
+                          {p.lowestPrice ? (
+                            <div style={{ fontSize: 13, fontWeight: 700, color: '#132347' }}>
+                              From <span style={{ fontSize: 18, fontWeight: 800 }}>${p.lowestPrice.toFixed(2)}</span>
+                              {p.highestPrice && p.highestPrice !== p.lowestPrice && <span style={{ fontSize: 12, color: '#64748b', fontWeight: 500 }}> – ${p.highestPrice.toFixed(2)}</span>}
+                            </div>
+                          ) : (
+                            <div style={{ display: 'flex', alignItems: 'center', gap: 6, color: '#64748b', fontSize: 12, fontWeight: 600 }}>
+                              <svg fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24" style={{ width: 14, height: 14 }}><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>
+                              Login for pricing
+                            </div>
+                          )}
                           <div style={{ textAlign: 'right' }}>
                             <div className="aw-stock-label"><b>{p.totalStock}</b> units · {p.skuCount} SKUs</div>
                             <button className="aw-view-btn" style={{ marginTop: 6 }}>View</button>
@@ -405,18 +424,32 @@ export default function Catalog() {
           </div>
         </div>
 
-        <div className="aw-login-banner">
-          <div className="aw-login-banner-inner">
-            <div>
-              <div className="aw-banner-title">Ready to buy? Apply for wholesale access</div>
-              <div className="aw-banner-sub">Get access to bulk pricing and place orders directly</div>
-            </div>
-            <div className="aw-banner-btns">
-              <button className="aw-banner-btn-primary" onClick={() => navigate('/apply')}>Apply for Access</button>
-              <button className="aw-banner-btn-ghost" onClick={() => navigate('/login')}>Login</button>
+        {dealerToken ? (
+          <div className="aw-login-banner">
+            <div className="aw-login-banner-inner">
+              <div>
+                <div className="aw-banner-title">Logged in as {dealerUser?.companyName || 'Dealer'}</div>
+                <div className="aw-banner-sub">You are viewing wholesale prices. <a href="/portal" style={{ color: '#ea580c', textDecoration: 'none', fontWeight: 700 }}>Go to portal →</a></div>
+              </div>
+              <div className="aw-banner-btns">
+                <button className="aw-banner-btn-ghost" onClick={() => { localStorage.removeItem('aw-token'); localStorage.removeItem('aw-user'); window.location.reload() }}>Sign Out</button>
+              </div>
             </div>
           </div>
-        </div>
+        ) : (
+          <div className="aw-login-banner">
+            <div className="aw-login-banner-inner">
+              <div>
+                <div className="aw-banner-title">Ready to buy? Apply for wholesale access</div>
+                <div className="aw-banner-sub">Get access to bulk pricing and place orders directly</div>
+              </div>
+              <div className="aw-banner-btns">
+                <button className="aw-banner-btn-primary" onClick={() => navigate('/apply')}>Apply for Access</button>
+                <button className="aw-banner-btn-ghost" onClick={() => navigate('/login')}>Login</button>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </>
   )

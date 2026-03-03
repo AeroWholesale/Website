@@ -42,6 +42,18 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   const pool = new Pool({ connectionString: process.env.DATABASE_URL })
 
   try {
+    // Check for dealer session token — if valid, include pricing
+    const authHeader = req.headers.authorization || ''
+    const token = authHeader.replace('Bearer ', '').trim()
+    let showPrices = false
+    if (token) {
+      const sessionCheck = await pool.query(
+        'SELECT s.id FROM sessions s JOIN users u ON u.id = s.user_id WHERE s.token = $1 AND s.expires_at > NOW() AND u.active = true',
+        [token]
+      )
+      showPrices = sessionCheck.rows.length > 0
+    }
+
     const {
       category, brand, grade, storage, carrier, search,
       sort = 'name', page = '1', size = '24'
@@ -224,7 +236,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     const total = products.length
     const paginated = products.slice((pageNum - 1) * pageSize, pageNum * pageSize)
 
-    // Strip prices and cost from public response
+    // Include prices for authenticated dealers, strip for public
     const sanitized = paginated.map(p => ({
       modelCode: p.modelCode,
       name: p.name,
@@ -237,6 +249,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       carriers: p.carriers,
       colors: p.colors,
       image: p.image,
+      lowestPrice: showPrices ? (p.lowestPrice === Infinity ? null : p.lowestPrice) : null,
+      highestPrice: showPrices ? (p.highestPrice || null) : null,
       skus: p.skus.map((s: any) => ({
         sku: s.sku,
         grade: s.grade,
