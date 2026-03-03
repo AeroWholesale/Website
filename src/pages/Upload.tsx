@@ -36,75 +36,157 @@ const css = ".aw-upload{font-family:DM Sans,sans-serif;background:#f8fafc;min-he
 ".aw-upload-footer-text{font-size:12px;color:#94a3b8}"
 
 const DOC_LABELS: Record<string,string> = {
-  w9:'W-9 Form',st3:'ST-3 Sales Tax Exemption Certificate',ein:'EIN Verification Letter',
-  formation:'Business Formation Documents',id:'Government-Issued Photo ID',
-  resale:'Resale Certificate',insurance:'Certificate of Insurance',
+  w9:'W-9 Form',
+  st3:'ST-3 Sales Tax Exemption Certificate',
+  ein:'EIN Verification Letter',
+  formation:'Business Formation Documents',
+  id:'Government-Issued Photo ID',
+  resale:'Resale Certificate',
+  insurance:'Certificate of Insurance',
 }
 
-type UploadInfo = {companyName:string;firstName:string;documents:string[];status:string;uploaded:{docType:string;fileName:string}[]}
+type UploadInfo = {
+  companyName: string
+  firstName: string
+  documents: string[]
+  status: string
+  uploaded: {docType: string; fileName: string}[]
+}
 
 export default function Upload() {
-  const params = useParams<{token:string}>()
-  const token = params?.token || ''
-  const [info,setInfo] = useState<UploadInfo|null>(null)
-  const [loading,setLoading] = useState(true)
-  const [error,setError] = useState('')
-  const [uploading,setUploading] = useState<string|null>(null)
-  const [uploaded,setUploaded] = useState<Record<string,string>>({})
-  const [allDone,setAllDone] = useState(false)
+  const params = useParams<{token: string}>()
+  const token = (params as any)?.token || ''
+  const [info, setInfo] = useState<UploadInfo | null>(null)
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState('')
+  const [uploading, setUploading] = useState<string | null>(null)
+  const [uploaded, setUploaded] = useState<Record<string, string>>({})
+  const [allDone, setAllDone] = useState(false)
 
   useEffect(() => {
-    if (!token) return
-    fetch('/api/upload-info?token='+token)
-      .then(r => {if(!r.ok) throw new Error('nf');return r.json()})
+    if (!token) {
+      setError('No upload token provided.')
+      setLoading(false)
+      return
+    }
+    fetch('/api/upload-info?token=' + token)
+      .then(r => r.json())
       .then(data => {
+        if (data.error) {
+          setError(data.error)
+          return
+        }
         setInfo(data)
-        const ex: Record<string,string> = {}
-        data.uploaded?.forEach((u:any) => {ex[u.docType]=u.fileName})
+        const ex: Record<string, string> = {}
+        data.uploaded?.forEach((u: any) => { ex[u.docType] = u.fileName })
         setUploaded(ex)
-        if(data.status==='completed') setAllDone(true)
+        if (data.status === 'completed') setAllDone(true)
       })
-      .catch(() => setError('This upload link is invalid or has expired.'))
+      .catch(err => {
+        setError('Failed to load upload info. Please try again or contact support.')
+      })
       .finally(() => setLoading(false))
   }, [token])
 
-  const handleUpload = async (docType:string, file:File) => {
+  const handleUpload = async (docType: string, file: File) => {
     setUploading(docType)
     try {
-      const res = await fetch('/api/upload-file?token='+token+'&docType='+docType+'&fileName='+encodeURIComponent(file.name),{method:'POST',body:file})
-      if(res.ok){const data=await res.json();setUploaded(p=>({...p,[docType]:file.name}));if(data.allComplete) setAllDone(true)}
-    } catch{} finally{setUploading(null)}
+      const res = await fetch(
+        '/api/upload-file?token=' + token + '&docType=' + docType + '&fileName=' + encodeURIComponent(file.name),
+        { method: 'POST', body: file }
+      )
+      if (res.ok) {
+        const data = await res.json()
+        setUploaded(p => ({ ...p, [docType]: file.name }))
+        if (data.allComplete) setAllDone(true)
+      } else {
+        alert('Upload failed. Please try again.')
+      }
+    } catch {
+      alert('Upload failed. Please check your connection.')
+    } finally {
+      setUploading(null)
+    }
   }
 
   return (
-    <><link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600;9..40,700;9..40,800;9..40,900&display=swap" rel="stylesheet" /><style>{css}</style>
+    <>
+      <link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600;9..40,700;9..40,800;9..40,900&display=swap" rel="stylesheet" />
+      <style>{css}</style>
       <div className="aw-upload">
-        <div className="aw-upload-header"><div className="aw-upload-logo">AeroWholesale</div><div className="aw-upload-header-sub">Secure Document Upload</div></div>
+        <div className="aw-upload-header">
+          <div className="aw-upload-logo">AeroWholesale</div>
+          <div className="aw-upload-header-sub">Secure Document Upload</div>
+        </div>
         <div className="aw-upload-main">
-          {loading ? <div className="aw-upload-loading">Loading...</div>
-          : error ? <div className="aw-upload-error"><div className="aw-upload-error-title">Link Not Found</div><div className="aw-upload-error-sub">{error}</div></div>
-          : allDone ? <div className="aw-upload-card"><div className="aw-upload-done"><div className="aw-upload-done-icon">✅</div><div className="aw-upload-done-title">All Documents Received!</div><div className="aw-upload-done-sub">Thank you, {info?.firstName}. We have received all documents for {info?.companyName}. Our team will review and you will hear from us within 1 business day.</div></div></div>
-          : <div className="aw-upload-card">
-              <div className="aw-upload-card-header"><div className="aw-upload-title">Upload Your Documents</div><div className="aw-upload-sub">Hi {info?.firstName} — please upload the following for {info?.companyName}.</div></div>
+          {loading ? (
+            <div className="aw-upload-loading">Loading your documents...</div>
+          ) : error ? (
+            <div className="aw-upload-card">
+              <div className="aw-upload-error">
+                <div className="aw-upload-error-title">Link Not Found</div>
+                <div className="aw-upload-error-sub">{error}</div>
+              </div>
+            </div>
+          ) : allDone ? (
+            <div className="aw-upload-card">
+              <div className="aw-upload-done">
+                <div className="aw-upload-done-icon">✅</div>
+                <div className="aw-upload-done-title">All Documents Received!</div>
+                <div className="aw-upload-done-sub">
+                  Thank you, {info?.firstName}. We have received all documents for {info?.companyName}. Our team will review and you will hear from us within 1 business day.
+                </div>
+              </div>
+            </div>
+          ) : (
+            <div className="aw-upload-card">
+              <div className="aw-upload-card-header">
+                <div className="aw-upload-title">Upload Your Documents</div>
+                <div className="aw-upload-sub">Hi {info?.firstName} — please upload the following for {info?.companyName}.</div>
+              </div>
               <div className="aw-upload-list">
                 {info?.documents.map(docType => {
-                  const isDone = !!uploaded[docType]; const isUp = uploading === docType
-                  return (<div key={docType} className="aw-upload-item">
-                    <div className={'aw-upload-item-icon '+(isDone?'done':'pending')}>{isDone?'✅':'📄'}</div>
-                    <div className="aw-upload-item-info">
-                      <div className="aw-upload-item-name">{DOC_LABELS[docType]||docType}</div>
-                      {isDone?<div className="aw-upload-item-status done">Uploaded: {uploaded[docType]}</div>
-                      :isUp?<div className="aw-upload-item-status">Uploading...</div>
-                      :<div className="aw-upload-item-status">PDF, JPG, or PNG</div>}
+                  const isDone = !!uploaded[docType]
+                  const isUp = uploading === docType
+                  return (
+                    <div key={docType} className="aw-upload-item">
+                      <div className={'aw-upload-item-icon ' + (isDone ? 'done' : 'pending')}>
+                        {isDone ? '✅' : '📄'}
+                      </div>
+                      <div className="aw-upload-item-info">
+                        <div className="aw-upload-item-name">{DOC_LABELS[docType] || docType}</div>
+                        {isDone
+                          ? <div className="aw-upload-item-status done">Uploaded: {uploaded[docType]}</div>
+                          : isUp
+                            ? <div className="aw-upload-item-status">Uploading...</div>
+                            : <div className="aw-upload-item-status">PDF, JPG, or PNG</div>
+                        }
+                      </div>
+                      {!isDone && (
+                        <div className="aw-upload-item-btn">
+                          <button disabled={isUp}>{isUp ? '...' : 'Upload'}</button>
+                          {!isUp && (
+                            <input
+                              type="file"
+                              accept=".pdf,.jpg,.jpeg,.png"
+                              onChange={e => {
+                                const f = e.target.files?.[0]
+                                if (f) handleUpload(docType, f)
+                                e.target.value = ''
+                              }}
+                            />
+                          )}
+                        </div>
+                      )}
                     </div>
-                    {!isDone && <div className="aw-upload-item-btn"><button disabled={isUp}>{isUp?'...':'Upload'}</button>
-                      {!isUp && <input type="file" accept=".pdf,.jpg,.jpeg,.png" onChange={e=>{const f=e.target.files?.[0];if(f) handleUpload(docType,f);e.target.value=''}} />}
-                    </div>}
-                  </div>)
+                  )
                 })}
               </div>
-            </div>}
-          <div className="aw-upload-footer"><div className="aw-upload-footer-text">Your documents are transmitted securely and stored safely.</div></div>
+            </div>
+          )}
+          <div className="aw-upload-footer">
+            <div className="aw-upload-footer-text">Your documents are transmitted securely and stored safely.</div>
+          </div>
         </div>
       </div>
     </>
