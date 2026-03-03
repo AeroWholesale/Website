@@ -24,18 +24,9 @@ export default function Navbar() {
   const [scrolled, setScrolled] = useState(false)
   const [mobileOpen, setMobileOpen] = useState(false)
   const [buyersOpen, setBuyersOpen] = useState(false)
-  const [dealerUser, setDealerUser] = useState<any>(null)
-
-  useEffect(() => {
-    const user = localStorage.getItem('aw-user')
-    if (user) { try { setDealerUser(JSON.parse(user)) } catch {} }
-    const onStorage = () => {
-      const u = localStorage.getItem('aw-user')
-      setDealerUser(u ? JSON.parse(u) : null)
-    }
-    window.addEventListener('storage', onStorage)
-    return () => window.removeEventListener('storage', onStorage)
-  }, [])
+  const [dealerUser, setDealerUser] = useState<any>(() => {
+    try { const u = localStorage.getItem('aw-user'); return u ? JSON.parse(u) : null } catch { return null }
+  })
 
   const handleSignOut = () => {
     localStorage.removeItem('aw-token')
@@ -262,7 +253,7 @@ export default function Navbar() {
               style={{ fontFamily: "'DM Sans', sans-serif" }}
             >
               Apply for Access
-            </Link>
+            </Link>}
           </div>
         </div>
       </div>
