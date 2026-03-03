@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useRef } from 'react'
 import { useLocation } from 'wouter'
 
 const css = `
@@ -10,6 +10,7 @@ const css = `
     --steel: #334155; --steel-dim: #64748b;
     --slate-bg: #f1f4f8; --white: #ffffff; --off-white: #f8fafc;
     --border: #e2e8f0; --text-dark: #0f172a;
+    --green: #16a34a; --green-bg: #f0fdf4;
   }
 
   .aw-apply-page { font-family: 'DM Sans', sans-serif; background: var(--off-white); color: var(--text-dark); -webkit-font-smoothing: antialiased; }
@@ -48,7 +49,7 @@ const css = `
   .aw-apply-input:focus { border-color: var(--navy-mid); background: #fff; }
   .aw-apply-select { padding: 10px 32px 10px 14px; border: 1.5px solid var(--border); border-radius: 8px; font-size: 13px; font-family: 'DM Sans', sans-serif; color: var(--navy); background: var(--off-white); appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%2394a3b8' stroke-width='2'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 10px center; outline: none; cursor: pointer; }
   .aw-apply-select:focus { border-color: var(--navy-mid); background: #fff; }
-  .aw-apply-textarea { padding: 10px 14px; border: 1.5px solid var(--border); border-radius: 8px; font-size: 13px; font-family: 'DM Sans', sans-serif; color: var(--navy); background: var(--off-white); outline: none; resize: none; width: 100%; }
+  .aw-apply-textarea { padding: 10px 14px; border: 1.5px solid var(--border); border-radius: 8px; font-size: 13px; font-family: 'DM Sans', sans-serif; color: var(--navy); background: var(--off-white); outline: none; resize: none; width: 100%; box-sizing: border-box; }
   .aw-apply-textarea:focus { border-color: var(--navy-mid); background: #fff; }
   .aw-apply-hint { font-size: 11px; color: var(--steel-dim); margin-top: 2px; }
 
@@ -67,6 +68,19 @@ const css = `
   .aw-apply-pill:hover { border-color: var(--navy); color: var(--navy); }
   .aw-apply-pill.selected { border-color: var(--navy); background: #eff3fa; color: var(--navy); font-weight: 700; }
 
+  /* ── DOCUMENT UPLOAD ── */
+  .aw-upload-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .aw-upload-zone { border: 2px dashed var(--border); border-radius: 10px; padding: 20px 16px; text-align: center; cursor: pointer; transition: all 0.15s; background: var(--off-white); position: relative; }
+  .aw-upload-zone:hover { border-color: var(--navy); background: #f0f4fb; }
+  .aw-upload-zone.has-file { border-color: var(--green); border-style: solid; background: var(--green-bg); }
+  .aw-upload-zone input[type="file"] { position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%; height: 100%; }
+  .aw-upload-icon { font-size: 24px; margin-bottom: 8px; }
+  .aw-upload-label { font-size: 12px; font-weight: 700; color: var(--navy); margin-bottom: 3px; }
+  .aw-upload-sub { font-size: 11px; color: var(--steel-dim); }
+  .aw-upload-filename { font-size: 11px; color: var(--green); font-weight: 600; margin-top: 4px; word-break: break-all; }
+  .aw-upload-badge { display: inline-block; background: var(--slate-bg); border: 1px solid var(--border); border-radius: 4px; padding: 1px 6px; font-size: 10px; font-weight: 700; color: var(--steel-dim); margin-left: 6px; }
+  .aw-upload-note { font-size: 11px; color: var(--steel-dim); margin-top: 12px; display: flex; align-items: center; gap: 6px; }
+
   /* Submit */
   .aw-apply-submit-section { padding: 24px 32px; background: var(--slate-bg); border-top: 1px solid var(--border); }
   .aw-apply-terms { display: flex; align-items: flex-start; gap: 10px; font-size: 13px; color: var(--steel); margin-bottom: 18px; }
@@ -81,6 +95,9 @@ const css = `
   /* Trust */
   .aw-apply-trust { display: flex; justify-content: center; gap: 28px; margin-top: 32px; }
   .aw-apply-trust-item { display: flex; align-items: center; gap: 8px; font-size: 12px; color: var(--steel-dim); }
+
+  /* Error */
+  .aw-apply-error { background: #fef2f2; border: 1px solid #fecaca; border-radius: 8px; padding: 12px 16px; font-size: 13px; color: #dc2626; margin-bottom: 16px; }
 
   /* Success overlay */
   .aw-apply-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 200; display: flex; align-items: center; justify-content: center; }
@@ -99,6 +116,7 @@ const css = `
     .aw-apply-title { font-size: 24px; }
     .aw-apply-row, .aw-apply-row.triple { grid-template-columns: 1fr; }
     .aw-apply-type-grid { grid-template-columns: 1fr; }
+    .aw-apply-upload-grid { grid-template-columns: 1fr; }
     .aw-apply-steps { flex-wrap: wrap; gap: 8px; }
     .aw-apply-section, .aw-apply-submit-section { padding: 20px; }
   }
@@ -125,6 +143,14 @@ const IconUser = () => <svg width="18" height="18" fill="none" stroke="currentCo
 const IconBriefcase = () => <svg width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 00-2-2h-4a2 2 0 00-2 2v2"/></svg>
 const IconCheck = () => <svg width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M8 12l3 3 5-5"/></svg>
 const IconBox = () => <svg width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24"><path d="M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 002 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0022 16z"/></svg>
+const IconDoc = () => <svg width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+
+const UPLOAD_SLOTS = [
+  { id: 'resaleCert', icon: '📄', label: 'Resale Certificate', sub: 'State-issued resale or tax exempt cert', required: false },
+  { id: 'businessLicense', icon: '🏛️', label: 'Business License', sub: 'City/state business operating license', required: false },
+  { id: 'taxExempt', icon: '📋', label: 'Tax Exempt Form', sub: 'ST-3, ST-5, or state equivalent', required: false },
+  { id: 'other', icon: '📎', label: 'Other Document', sub: 'Any other supporting documentation', required: false },
+]
 
 export default function Apply() {
   const [, navigate] = useLocation()
@@ -134,28 +160,62 @@ export default function Apply() {
     accountType: '', monthlyVolume: '', salesChannel: '', heardAbout: '', notes: ''
   })
   const [categories, setCategories] = useState<string[]>([])
+  const [files, setFiles] = useState<Record<string, File | null>>({
+    resaleCert: null, businessLicense: null, taxExempt: null, other: null
+  })
   const [agreed, setAgreed] = useState(false)
   const [submitting, setSubmitting] = useState(false)
   const [submitted, setSubmitted] = useState(false)
+  const [error, setError] = useState('')
 
   const set = (key: string, val: string) => setForm(f => ({ ...f, [key]: val }))
+  const toggleCat = (id: string) => setCategories(c => c.includes(id) ? c.filter(x => x !== id) : [...c, id])
 
-  const toggleCat = (id: string) => {
-    setCategories(c => c.includes(id) ? c.filter(x => x !== id) : [...c, id])
+  const handleFileChange = (slotId: string, e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0] ?? null
+    if (file && file.size > 10 * 1024 * 1024) {
+      setError('File too large. Maximum size is 10MB per document.')
+      return
+    }
+    setError('')
+    setFiles(f => ({ ...f, [slotId]: file }))
   }
 
   const handleSubmit = async () => {
-    if (!form.firstName || !form.lastName || !form.email || !form.phone || !form.companyName || !form.ein || !form.state || !form.accountType || !form.monthlyVolume) return
+    setError('')
+    if (!form.firstName || !form.lastName || !form.email || !form.phone || !form.companyName || !form.ein || !form.state || !form.accountType || !form.monthlyVolume) {
+      setError('Please fill in all required fields before submitting.')
+      return
+    }
     setSubmitting(true)
     try {
+      // Use FormData so we can send both text fields and files in one request
+      const fd = new FormData()
+
+      // Append all text fields
+      Object.entries({ ...form, productCategories: categories.join(', ') }).forEach(([k, v]) => {
+        fd.append(k, v as string)
+      })
+
+      // Append files (only the ones that were actually selected)
+      Object.entries(files).forEach(([key, file]) => {
+        if (file) fd.append(key, file, file.name)
+      })
+
       const res = await fetch('/api/apply', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ ...form, productCategories: categories }),
+        // Do NOT set Content-Type header — browser sets it automatically with the correct boundary for multipart
+        body: fd,
       })
-      if (res.ok) setSubmitted(true)
+
+      if (res.ok) {
+        setSubmitted(true)
+      } else {
+        const data = await res.json().catch(() => ({}))
+        setError(data.error || 'Something went wrong. Please try again.')
+      }
     } catch {
-      setSubmitted(true)
+      setError('Network error. Please check your connection and try again.')
     } finally {
       setSubmitting(false)
     }
@@ -298,8 +358,47 @@ export default function Apply() {
               </div>
             </div>
 
+            {/* ── DOCUMENT UPLOAD ── */}
+            <div className="aw-apply-section">
+              <div className="aw-apply-sec-header">
+                <div className="aw-apply-sec-icon"><IconDoc /></div>
+                <div>
+                  <div className="aw-apply-sec-title">Supporting Documents <span className="aw-upload-badge">Optional</span></div>
+                  <div className="aw-apply-sec-sub">Upload your resale certificate, business license, or tax exempt form to speed up approval</div>
+                </div>
+              </div>
+
+              <div className="aw-upload-grid">
+                {UPLOAD_SLOTS.map(slot => {
+                  const file = files[slot.id]
+                  return (
+                    <div key={slot.id} className={`aw-upload-zone${file ? ' has-file' : ''}`}>
+                      <input
+                        type="file"
+                        accept=".pdf,.jpg,.jpeg,.png,.doc,.docx"
+                        onChange={e => handleFileChange(slot.id, e)}
+                      />
+                      <div className="aw-upload-icon">{file ? '✅' : slot.icon}</div>
+                      <div className="aw-upload-label">{slot.label}</div>
+                      {file ? (
+                        <div className="aw-upload-filename">{file.name}</div>
+                      ) : (
+                        <div className="aw-upload-sub">{slot.sub}</div>
+                      )}
+                    </div>
+                  )
+                })}
+              </div>
+
+              <div className="aw-upload-note">
+                <span>📎</span>
+                <span>Accepted formats: PDF, JPG, PNG, DOC, DOCX — max 10MB per file. Documents are stored securely and only used for account verification.</span>
+              </div>
+            </div>
+
             {/* Submit */}
             <div className="aw-apply-submit-section">
+              {error && <div className="aw-apply-error">{error}</div>}
               <div className="aw-apply-terms">
                 <input type="checkbox" checked={agreed} onChange={e => setAgreed(e.target.checked)} />
                 <label>I agree to AeroWholesale's <span className="aw-apply-terms-link">Terms of Service</span> and <span className="aw-apply-terms-link">Privacy Policy</span>. I confirm that all information provided is accurate.</label>
