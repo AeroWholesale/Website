@@ -138,6 +138,64 @@ const css = `
 
   /* LOADING */
   .aw-admin-loading { text-align: center; padding: 40px; color: #475569; font-size: 14px; }
+
+  /* ═══════════════════════════════════════════════════
+     LIGHT THEME  —  applied via .aw-light on root
+  ═══════════════════════════════════════════════════ */
+  .aw-light.aw-admin { background: #f1f4f8; color: #0f172a; }
+  .aw-light .aw-admin-sb { background: #ffffff; border-right: 1px solid #e2e8f0; }
+  .aw-light .aw-admin-sb-logo { border-bottom: 1px solid #e2e8f0; }
+  .aw-light .aw-admin-sb-label { color: #94a3b8; }
+  .aw-light .aw-admin-sb-item { color: #64748b; }
+  .aw-light .aw-admin-sb-item:hover { color: #0f172a; background: #f1f4f8; }
+  .aw-light .aw-admin-sb-item.active { color: #0f172a; background: #fef3ee; border-left-color: #ea580c; }
+  .aw-light .aw-admin-sb-footer { border-top: 1px solid #e2e8f0; }
+  .aw-light .aw-admin-sb-name { color: #0f172a; }
+  .aw-light .aw-admin-topbar { background: #ffffff; border-bottom: 1px solid #e2e8f0; }
+  .aw-light .aw-admin-topbar-title { color: #0f172a; }
+  .aw-light .aw-admin-page-title { color: #0f172a; }
+  .aw-light .aw-admin-page-sub { color: #64748b; }
+  .aw-light .aw-admin-stat { background: #ffffff; border: 1px solid #e2e8f0; }
+  .aw-light .aw-admin-stat-label { color: #64748b; }
+  .aw-light .aw-admin-stat-val { color: #0f172a; }
+  .aw-light .aw-admin-table-card { background: #ffffff; border: 1px solid #e2e8f0; }
+  .aw-light .aw-admin-table-header { border-bottom: 1px solid #e2e8f0; }
+  .aw-light .aw-admin-table-title { color: #0f172a; }
+  .aw-light .aw-admin-table th { color: #64748b; border-bottom: 1px solid #e2e8f0; background: #f8fafc; }
+  .aw-light .aw-admin-table td { color: #334155; border-bottom: 1px solid #f1f4f8; }
+  .aw-light .aw-admin-table tr:hover td { background: #f8fafc; }
+  .aw-light .aw-admin-td-bold { color: #0f172a; }
+  .aw-light .aw-admin-td-sub { color: #94a3b8; }
+  .aw-light .aw-admin-tabs { border-bottom: 1px solid #e2e8f0; }
+  .aw-light .aw-admin-tab { color: #64748b; }
+  .aw-light .aw-admin-tab.active { color: #0f172a; border-bottom-color: #ea580c; }
+  .aw-light .aw-admin-empty { color: #64748b; }
+  .aw-light .aw-admin-detail { background: #ffffff; border: 1px solid #e2e8f0; }
+  .aw-light .aw-admin-detail-title { color: #0f172a; }
+  .aw-light .aw-admin-detail-sub { color: #64748b; }
+  .aw-light .aw-admin-detail-label { color: #94a3b8; }
+  .aw-light .aw-admin-detail-value { color: #0f172a; }
+  .aw-light .aw-admin-detail-actions { border-top: 1px solid #e2e8f0; }
+  .aw-light .aw-admin-msg { background: #ffffff; border: 1px solid #e2e8f0; }
+  .aw-light .aw-admin-msg.unread { background: #fffbf5; border-color: #fdba74; }
+  .aw-light .aw-admin-msg-from { color: #0f172a; }
+  .aw-light .aw-admin-msg-subject { color: #1e293b; }
+  .aw-light .aw-admin-msg-preview { color: #64748b; }
+  .aw-light .aw-admin-msg-meta { color: #94a3b8; }
+  .aw-light .aw-admin-msg-date { color: #94a3b8; }
+  .aw-light .aw-admin-loading { color: #64748b; }
+  /* theme toggle pill */
+  .aw-theme-toggle { display: flex; align-items: center; gap: 8px; cursor: pointer; padding: 6px 12px; border-radius: 20px; border: 1.5px solid #1e2d4a; background: transparent; font-family: 'DM Sans', sans-serif; font-size: 12px; font-weight: 700; color: #94a3b8; transition: all 0.15s; user-select: none; }
+  .aw-theme-toggle:hover { border-color: #334155; color: #e2e8f0; }
+  .aw-light .aw-theme-toggle { border-color: #e2e8f0; color: #64748b; }
+  .aw-light .aw-theme-toggle:hover { border-color: #cbd5e1; color: #0f172a; }
+  .aw-toggle-track { width: 32px; height: 18px; border-radius: 9px; background: #1e2d4a; position: relative; transition: background 0.2s; flex-shrink: 0; }
+  .aw-light .aw-toggle-track { background: #e2e8f0; }
+  .aw-toggle-thumb { width: 12px; height: 12px; border-radius: 50%; background: #ea580c; position: absolute; top: 3px; left: 3px; transition: transform 0.2s; }
+  .aw-light .aw-toggle-thumb { transform: translateX(14px); }
+  /* light-mode note/upload boxes in detail drawer */
+  .aw-light .aw-admin-detail .aw-note-box { background: #f8fafc; border-color: #e2e8f0; }
+  .aw-light .aw-admin-detail input[style] { background: #f8fafc !important; border-color: #e2e8f0 !important; color: #0f172a !important; }
 `
 
 type Application = {
@@ -168,7 +226,9 @@ function statusBadge(status: string) {
     pending: 'aw-admin-badge-yellow',
     approved: 'aw-admin-badge-green',
     rejected: 'aw-admin-badge-red',
-    docs_requested: 'aw-admin-badge-orange',
+    docs_requested: 'aw-admin-badge-blue',
+    docs_received: 'aw-admin-badge-orange',
+    pending_tc: 'aw-admin-badge-orange',
   }
   return map[status] || 'aw-admin-badge-gray'
 }
@@ -201,6 +261,18 @@ export default function Admin() {
   const [docsSending, setDocsSending] = useState(false)
   const [approving, setApproving] = useState<number | null>(null)
   const [toast, setToast] = useState<{ text: string; error?: boolean } | null>(null)
+  const [theme, setTheme] = useState<'dark' | 'light'>(() => (typeof window !== 'undefined' && localStorage.getItem('aw-admin-theme') as 'dark'|'light') || 'dark')
+  const toggleTheme = () => setTheme(t => { const n = t === 'dark' ? 'light' : 'dark'; localStorage.setItem('aw-admin-theme', n); return n })
+  // Notes state
+  const [appNotes, setAppNotes] = useState<{id:number;author:string;note:string;created_at:string}[]>([])
+  const [noteText, setNoteText] = useState('')
+  const [savingNote, setSavingNote] = useState(false)
+  // Uploads state
+  const [appUploads, setAppUploads] = useState<{id:number;doc_type:string;file_name:string;file_url:string;file_size:number;uploaded_at:string}[]>([])
+  const [uploadsLoading, setUploadsLoading] = useState(false)
+  // Reject panel state
+  const [showRejectPanel, setShowRejectPanel] = useState(false)
+  const [rejectReason, setRejectReason] = useState('')
 
   // Sync Dashboard state
   const [syncStatus, setSyncStatus] = useState<any>(null)
@@ -605,7 +677,69 @@ export default function Admin() {
     }
   }
 
-  const pendingApps = apps.filter(a => a.status === 'pending')
+  const fetchNotesForApp = async (appId: number) => {
+    try {
+      const res = await fetch(`/api/admin-notes?applicationId=${appId}`)
+      if (res.ok) setAppNotes(await res.json())
+    } catch {}
+  }
+
+  const fetchUploadsForApp = async (appId: number) => {
+    setUploadsLoading(true)
+    try {
+      const res = await fetch(`/api/admin-uploads?applicationId=${appId}`)
+      if (res.ok) {
+        const data = await res.json()
+        setAppUploads(data.uploads || [])
+      }
+    } catch {}
+    finally { setUploadsLoading(false) }
+  }
+
+  const saveNote = async () => {
+    if (!detail || !noteText.trim()) return
+    setSavingNote(true)
+    try {
+      const res = await fetch('/api/admin-notes', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ applicationId: detail.id, note: noteText }),
+      })
+      if (res.ok) {
+        const saved = await res.json()
+        setAppNotes(prev => [saved, ...prev])
+        setNoteText('')
+        showToast('Note saved')
+      }
+    } catch {}
+    finally { setSavingNote(false) }
+  }
+
+  const openDetail = (app: Application) => {
+    setDetail(app)
+    setShowRejectPanel(false)
+    setRejectReason('')
+    setAppNotes([])
+    setAppUploads([])
+    fetchNotesForApp(app.id)
+    fetchUploadsForApp(app.id)
+  }
+
+  const rejectApp = async () => {
+    if (!detail) return
+    try {
+      await fetch('/api/admin-applications', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id: detail.id, status: 'rejected', rejectionReason: rejectReason }),
+      })
+      setApps(prev => prev.map(a => a.id === detail.id ? { ...a, status: 'rejected' } : a))
+      showToast('Rejection email sent to ' + detail.first_name)
+      setDetail(null)
+    } catch { showToast('Failed to reject', true) }
+  }
+
+  const pendingApps = apps.filter(a => ['pending', 'docs_received'].includes(a.status))
   const unreadMsgs = msgs.filter(m => !m.read)
   const filteredApps = appTab === 'pending' ? pendingApps : apps
 
@@ -711,7 +845,7 @@ export default function Admin() {
           </div>
         </div>
       ) : (
-      <div className="aw-admin">
+      <div className={`aw-admin${theme === 'light' ? ' aw-light' : ''}`}>
 
         {/* SIDEBAR */}
         <div className="aw-admin-sb">
@@ -752,6 +886,11 @@ export default function Admin() {
         <div className="aw-admin-content">
           <div className="aw-admin-topbar">
             <div className="aw-admin-topbar-title">{page === 'applications' ? 'Account Applications' : page === 'messages' ? 'Contact Messages' : page === 'families' ? 'Product Families' : page === 'grades' ? 'Pricing & Grades' : page === 'review' ? 'Unassigned SKUs' : page === 'users' ? 'User Management' : 'SellerCloud Sync'}</div>
+            <button className="aw-theme-toggle" onClick={toggleTheme}>
+              {theme === 'dark' ? '☀️' : '🌙'}
+              <span>{theme === 'dark' ? 'Light' : 'Dark'}</span>
+              <div className="aw-toggle-track"><div className="aw-toggle-thumb" /></div>
+            </button>
           </div>
 
          {page !== 'sync' && page !== 'families' && page !== 'grades' && page !== 'review' && page !== 'users' && <div className="aw-admin-page">
@@ -805,7 +944,7 @@ export default function Admin() {
                             <td><span className={`aw-admin-badge ${statusBadge(app.status)}`}>{app.status.replace('_', ' ')}</span></td>
                             <td>
                               <div style={{ display: 'flex', gap: 5 }}>
-                                <button className="aw-admin-btn aw-admin-btn-view" onClick={() => setDetail(app)}>View</button>
+                                <button className="aw-admin-btn aw-admin-btn-view" onClick={() => openDetail(app)}>View</button>
                                 {app.status === 'pending' && (
                                   <>
                                     <button className="aw-admin-btn aw-admin-btn-approve" onClick={() => approveApp(app)}>{approving === app.id ? '...' : 'Approve'}</button>
@@ -856,16 +995,16 @@ export default function Admin() {
         {/* APPLICATION DETAIL MODAL */}
         {detail && (
           <div className="aw-admin-detail-overlay" onClick={() => setDetail(null)}>
-            <div className="aw-admin-detail" onClick={e => e.stopPropagation()}>
+            <div className="aw-admin-detail" style={{ maxWidth: 640, width: '95vw' }} onClick={e => e.stopPropagation()}>
               <div className="aw-admin-detail-title">{detail.company_name}</div>
-              <div className="aw-admin-detail-sub">Applied {timeAgo(detail.created_at)} · <span className={`aw-admin-badge ${statusBadge(detail.status)}`}>{detail.status.replace('_', ' ')}</span></div>
+              <div className="aw-admin-detail-sub">Applied {timeAgo(detail.created_at)} · <span className={`aw-admin-badge ${statusBadge(detail.status)}`}>{detail.status.replace(/_/g, ' ')}</span></div>
 
               <div className="aw-admin-detail-grid">
                 <div className="aw-admin-detail-field"><div className="aw-admin-detail-label">Contact</div><div className="aw-admin-detail-value">{detail.first_name} {detail.last_name}</div></div>
                 <div className="aw-admin-detail-field"><div className="aw-admin-detail-label">Email</div><div className="aw-admin-detail-value">{detail.email}</div></div>
                 <div className="aw-admin-detail-field"><div className="aw-admin-detail-label">Phone</div><div className="aw-admin-detail-value">{detail.phone}</div></div>
                 <div className="aw-admin-detail-field"><div className="aw-admin-detail-label">Job Title</div><div className="aw-admin-detail-value">{detail.job_title || '—'}</div></div>
-                <div className="aw-admin-detail-field"><div className="aw-admin-detail-label">EIN / Tax ID</div><div className="aw-admin-detail-value">{detail.ein}</div></div>
+                <div className="aw-admin-detail-field"><div className="aw-admin-detail-label">EIN / Tax ID</div><div className="aw-admin-detail-value" style={{ fontFamily: 'monospace' }}>{detail.ein}</div></div>
                 <div className="aw-admin-detail-field"><div className="aw-admin-detail-label">Website</div><div className="aw-admin-detail-value">{detail.website || '—'}</div></div>
                 <div className="aw-admin-detail-field"><div className="aw-admin-detail-label">Location</div><div className="aw-admin-detail-value">{detail.city ? `${detail.city}, ` : ''}{detail.state}</div></div>
                 <div className="aw-admin-detail-field"><div className="aw-admin-detail-label">Years in Business</div><div className="aw-admin-detail-value">{detail.years_in_business || '—'}</div></div>
@@ -876,19 +1015,82 @@ export default function Admin() {
                 <div className="aw-admin-detail-field"><div className="aw-admin-detail-label">How They Found Us</div><div className="aw-admin-detail-value">{detail.heard_about || '—'}</div></div>
               </div>
 
-              {detail.notes && (
-                <div style={{ marginBottom: 24 }}>
-                  <div className="aw-admin-detail-label">Notes</div>
-                  <div style={{ fontSize: 13, color: '#94a3b8', lineHeight: 1.6, marginTop: 4 }}>{detail.notes}</div>
+              {/* UPLOADED DOCUMENTS */}
+              <div style={{ marginBottom: 20 }}>
+                <div className="aw-admin-detail-label" style={{ marginBottom: 8 }}>Uploaded Documents</div>
+                {uploadsLoading ? (
+                  <div style={{ fontSize: 12, color: '#475569' }}>Loading documents...</div>
+                ) : appUploads.length === 0 ? (
+                  <div style={{ fontSize: 12, color: '#475569', fontStyle: 'italic' }}>No documents uploaded yet.</div>
+                ) : (
+                  appUploads.map(u => (
+                    <div key={u.id} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '8px 12px', background: '#0a0f1a', border: '1px solid #1e2d4a', borderRadius: 8, marginBottom: 6 }}>
+                      <span style={{ fontSize: 16 }}>📄</span>
+                      <div style={{ flex: 1 }}>
+                        <div style={{ fontSize: 12, fontWeight: 700, color: '#e2e8f0' }}>{u.doc_type.toUpperCase()}</div>
+                        <div style={{ fontSize: 11, color: '#475569' }}>{u.file_name} · {u.file_size ? `${Math.round(u.file_size/1024)} KB` : ''} · {timeAgo(u.uploaded_at)}</div>
+                      </div>
+                      <a href={u.file_url} target="_blank" rel="noreferrer" style={{ fontSize: 11, fontWeight: 700, padding: '4px 10px', background: '#1e3a8a', color: '#93c5fd', border: '1px solid #1e3a8a', borderRadius: 6, textDecoration: 'none' }}>⬇ Download</a>
+                    </div>
+                  ))
+                )}
+              </div>
+
+              {/* ADMIN NOTES LOG */}
+              <div style={{ marginBottom: 20 }}>
+                <div className="aw-admin-detail-label" style={{ marginBottom: 8 }}>Notes Log</div>
+                <div style={{ display: 'flex', gap: 8, marginBottom: 10 }}>
+                  <input
+                    value={noteText}
+                    onChange={e => setNoteText(e.target.value)}
+                    onKeyDown={e => e.key === 'Enter' && !e.shiftKey && saveNote()}
+                    placeholder="Add a note... (Enter to save)"
+                    style={{ flex: 1, padding: '8px 12px', background: '#0a0f1a', border: '1.5px solid #1e2d4a', borderRadius: 8, fontSize: 13, color: '#e2e8f0', fontFamily: 'inherit', outline: 'none' }}
+                  />
+                  <button
+                    className="aw-admin-btn aw-admin-btn-primary"
+                    disabled={savingNote || !noteText.trim()}
+                    onClick={saveNote}
+                    style={{ whiteSpace: 'nowrap', fontSize: 12 }}
+                  >{savingNote ? '...' : 'Save'}</button>
+                </div>
+                {appNotes.length === 0 ? (
+                  <div style={{ fontSize: 12, color: '#475569', fontStyle: 'italic' }}>No notes yet.</div>
+                ) : (
+                  appNotes.map(n => (
+                    <div key={n.id} style={{ padding: '10px 12px', background: '#0a0f1a', border: '1px solid #1e2d4a', borderRadius: 8, marginBottom: 6 }}>
+                      <div style={{ fontSize: 11, color: '#475569', marginBottom: 4 }}>{n.author} · {timeAgo(n.created_at)}</div>
+                      <div style={{ fontSize: 13, color: '#cbd5e1', lineHeight: 1.5 }}>{n.note}</div>
+                    </div>
+                  ))
+                )}
+              </div>
+
+              {/* REJECT PANEL */}
+              {showRejectPanel && (
+                <div style={{ background: '#1c0606', border: '1px solid #7f1d1d', borderRadius: 10, padding: 16, marginBottom: 16 }}>
+                  <div style={{ fontSize: 11, fontWeight: 700, color: '#ef4444', marginBottom: 8 }}>Rejection reason (included in email):</div>
+                  <textarea
+                    value={rejectReason}
+                    onChange={e => setRejectReason(e.target.value)}
+                    rows={3}
+                    placeholder="e.g. Unable to verify business credentials at this time. You may reapply in 90 days."
+                    style={{ width: '100%', padding: '8px 12px', background: '#0a0f1a', border: '1.5px solid #7f1d1d', borderRadius: 8, fontSize: 13, color: '#e2e8f0', fontFamily: 'inherit', resize: 'none', outline: 'none', marginBottom: 10, boxSizing: 'border-box' as const }}
+                  />
+                  <button
+                    className="aw-admin-btn aw-admin-btn-reject"
+                    style={{ width: '100%', justifyContent: 'center', padding: '9px' }}
+                    onClick={rejectApp}
+                  >Send Rejection Email →</button>
                 </div>
               )}
 
               <div className="aw-admin-detail-actions">
-                {detail.status === 'pending' && (
+                {(detail.status === 'pending' || detail.status === 'docs_received') && (
                   <>
                     <button className="aw-admin-btn aw-admin-btn-approve" disabled={approving === detail.id} onClick={() => approveApp(detail)}>{approving === detail.id ? '...' : '✓ Approve'}</button>
-                    <button className="aw-admin-btn aw-admin-btn-docs" onClick={() => { setDocsModal(detail); setSelectedDocs([]) }}>📄 Request Documents</button>
-                    <button className="aw-admin-btn aw-admin-btn-reject" onClick={() => updateAppStatus(detail.id, 'rejected')}>✗ Reject</button>
+                    <button className="aw-admin-btn aw-admin-btn-docs" onClick={() => { setDocsModal(detail); setSelectedDocs([]) }}>📄 Request Docs</button>
+                    <button className="aw-admin-btn aw-admin-btn-reject" onClick={() => setShowRejectPanel(p => !p)}>✗ Reject</button>
                   </>
                 )}
                 {detail.status === 'docs_requested' && (
