@@ -1,4 +1,3 @@
-@'
 import { useState, useEffect } from 'react'
 
 const css =
@@ -51,7 +50,7 @@ export default function ResetPassword() {
       })
       const data = await res.json()
       if (data.success) { setDone(true) }
-      else { setError(data.error || 'Something went wrong. Please try again.') }
+      else { setError(data.error || 'Something went wrong.') }
     } catch {
       setError('Connection error. Please try again.')
     } finally {
@@ -75,7 +74,7 @@ export default function ResetPassword() {
             </>
           ) : done ? (
             <div className="aw-reset-success">
-              <div className="aw-reset-success-icon">✅</div>
+              <div className="aw-reset-success-icon">?</div>
               <div className="aw-reset-success-title">Password Updated</div>
               <div className="aw-reset-success-sub">Your password has been reset successfully.</div>
               <a href="/login" className="aw-reset-link">Sign In</a>
@@ -97,4 +96,3 @@ export default function ResetPassword() {
     </>
   )
 }
-'@ | Set-Content src/pages/ResetPassword.tsx
