@@ -11,6 +11,8 @@ import Admin from '@/pages/Admin'
 import Upload from '@/pages/Upload'
 import TermsAccept from '@/pages/TermsAccept'
 import Portal from '@/pages/Portal'
+import ForgotPassword from '@/pages/ForgotPassword'
+import ResetPassword from '@/pages/ResetPassword'
 import Enterprise from '@/pages/buyers/Enterprise'
 import Wholesale from '@/pages/buyers/Wholesale'
 import Resellers from '@/pages/buyers/Resellers'
@@ -22,6 +24,8 @@ export default function App() {
       <Route path="/upload/:token" component={Upload} />
       <Route path="/terms-accept" component={TermsAccept} />
       <Route path="/portal" component={Portal} />
+      <Route path="/forgot-password" component={ForgotPassword} />
+      <Route path="/reset-password" component={ResetPassword} />
       <Route>
         <Layout>
           <Switch>
