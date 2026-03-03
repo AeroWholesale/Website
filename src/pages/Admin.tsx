@@ -1112,15 +1112,15 @@ export default function Admin() {
                 <div className="aw-drawer-field"><label>Email</label><span>{detail.email}</span></div>
                 <div className="aw-drawer-field"><label>Phone</label><span>{detail.phone}</span></div>
                 <div className="aw-drawer-field"><label>Job Title</label><span>{detail.job_title || '—'}</span></div>
-                <div className="aw-drawer-field"><label>EIN / Tax ID</div><div className="aw-admin-detail-value" style={{ fontFamily: 'monospace' }}>{detail.ein}</span></div>
+                <div className="aw-drawer-field"><label>EIN / Tax ID</label><span style={{ fontFamily: 'monospace' }}>{detail.ein}</span></div>
                 <div className="aw-drawer-field"><label>Website</label><span>{detail.website || '—'}</span></div>
                 <div className="aw-drawer-field"><label>Location</label><span>{detail.city ? `${detail.city}, ` : ''}{detail.state}</span></div>
                 <div className="aw-drawer-field"><label>Years in Business</label><span>{detail.years_in_business || '—'}</span></div>
-                <div className="aw-drawer-field"><label>Account Type</div><div className="aw-admin-detail-value" style={{ textTransform: 'capitalize' }}>{detail.account_type}</span></div>
+                <div className="aw-drawer-field"><label>Account Type</label><span style={{ textTransform: 'capitalize' }}>{detail.account_type}</span></div>
                 <div className="aw-drawer-field"><label>Monthly Volume</label><span>{detail.monthly_volume}</span></div>
                 <div className="aw-drawer-field"><label>Product Categories</label><span>{detail.product_categories || '—'}</span></div>
                 <div className="aw-drawer-field"><label>Sales Channel</label><span>{detail.sales_channel || '—'}</span></div>
-                <div className="aw-drawer-field"><label>How They Found Us</label><span>{detail.heard_about || '—'}</div></div>
+                <div className="aw-drawer-field"><label>How They Found Us</label><span>{detail.heard_about || '—'}</span></div>
                   </div>
                 </div>
 
@@ -1198,7 +1198,7 @@ export default function Admin() {
 
               <div className="aw-admin-detail-grid" style={{ marginBottom: 20 }}>
                 <div className="aw-drawer-field"><label>Email</label><span>{msgDetail.email}</span></div>
-                <div className="aw-drawer-field"><label>Company</label><span>{msgDetail.company || '—'}</div></div>
+                <div className="aw-drawer-field"><label>Company</label><span>{msgDetail.company || '—'}</span></div>
               </div>
 
               <div className="aw-admin-detail-label">Message</div>
