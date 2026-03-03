@@ -180,6 +180,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       carriers: Array.from(f.carriers).sort(),
       colors: Array.from(f.colors).sort(),
       image: f.image,
+      lowestPrice: f.lowestPrice,
+      highestPrice: f.highestPrice,
       skus: f.skus,
     }))
 
