@@ -12,5 +12,9 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     const row = rows[0]
     const { rows: uploaded } = await pool.query('SELECT doc_type, file_name FROM uploads WHERE upload_request_id = $1', [row.id])
     res.status(200).json({ companyName: row.company_name, firstName: row.first_name, documents: row.documents.split(','), status: row.status, uploaded: uploaded.map((u) => ({ docType: u.doc_type, fileName: u.file_name })) })
-  } catch (err) { res.status(500).json({ error: String(err) }) } finally { await pool.end() }
+  } catch (err) {
+    res.status(500).json({ error: String(err) })
+  } finally {
+    await pool.end()
+  }
 }
