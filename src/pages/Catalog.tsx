@@ -364,7 +364,7 @@ export default function Catalog() {
                   {data.products.map(p => (
                     <div key={p.modelCode} className="aw-product-card">
                       <div className="aw-card-img">
-                        {p.image && p.image !== noImg ? <img src={p.image} alt={p.name} loading="lazy" /> : <IconDevice category={p.category} />}
+                        <IconDevice category={p.category} />
                         {p.totalStock >= 10 && <div className="aw-card-badge">{p.totalStock} in stock</div>}
                       </div>
                       <div className="aw-card-body">
