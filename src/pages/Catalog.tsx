@@ -143,6 +143,7 @@ interface Product {
   totalStock: number; skuCount: number; grades: string[]; storages: string[]
   carriers: string[]; colors: string[]
   image: string; skus: any[]
+  lowestPrice?: number | null; highestPrice?: number | null
 }
 
 interface ApiResponse {
@@ -168,15 +169,8 @@ export default function Catalog() {
   const [page, setPage] = useState(1)
 
   const [openGroups, setOpenGroups] = useState({ category: true, brand: true, grade: true, storage: false, carrier: false })
-  const [dealerToken, setDealerToken] = useState<string | null>(null)
-  const [dealerUser, setDealerUser] = useState<any>(null)
-
-  useEffect(() => {
-    const token = localStorage.getItem('aw-token')
-    const user = localStorage.getItem('aw-user')
-    if (token) setDealerToken(token)
-    if (user) { try { setDealerUser(JSON.parse(user)) } catch {} }
-  }, [])
+  const dealerToken = localStorage.getItem('aw-token')
+  const dealerUser = (() => { try { return JSON.parse(localStorage.getItem('aw-user') || '') } catch { return null } })()
   const toggleGroup = (key: keyof typeof openGroups) => setOpenGroups(g => ({ ...g, [key]: !g[key] }))
 
   const fetchData = useCallback(async () => {
@@ -192,9 +186,9 @@ export default function Catalog() {
       params.set('sort', sort)
       params.set('page', String(page))
       params.set('size', '24')
-      const token = localStorage.getItem('aw-token')
       const headers: Record<string, string> = {}
-      if (token) headers['Authorization'] = `Bearer ${token}`
+      const tok = localStorage.getItem('aw-token')
+      if (tok) headers['Authorization'] = `Bearer ${tok}`
       const res = await fetch(`/api/catalog-public?${params}`, { headers })
       if (!res.ok) throw new Error(`API error: ${res.status}`)
       setData(await res.json())
