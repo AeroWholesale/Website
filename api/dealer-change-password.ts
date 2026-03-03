@@ -28,4 +28,3 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   } finally {
     await pool.end()
   }
-}
