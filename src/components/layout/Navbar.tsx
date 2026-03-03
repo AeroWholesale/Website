@@ -24,6 +24,25 @@ export default function Navbar() {
   const [scrolled, setScrolled] = useState(false)
   const [mobileOpen, setMobileOpen] = useState(false)
   const [buyersOpen, setBuyersOpen] = useState(false)
+  const [dealerUser, setDealerUser] = useState<any>(null)
+
+  useEffect(() => {
+    const user = localStorage.getItem('aw-user')
+    if (user) { try { setDealerUser(JSON.parse(user)) } catch {} }
+    const onStorage = () => {
+      const u = localStorage.getItem('aw-user')
+      setDealerUser(u ? JSON.parse(u) : null)
+    }
+    window.addEventListener('storage', onStorage)
+    return () => window.removeEventListener('storage', onStorage)
+  }, [])
+
+  const handleSignOut = () => {
+    localStorage.removeItem('aw-token')
+    localStorage.removeItem('aw-user')
+    setDealerUser(null)
+    window.location.href = '/'
+  }
 
   useEffect(() => {
     const handleScroll = () => setScrolled(window.scrollY > 10)
@@ -120,13 +139,32 @@ export default function Navbar() {
 
           {/* Right CTAs */}
           <div className="hidden lg:flex items-center gap-2">
-            <Link
-              href="/login"
-              className="px-4 py-1.5 text-sm font-medium text-gray-600 hover:text-[#1B2E5E] transition-colors"
-              style={{ fontFamily: "'DM Sans', sans-serif" }}
-            >
-              Login
-            </Link>
+            {dealerUser ? (
+              <>
+                <Link
+                  href="/portal"
+                  className="px-4 py-1.5 text-sm font-medium text-[#1B2E5E] hover:text-[#ea580c] transition-colors"
+                  style={{ fontFamily: "'DM Sans', sans-serif" }}
+                >
+                  {dealerUser.companyName || dealerUser.firstName}
+                </Link>
+                <button
+                  onClick={handleSignOut}
+                  className="px-4 py-1.5 text-sm font-medium text-gray-600 hover:text-red-600 transition-colors"
+                  style={{ fontFamily: "'DM Sans', sans-serif", background: 'none', border: 'none', cursor: 'pointer' }}
+                >
+                  Sign Out
+                </button>
+              </>
+            ) : (
+              <Link
+                href="/login"
+                className="px-4 py-1.5 text-sm font-medium text-gray-600 hover:text-[#1B2E5E] transition-colors"
+                style={{ fontFamily: "'DM Sans', sans-serif" }}
+              >
+                Login
+              </Link>
+            )}
             <Link
               href="/quote"
               className="px-4 py-2 rounded-md text-sm font-semibold bg-[#ea580c] text-white hover:bg-[#c2410c] transition-all duration-150"
@@ -134,13 +172,15 @@ export default function Navbar() {
             >
               Request a Quote
             </Link>
-            <Link
-              href="/apply"
-              className="px-4 py-2 rounded-md text-sm font-semibold bg-[#1B2E5E] text-white hover:bg-[#152448] transition-all duration-150"
-              style={{ fontFamily: "'DM Sans', sans-serif" }}
-            >
-              Apply for Access
-            </Link>
+            {!dealerUser && (
+              <Link
+                href="/apply"
+                className="px-4 py-2 rounded-md text-sm font-semibold bg-[#1B2E5E] text-white hover:bg-[#152448] transition-all duration-150"
+                style={{ fontFamily: "'DM Sans', sans-serif" }}
+              >
+                Apply for Access
+              </Link>
+            )}
           </div>
 
           {/* Mobile hamburger */}
@@ -195,13 +235,20 @@ export default function Navbar() {
             )
           )}
           <div className="pt-3 border-t border-gray-100 space-y-2">
-            <Link
-              href="/login"
-              className="block px-3 py-2.5 text-sm font-medium text-gray-600 hover:text-[#1B2E5E]"
-              style={{ fontFamily: "'DM Sans', sans-serif" }}
-            >
-              Login
-            </Link>
+            {dealerUser ? (
+              <>
+                <Link href="/portal" className="block px-3 py-2.5 text-sm font-medium text-[#1B2E5E]" style={{ fontFamily: "'DM Sans', sans-serif" }}>
+                  {dealerUser.companyName || dealerUser.firstName}
+                </Link>
+                <button onClick={handleSignOut} className="block w-full text-left px-3 py-2.5 text-sm font-medium text-red-600" style={{ fontFamily: "'DM Sans', sans-serif", background: 'none', border: 'none', cursor: 'pointer' }}>
+                  Sign Out
+                </button>
+              </>
+            ) : (
+              <Link href="/login" className="block px-3 py-2.5 text-sm font-medium text-gray-600 hover:text-[#1B2E5E]" style={{ fontFamily: "'DM Sans', sans-serif" }}>
+                Login
+              </Link>
+            )}
             <Link
               href="/quote"
               className="block w-full text-center px-4 py-2.5 rounded-md text-sm font-semibold bg-[#ea580c] text-white hover:bg-[#c2410c] transition-colors"
@@ -209,7 +256,7 @@ export default function Navbar() {
             >
               Request a Quote
             </Link>
-            <Link
+            {!dealerUser && <Link
               href="/apply"
               className="block w-full text-center px-4 py-2.5 rounded-md text-sm font-semibold bg-[#1B2E5E] text-white hover:bg-[#152448] transition-colors"
               style={{ fontFamily: "'DM Sans', sans-serif" }}
