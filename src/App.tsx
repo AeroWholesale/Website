@@ -10,15 +10,18 @@ import Login from '@/pages/Login'
 import Admin from '@/pages/Admin'
 import Upload from '@/pages/Upload'
 import TermsAccept from '@/pages/TermsAccept'
+import Portal from '@/pages/Portal'
 import Enterprise from '@/pages/buyers/Enterprise'
 import Wholesale from '@/pages/buyers/Wholesale'
 import Resellers from '@/pages/buyers/Resellers'
+
 export default function App() {
   return (
     <Switch>
       <Route path="/admin" component={Admin} />
       <Route path="/upload/:token" component={Upload} />
       <Route path="/terms-accept" component={TermsAccept} />
+      <Route path="/portal" component={Portal} />
       <Route>
         <Layout>
           <Switch>
