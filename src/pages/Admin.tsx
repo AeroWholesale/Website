@@ -246,6 +246,7 @@ function UsersPage() {
   const [users, setUsers] = React.useState<any[]>([])
   const [loading, setLoading] = React.useState(true)
   const [search, setSearch] = React.useState('')
+  const [toggling, setToggling] = React.useState<number | null>(null)
 
   React.useEffect(() => {
     fetch('/api/admin-users')
@@ -253,6 +254,21 @@ function UsersPage() {
       .then(data => { if (Array.isArray(data)) setUsers(data) })
       .finally(() => setLoading(false))
   }, [])
+
+  const toggleUser = async (id: number, currentActive: boolean) => {
+    setToggling(id)
+    try {
+      const res = await fetch('/api/admin-toggle-user', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id, active: !currentActive })
+      })
+      const data = await res.json()
+      if (data.success) setUsers(prev => prev.map(u => u.id === id ? { ...u, active: !currentActive } : u))
+    } finally {
+      setToggling(null)
+    }
+  }
 
   const filtered = users.filter(u => {
     const q = search.toLowerCase()
@@ -281,7 +297,7 @@ function UsersPage() {
           <div style={{ padding: 40, textAlign: 'center', color: '#94a3b8' }}>Loading...</div>
         ) : (
           <table className="aw-admin-table">
-            <thead><tr><th>Company</th><th>Name</th><th>Email</th><th>Type</th><th>Status</th><th>Joined</th></tr></thead>
+            <thead><tr><th>Company</th><th>Name</th><th>Email</th><th>Type</th><th>Status</th><th>Joined</th><th>Action</th></tr></thead>
             <tbody>
               {filtered.map(u => (
                 <tr key={u.id}>
@@ -291,10 +307,19 @@ function UsersPage() {
                   <td><span style={{ textTransform: 'capitalize' }}>{u.account_type || '—'}</span></td>
                   <td><span className={`aw-admin-badge ${u.active ? 'aw-admin-badge-green' : 'aw-admin-badge-red'}`}>{u.active ? 'Active' : 'Inactive'}</span></td>
                   <td style={{ fontSize: 12, color: '#64748b' }}>{u.created_at ? new Date(u.created_at).toLocaleDateString() : '—'}</td>
+                  <td>
+                    <button
+                      onClick={() => toggleUser(u.id, u.active)}
+                      disabled={toggling === u.id}
+                      style={{ padding: '4px 12px', borderRadius: 6, border: 'none', cursor: 'pointer', fontSize: 12, fontWeight: 700, fontFamily: 'DM Sans,sans-serif', background: u.active ? '#7f1d1d' : '#14532d', color: u.active ? '#fca5a5' : '#86efac' }}
+                    >
+                      {toggling === u.id ? '...' : u.active ? 'Suspend' : 'Reactivate'}
+                    </button>
+                  </td>
                 </tr>
               ))}
               {!filtered.length && (
-                <tr><td colSpan={6} style={{ textAlign: 'center', color: '#64748b', padding: 24 }}>No dealers found</td></tr>
+                <tr><td colSpan={7} style={{ textAlign: 'center', color: '#64748b', padding: 24 }}>No dealers found</td></tr>
               )}
             </tbody>
           </table>
