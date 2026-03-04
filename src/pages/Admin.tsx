@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import React, { useState, useEffect } from 'react'
 
 const css = `
   @import url('https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600;9..40,700;9..40,800;9..40,900&display=swap');
@@ -34,7 +34,7 @@ const css = `
   .aw-admin-sb-role { font-size: 10px; color: #475569; }
 
   /* CONTENT */
-  .aw-admin-content { margin-left: 220px; flex: 1; display: flex; flex-direction: column; }
+  .aw-admin-content { margin-left: 220px; flex: 1; display: flex; flex-direction: column; height: 100vh; overflow-y: auto; }
 
   /* TOPBAR */
   .aw-admin-topbar { height: 56px; background: #0a0f1a; border-bottom: 1px solid #1e2d4a; display: flex; align-items: center; padding: 0 28px; gap: 16px; position: sticky; top: 0; z-index: 40; }
@@ -48,7 +48,7 @@ const css = `
   /* STAT CARDS */
   .aw-admin-stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; margin-bottom: 24px; }
   .aw-admin-stat { background: #111827; border: 1px solid #1e2d4a; border-radius: 12px; padding: 18px 20px; }
-  .aw-admin-stat-label { font-size: 11px; font-weight: 600; color: #475569; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 8px; }
+  .aw-admin-stat-label { font-size: 11px; font-weight: 600; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 8px; }
   .aw-admin-stat-val { font-size: 26px; font-weight: 800; color: #fff; line-height: 1; }
 
   /* TABLE */
@@ -56,8 +56,8 @@ const css = `
   .aw-admin-table-header { padding: 14px 20px; border-bottom: 1px solid #1e2d4a; display: flex; align-items: center; justify-content: space-between; }
   .aw-admin-table-title { font-size: 14px; font-weight: 700; color: #fff; }
   .aw-admin-table { width: 100%; border-collapse: collapse; }
-  .aw-admin-table th { font-size: 10px; font-weight: 700; color: #334155; text-transform: uppercase; letter-spacing: 0.08em; padding: 10px 16px; text-align: left; border-bottom: 1px solid #1e2d4a; }
-  .aw-admin-table td { font-size: 13px; color: #94a3b8; padding: 11px 16px; border-bottom: 1px solid #111827; }
+  .aw-admin-table th { font-size: 10px; font-weight: 700; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.08em; padding: 10px 16px; text-align: left; border-bottom: 1px solid #1e2d4a; }
+  .aw-admin-table td { font-size: 13px; color: #cbd5e1; padding: 11px 16px; border-bottom: 1px solid #111827; }
   .aw-admin-table tr:last-child td { border-bottom: none; }
   .aw-admin-table tr:hover td { background: #0f1520; }
   .aw-admin-td-bold { font-weight: 700; color: #e2e8f0; }
@@ -138,6 +138,64 @@ const css = `
 
   /* LOADING */
   .aw-admin-loading { text-align: center; padding: 40px; color: #475569; font-size: 14px; }
+
+  /* ═══════════════════════════════════════════════════
+     LIGHT THEME  —  applied via .aw-light on root
+  ═══════════════════════════════════════════════════ */
+  .aw-light.aw-admin { background: #f1f4f8; color: #0f172a; }
+  .aw-light .aw-admin-sb { background: #ffffff; border-right: 1px solid #e2e8f0; }
+  .aw-light .aw-admin-sb-logo { border-bottom: 1px solid #e2e8f0; }
+  .aw-light .aw-admin-sb-label { color: #94a3b8; }
+  .aw-light .aw-admin-sb-item { color: #64748b; }
+  .aw-light .aw-admin-sb-item:hover { color: #0f172a; background: #f1f4f8; }
+  .aw-light .aw-admin-sb-item.active { color: #0f172a; background: #fef3ee; border-left-color: #ea580c; }
+  .aw-light .aw-admin-sb-footer { border-top: 1px solid #e2e8f0; }
+  .aw-light .aw-admin-sb-name { color: #0f172a; }
+  .aw-light .aw-admin-topbar { background: #ffffff; border-bottom: 1px solid #e2e8f0; }
+  .aw-light .aw-admin-topbar-title { color: #0f172a; }
+  .aw-light .aw-admin-page-title { color: #0f172a; }
+  .aw-light .aw-admin-page-sub { color: #64748b; }
+  .aw-light .aw-admin-stat { background: #ffffff; border: 1px solid #e2e8f0; }
+  .aw-light .aw-admin-stat-label { color: #64748b; }
+  .aw-light .aw-admin-stat-val { color: #0f172a; }
+  .aw-light .aw-admin-table-card { background: #ffffff; border: 1px solid #e2e8f0; }
+  .aw-light .aw-admin-table-header { border-bottom: 1px solid #e2e8f0; }
+  .aw-light .aw-admin-table-title { color: #0f172a; }
+  .aw-light .aw-admin-table th { color: #64748b; border-bottom: 1px solid #e2e8f0; background: #f8fafc; }
+  .aw-light .aw-admin-table td { color: #334155; border-bottom: 1px solid #f1f4f8; }
+  .aw-light .aw-admin-table tr:hover td { background: #f8fafc; }
+  .aw-light .aw-admin-td-bold { color: #0f172a; }
+  .aw-light .aw-admin-td-sub { color: #94a3b8; }
+  .aw-light .aw-admin-tabs { border-bottom: 1px solid #e2e8f0; }
+  .aw-light .aw-admin-tab { color: #64748b; }
+  .aw-light .aw-admin-tab.active { color: #0f172a; border-bottom-color: #ea580c; }
+  .aw-light .aw-admin-empty { color: #64748b; }
+  .aw-light .aw-admin-detail { background: #ffffff; border: 1px solid #e2e8f0; }
+  .aw-light .aw-admin-detail-title { color: #0f172a; }
+  .aw-light .aw-admin-detail-sub { color: #64748b; }
+  .aw-light .aw-admin-detail-label { color: #94a3b8; }
+  .aw-light .aw-admin-detail-value { color: #0f172a; }
+  .aw-light .aw-admin-detail-actions { border-top: 1px solid #e2e8f0; }
+  .aw-light .aw-admin-msg { background: #ffffff; border: 1px solid #e2e8f0; }
+  .aw-light .aw-admin-msg.unread { background: #fffbf5; border-color: #fdba74; }
+  .aw-light .aw-admin-msg-from { color: #0f172a; }
+  .aw-light .aw-admin-msg-subject { color: #1e293b; }
+  .aw-light .aw-admin-msg-preview { color: #64748b; }
+  .aw-light .aw-admin-msg-meta { color: #94a3b8; }
+  .aw-light .aw-admin-msg-date { color: #94a3b8; }
+  .aw-light .aw-admin-loading { color: #64748b; }
+  /* theme toggle pill */
+  .aw-theme-toggle { display: flex; align-items: center; gap: 8px; cursor: pointer; padding: 6px 12px; border-radius: 20px; border: 1.5px solid #1e2d4a; background: transparent; font-family: 'DM Sans', sans-serif; font-size: 12px; font-weight: 700; color: #94a3b8; transition: all 0.15s; user-select: none; }
+  .aw-theme-toggle:hover { border-color: #334155; color: #e2e8f0; }
+  .aw-light .aw-theme-toggle { border-color: #e2e8f0; color: #64748b; }
+  .aw-light .aw-theme-toggle:hover { border-color: #cbd5e1; color: #0f172a; }
+  .aw-toggle-track { width: 32px; height: 18px; border-radius: 9px; background: #1e2d4a; position: relative; transition: background 0.2s; flex-shrink: 0; }
+  .aw-light .aw-toggle-track { background: #e2e8f0; }
+  .aw-toggle-thumb { width: 12px; height: 12px; border-radius: 50%; background: #ea580c; position: absolute; top: 3px; left: 3px; transition: transform 0.2s; }
+  .aw-light .aw-toggle-thumb { transform: translateX(14px); }
+  /* light-mode note/upload boxes in detail drawer */
+  .aw-light .aw-admin-detail .aw-note-box { background: #f8fafc; border-color: #e2e8f0; }
+  .aw-light .aw-admin-detail input[style] { background: #f8fafc !important; border-color: #e2e8f0 !important; color: #0f172a !important; }
 `
 
 type Application = {
@@ -168,7 +226,9 @@ function statusBadge(status: string) {
     pending: 'aw-admin-badge-yellow',
     approved: 'aw-admin-badge-green',
     rejected: 'aw-admin-badge-red',
-    docs_requested: 'aw-admin-badge-orange',
+    docs_requested: 'aw-admin-badge-blue',
+    docs_received: 'aw-admin-badge-orange',
+    pending_tc: 'aw-admin-badge-orange',
   }
   return map[status] || 'aw-admin-badge-gray'
 }
@@ -182,12 +242,112 @@ function typeBadge(type: string) {
   return map[type] || 'aw-admin-badge-gray'
 }
 
+function UsersPage() {
+  const [users, setUsers] = React.useState<any[]>([])
+  const [loading, setLoading] = React.useState(true)
+  const [search, setSearch] = React.useState('')
+  const [toggling, setToggling] = React.useState<number | null>(null)
+
+  React.useEffect(() => {
+    fetch('/api/admin-users')
+      .then(r => r.json())
+      .then(data => { if (Array.isArray(data)) setUsers(data) })
+      .finally(() => setLoading(false))
+  }, [])
+
+  const toggleUser = async (id: number, currentActive: boolean) => {
+    setToggling(id)
+    try {
+      const res = await fetch('/api/admin-toggle-user', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id, active: !currentActive })
+      })
+      const data = await res.json()
+      if (data.success) setUsers(prev => prev.map(u => u.id === id ? { ...u, active: !currentActive } : u))
+    } finally {
+      setToggling(null)
+    }
+  }
+
+  const filtered = users.filter(u => {
+    const q = search.toLowerCase()
+    return !q || u.email?.toLowerCase().includes(q) || u.company_name?.toLowerCase().includes(q) || u.first_name?.toLowerCase().includes(q) || u.last_name?.toLowerCase().includes(q)
+  })
+
+  return (
+    <div className="aw-admin-page">
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 16, marginBottom: 20 }}>
+        <div className="aw-admin-stat"><div className="aw-admin-stat-label">Total Dealers</div><div className="aw-admin-stat-val">{users.length}</div></div>
+        <div className="aw-admin-stat"><div className="aw-admin-stat-label">Active</div><div className="aw-admin-stat-val">{users.filter(u => u.active).length}</div></div>
+        <div className="aw-admin-stat"><div className="aw-admin-stat-label">Inactive</div><div className="aw-admin-stat-val">{users.filter(u => !u.active).length}</div></div>
+      </div>
+      <div className="aw-admin-table-card">
+        <div className="aw-admin-table-header">
+          <div className="aw-admin-table-title">Dealer Accounts</div>
+          <input
+            type="text"
+            placeholder="Search dealers..."
+            value={search}
+            onChange={e => setSearch(e.target.value)}
+            style={{ padding: '6px 12px', borderRadius: 6, border: '1px solid #1e2d4a', background: '#0a0f1a', color: '#e2e8f0', fontSize: 13, fontFamily: 'DM Sans,sans-serif', outline: 'none', width: 200 }}
+          />
+        </div>
+        {loading ? (
+          <div style={{ padding: 40, textAlign: 'center', color: '#94a3b8' }}>Loading...</div>
+        ) : (
+          <table className="aw-admin-table">
+            <thead><tr><th>Company</th><th>Name</th><th>Email</th><th>Type</th><th>Status</th><th>Joined</th><th>Action</th></tr></thead>
+            <tbody>
+              {filtered.map(u => (
+                <tr key={u.id}>
+                  <td className="aw-admin-td-bold">{u.company_name || '—'}</td>
+                  <td>{u.first_name} {u.last_name}</td>
+                  <td style={{ fontSize: 12 }}>{u.email}</td>
+                  <td><span style={{ textTransform: 'capitalize' }}>{u.account_type || '—'}</span></td>
+                  <td><span className={`aw-admin-badge ${u.active ? 'aw-admin-badge-green' : 'aw-admin-badge-red'}`}>{u.active ? 'Active' : 'Inactive'}</span></td>
+                  <td style={{ fontSize: 12, color: '#64748b' }}>{u.created_at ? new Date(u.created_at).toLocaleDateString() : '—'}</td>
+                  <td>
+                    <button
+                      onClick={() => toggleUser(u.id, u.active)}
+                      disabled={toggling === u.id}
+                      style={{ padding: '4px 12px', borderRadius: 6, border: 'none', cursor: 'pointer', fontSize: 12, fontWeight: 700, fontFamily: 'DM Sans,sans-serif', background: u.active ? '#7f1d1d' : '#14532d', color: u.active ? '#fca5a5' : '#86efac' }}
+                    >
+                      {toggling === u.id ? '...' : u.active ? 'Suspend' : 'Reactivate'}
+                    </button>
+                  </td>
+                </tr>
+              ))}
+              {!filtered.length && (
+                <tr><td colSpan={7} style={{ textAlign: 'center', color: '#64748b', padding: 24 }}>No dealers found</td></tr>
+              )}
+            </tbody>
+          </table>
+        )}
+      </div>
+      <div className="aw-admin-table-card" style={{ marginTop: 20 }}>
+        <div className="aw-admin-table-header">
+          <div className="aw-admin-table-title">Admin Team</div>
+        </div>
+        <table className="aw-admin-table">
+          <thead><tr><th>Name</th><th>Role</th><th>Access</th><th>Status</th></tr></thead>
+          <tbody>
+            <tr><td className="aw-admin-td-bold">Isaac</td><td>Owner</td><td>Full Admin</td><td><span className="aw-admin-badge aw-admin-badge-green">Active</span></td></tr>
+            <tr><td className="aw-admin-td-bold">Linde</td><td>Marketplace Manager</td><td>Products, Families, Grades</td><td><span className="aw-admin-badge aw-admin-badge-yellow">Pending Setup</span></td></tr>
+            <tr><td className="aw-admin-td-bold">Will</td><td>Warehouse / Ops</td><td>Inventory, Sync</td><td><span className="aw-admin-badge aw-admin-badge-yellow">Pending Setup</span></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  )
+}
+
 export default function Admin() {
   const [authed, setAuthed] = useState(false)
   const [pw, setPw] = useState('')
   const [pwError, setPwError] = useState('')
   const [pwLoading, setPwLoading] = useState(false)
-  const [page, setPage] = useState<'applications' | 'messages' | 'sync'>('applications')
+  const [page, setPage] = useState<'applications' | 'messages' | 'sync' | 'families' | 'grades' | 'review' | 'users'>('applications')
   const [apps, setApps] = useState<Application[]>([])
   const [msgs, setMsgs] = useState<Message[]>([])
   const [loading, setLoading] = useState(true)
@@ -201,6 +361,18 @@ export default function Admin() {
   const [docsSending, setDocsSending] = useState(false)
   const [approving, setApproving] = useState<number | null>(null)
   const [toast, setToast] = useState<{ text: string; error?: boolean } | null>(null)
+  const [theme, setTheme] = useState<'dark' | 'light'>(() => (typeof window !== 'undefined' && localStorage.getItem('aw-admin-theme') as 'dark'|'light') || 'dark')
+  const toggleTheme = () => setTheme(t => { const n = t === 'dark' ? 'light' : 'dark'; localStorage.setItem('aw-admin-theme', n); return n })
+  // Notes state
+  const [appNotes, setAppNotes] = useState<{id:number;author:string;note:string;created_at:string}[]>([])
+  const [noteText, setNoteText] = useState('')
+  const [savingNote, setSavingNote] = useState(false)
+  // Uploads state
+  const [appUploads, setAppUploads] = useState<{id:number;doc_type:string;file_name:string;file_url:string;file_size:number;uploaded_at:string}[]>([])
+  const [uploadsLoading, setUploadsLoading] = useState(false)
+  // Reject panel state
+  const [showRejectPanel, setShowRejectPanel] = useState(false)
+  const [rejectReason, setRejectReason] = useState('')
 
   // Sync Dashboard state
   const [syncStatus, setSyncStatus] = useState<any>(null)
@@ -210,6 +382,285 @@ export default function Admin() {
   const [syncSearch, setSyncSearch] = useState('')
   const [syncSearching, setSyncSearching] = useState(false)
   const [syncTab, setSyncTab] = useState<'overview' | 'catalog' | 'inventory'>('overview')
+
+  // Product families + grades admin state
+  const [familiesData, setFamiliesData] = useState<any>(null)
+  const [familiesLoading, setFamiliesLoading] = useState(false)
+  const [gradesData, setGradesData] = useState<any>(null)
+  const [gradesLoading, setGradesLoading] = useState(false)
+  const [editingFamily, setEditingFamily] = useState<any>(null)
+  const [editingGrade, setEditingGrade] = useState<any>(null)
+  const [familySaving, setFamilySaving] = useState(false)
+  const [gradeSaving, setGradeSaving] = useState(false)
+  const [familyFilter, setFamilyFilter] = useState('')
+  const [familySort, setFamilySort] = useState<'name' | 'brand' | 'stock' | 'category'>('name')
+  const [familyBrandFilter, setFamilyBrandFilter] = useState('')
+  const [familyCatFilter, setFamilyCatFilter] = useState('')
+  const [familyVisFilter, setFamilyVisFilter] = useState<'' | 'yes' | 'no'>('')
+  const [familyStockFilter, setFamilyStockFilter] = useState<'' | 'instock' | 'nostock'>('')
+
+  // Review Queue state
+  const [reviewData, setReviewData] = useState<any>(null)
+  const [reviewLoading, setReviewLoading] = useState(false)
+  const [reviewFilter, setReviewFilter] = useState('all')
+  const [reviewSelected, setReviewSelected] = useState<string[]>([])
+
+  // Collapsible sections
+  const [unmappedOpen, setUnmappedOpen] = useState(true)
+  const [mappedOpen, setMappedOpen] = useState(true)
+  const [expandedFamily, setExpandedFamily] = useState<string | null>(null)
+  const [familyDetail, setFamilyDetail] = useState<any>(null)
+  const [familyDetailLoading, setFamilyDetailLoading] = useState(false)
+  const [skuTab, setSkuTab] = useState<'visible' | 'hidden' | 'all'>('visible')
+  const [skuSelected, setSkuSelected] = useState<string[]>([])
+  const [skuSearch, setSkuSearch] = useState('')
+  const [pricingData, setPricingData] = useState<any>(null)
+  const [pricingLoading, setPricingLoading] = useState(false)
+  const [editingCell, setEditingCell] = useState<{ category: string; grade: string; value: string } | null>(null)
+  const [previewProduct, setPreviewProduct] = useState<string>('')
+  const [previewResults, setPreviewResults] = useState<any[]>([])
+  const [previewSku, setPreviewSku] = useState<any>(null)
+  const [previewSearching, setPreviewSearching] = useState(false)
+
+
+  const loadFamilies = async () => {
+    setFamiliesLoading(true)
+    try {
+      const res = await fetch('/api/sc/admin-families')
+      const data = await res.json()
+      if (data && data.families) {
+        setFamiliesData(data)
+      } else { console.error('Bad families response:', data); setFamiliesData(null) }
+    } catch (err) { console.error(err); setFamiliesData(null) }
+    setFamiliesLoading(false)
+  }
+
+  const loadFamilyDetail = async (modelCode: string) => {
+    if (expandedFamily === modelCode) {
+      setExpandedFamily(null); setFamilyDetail(null); setSkuTab('visible'); setSkuSelected([]); setSkuSearch(''); return
+    }
+    setExpandedFamily(modelCode); setFamilyDetailLoading(true); setSkuTab('visible'); setSkuSelected([]); setSkuSearch('')
+    try {
+      const res = await fetch('/api/sc/admin-families?family=' + encodeURIComponent(modelCode))
+      const data = await res.json()
+      if (data && data.family) { setFamilyDetail(data) } else { setFamilyDetail(null) }
+    } catch (err) { console.error(err); setFamilyDetail(null) }
+    setFamilyDetailLoading(false)
+  }
+
+  const toggleSkuHidden = async (sku: string, hide: boolean) => {
+    try {
+      await fetch('/api/sc/review-queue', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: hide ? 'hide' : 'show', skus: [sku] }) })
+      if (expandedFamily) { setFamilyDetailLoading(true); const res = await fetch('/api/sc/admin-families?family=' + encodeURIComponent(expandedFamily)); const data = await res.json(); if (data && data.family) setFamilyDetail(data); setFamilyDetailLoading(false) }
+    } catch (err) { showToast('Failed to update SKU', true) }
+  }
+
+  const bulkSkuAction = async (action: string) => {
+    if (skuSelected.length === 0) return
+    try {
+      await fetch('/api/sc/review-queue', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action, skus: skuSelected }) })
+      showToast(action + ' applied to ' + skuSelected.length + ' SKU(s)')
+      setSkuSelected([])
+      if (expandedFamily) { const res = await fetch('/api/sc/admin-families?family=' + encodeURIComponent(expandedFamily)); const data = await res.json(); if (data && data.family) setFamilyDetail(data) }
+    } catch (err) { showToast('Bulk action failed', true) }
+  }
+
+  const loadReview = async (filter?: string) => {
+    setReviewLoading(true)
+    try {
+      const f = filter || reviewFilter
+      const res = await fetch('/api/sc/review-queue?filter=' + f)
+      const rdata = await res.json()
+      if (rdata && rdata.stats) { setReviewData(rdata) } else { console.error('Bad review resp:', rdata); setReviewData(null) }
+      setReviewSelected([])
+    } catch (err) { console.error(err) }
+    setReviewLoading(false)
+  }
+
+  const reviewAction = async (action: string, skus: string[], grade?: string) => {
+    try {
+      const body: any = { action, skus, grade }
+      const res = await fetch('/api/sc/review-queue', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body),
+      })
+      if (res.ok) {
+        showToast(action + ' applied to ' + skus.length + ' SKU(s)')
+        loadReview()
+      } else showToast('Action failed', true)
+    } catch (err) { showToast('Action failed', true) }
+  }
+
+  const exportBulk = async (filter: string) => {
+    try {
+      const res = await fetch('/api/sc/bulk?filter=' + filter)
+      const data = await res.json()
+      const headers = ['SKU','Model','Brand','Type','Grade','Carrier','Storage','Color','Cost','Qty','Hidden']
+      const rows = data.products.map((p: any) =>
+        [p.sku, p.model, p.brand, p.device_type, p.grade, p.carrier, p.storage, p.color, p.cost, p.quantity, p.hidden_from_site].map((v: any) => '"' + String(v || '').replace(/"/g, '""') + '"').join(',')
+      )
+      const csv = [headers.join(','), ...rows].join('\n')
+      const blob = new Blob([csv], { type: 'text/csv' })
+      const url = URL.createObjectURL(blob)
+      const a = document.createElement('a')
+      a.href = url
+      a.download = 'aw-products-' + filter + '-' + new Date().toISOString().slice(0,10) + '.csv'
+      a.click()
+      URL.revokeObjectURL(url)
+      showToast('Exported ' + data.count + ' products')
+    } catch (err) { showToast('Export failed', true) }
+  }
+
+  const loadGrades = async () => {
+    setGradesLoading(true)
+    setPricingLoading(true)
+    try {
+      const [gradesRes, pricingRes] = await Promise.all([
+        fetch('/api/sc/grades'),
+        fetch('/api/sc/pricing'),
+      ])
+      setGradesData(await gradesRes.json())
+      const pd = await pricingRes.json()
+      if (pd && pd.grid) setPricingData(pd)
+    } catch (err) { console.error(err) }
+    setGradesLoading(false)
+    setPricingLoading(false)
+  }
+
+  const savePricingCell = async (category: string, grade_code: string, multiplier: number) => {
+    try {
+      const res = await fetch('/api/sc/pricing', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ category, grade_code, multiplier }),
+      })
+      if (res.ok) {
+        showToast(`${category} × ${grade_code} → ×${multiplier.toFixed(2)}`)
+        setEditingCell(null)
+        // Update local state
+        if (pricingData) {
+          const updated = { ...pricingData, grid: { ...pricingData.grid } }
+          updated.grid[category] = { ...updated.grid[category], [grade_code]: multiplier }
+          setPricingData(updated)
+        }
+      } else { showToast('Failed to save', true) }
+    } catch (err) { showToast('Failed to save', true) }
+  }
+
+  const searchPreviewSku = async (query: string) => {
+    setPreviewProduct(query)
+    setPreviewSku(null)
+    if (query.length < 2) { setPreviewResults([]); return }
+    setPreviewSearching(true)
+    try {
+      const res = await fetch('/api/sc/pricing?search=' + encodeURIComponent(query))
+      const data = await res.json()
+      if (data && data.results) {
+        setPreviewResults(data.results)
+      }
+    } catch (err) { setPreviewResults([]) }
+    setPreviewSearching(false)
+  }
+
+  const selectPreviewSku = (sku: any) => {
+    setPreviewSku(sku)
+    setPreviewProduct(sku.sku)
+    setPreviewResults([])
+  }
+  const saveFamily = async (data: any) => {
+    setFamilySaving(true)
+    try {
+      const res = await fetch('/api/sc/catalog', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data),
+      })
+      if (res.ok) {
+        showToast(`${data.name} saved`)
+        setEditingFamily(null)
+        loadFamilies()
+      } else {
+        showToast('Failed to save family', true)
+      }
+    } catch (err) { showToast('Failed to save family', true) }
+    setFamilySaving(false)
+  }
+
+  const deleteFamily = async (id: number) => {
+    if (!confirm('Delete this product family?')) return
+    await fetch(`/api/sc/catalog?id=${id}`, { method: 'DELETE' })
+    loadFamilies()
+  }
+
+  const saveGrade = async (data: any) => {
+    setGradeSaving(true)
+    try {
+      const res = await fetch('/api/sc/grades', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data),
+      })
+      if (res.ok) {
+        showToast(`Grade ${data.grade_code} updated`)
+        setEditingGrade(null)
+        loadGrades()
+      } else {
+        showToast('Failed to save grade', true)
+      }
+    } catch (err) { showToast('Failed to save grade', true) }
+    setGradeSaving(false)
+  }
+
+  const mapUnmapped = (u: any) => {
+    // Pre-fill a new family from unmapped SKU data
+    const brandMap: Record<string, string> = {
+      'AP': 'Apple', 'SA': 'Samsung', 'GO': 'Google', 'MO': 'Motorola',
+      'LG': 'LG', 'TC': 'TCL', 'KY': 'Kyocera', 'AL': 'Alcatel',
+      'ZT': 'ZTE', 'ON': 'OnePlus', 'KA': 'Kazuna', 'NV': 'Novatel',
+      'NE': 'Netgear', 'HT': 'HTC', 'PA': 'Pantech', 'GE': 'Generic',
+      'FR': 'Franklin', 'VZ': 'Verizon', 'RE': 'Reliance', 'AS': 'Asus',
+      'OP': 'OnePlus', 'SC': 'Sagecom', 'LU': 'Lucent', 'NK': 'Nokia',
+      'HTC': 'HTC', 'KAZ': 'Kazuna', 'NOV': 'Novatel',
+    }
+    const prefix = u.modelCode.split('-')[0]
+    const brand = brandMap[prefix] || u.brand || prefix
+
+    // Clean display name: try to make it human-readable
+    let displayName = u.scName || u.modelCode
+    // Remove brand prefix if it matches (e.g. "NOVATEL-MOD-U730L..." → "MOD-U730L...")
+    const scParts = displayName.split('-')
+    const knownBrandNames = ['APPLE', 'SAMSUNG', 'GOOGLE', 'MOTOROLA', 'LGE', 'TCL', 'KYOCERA', 'ALCATEL', 'ZTE', 'ONEPLUS', 'NOVATEL', 'NETGEAR', 'HTC', 'PANTECH', 'GENERIC', 'FRANKLIN', 'VERIZON', 'RELIANCE', 'ASUS', 'SAGECOM', 'LUCENT', 'NOKIA', 'KAZUNA', 'MOTORLA']
+    if (knownBrandNames.includes(scParts[0]?.toUpperCase())) {
+      scParts.shift()
+    }
+    // Remove model numbers, carrier codes, colors, grades from end — keep product name
+    // Also remove XA- prefix, shadow suffixes
+    displayName = displayName.replace(/^XA-/, '').replace(/-ShadowOf.*$/, '').replace(/S\d+$/, '')
+    // If still messy, just use model code with brand
+    if (displayName.length > 50 || displayName.includes('HSO')) {
+      displayName = `${brand} ${u.modelCode.split('-').slice(1).join(' ')}`.trim()
+    }
+
+    // Detect category from device type
+    let category = 'Phones'
+    const dt = (u.deviceType || '').toLowerCase()
+    if (dt.includes('tablet') || dt === 'ta' || dt === 'tka') category = 'Tablets'
+    else if (dt === 'lka' || dt.includes('laptop')) category = 'Laptops'
+    else if (dt === 'aka' || dt === 'ako' || dt.includes('watch') || dt.includes('wearable')) category = 'Wearables'
+    else if (dt === 'ca' || dt === 'cka' || dt.includes('cable') || dt.includes('charg') || dt.includes('accessory')) category = 'Accessories'
+    else if (dt === 'ia' || dt === 'ika' || dt === 'hko' || dt.includes('hotspot') || dt.includes('mifi') || dt.includes('router')) category = 'Accessories'
+    else if (dt === 'aa') category = 'Accessories'
+
+    setEditingFamily({
+      model_code: u.modelCode,
+      name: displayName,
+      brand,
+      category,
+      image_url: '',
+      visible: true,
+    })
+  }
 
   const testSCAuth = async () => {
     setSyncLoading(true)
@@ -226,9 +677,10 @@ export default function Admin() {
   const fetchSCCatalog = async (keyword?: string) => {
     setSyncSearching(true)
     try {
-      const url = keyword ? `/api/sc/catalog?size=20&active=false&keyword=${encodeURIComponent(keyword)}` : '/api/sc/catalog?size=20&active=false'
+      const url = keyword ? `/api/catalog-public?size=50&search=${encodeURIComponent(keyword)}` : '/api/catalog-public?size=50'
       const res = await fetch(url)
-      setCatalogData(await res.json())
+      const data = await res.json()
+      setCatalogData({ items: data.products, total: data.total })
     } catch (err) {
       setCatalogData({ error: String(err) })
     } finally {
@@ -325,7 +777,69 @@ export default function Admin() {
     }
   }
 
-  const pendingApps = apps.filter(a => a.status === 'pending')
+  const fetchNotesForApp = async (appId: number) => {
+    try {
+      const res = await fetch(`/api/admin-notes?applicationId=${appId}`)
+      if (res.ok) setAppNotes(await res.json())
+    } catch {}
+  }
+
+  const fetchUploadsForApp = async (appId: number) => {
+    setUploadsLoading(true)
+    try {
+      const res = await fetch(`/api/admin-uploads?applicationId=${appId}`)
+      if (res.ok) {
+        const data = await res.json()
+        setAppUploads(data.uploads || [])
+      }
+    } catch {}
+    finally { setUploadsLoading(false) }
+  }
+
+  const saveNote = async () => {
+    if (!detail || !noteText.trim()) return
+    setSavingNote(true)
+    try {
+      const res = await fetch('/api/admin-notes', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ applicationId: detail.id, note: noteText }),
+      })
+      if (res.ok) {
+        const saved = await res.json()
+        setAppNotes(prev => [saved, ...prev])
+        setNoteText('')
+        showToast('Note saved')
+      }
+    } catch {}
+    finally { setSavingNote(false) }
+  }
+
+  const openDetail = (app: Application) => {
+    setDetail(app)
+    setShowRejectPanel(false)
+    setRejectReason('')
+    setAppNotes([])
+    setAppUploads([])
+    fetchNotesForApp(app.id)
+    fetchUploadsForApp(app.id)
+  }
+
+  const rejectApp = async () => {
+    if (!detail) return
+    try {
+      await fetch('/api/admin-applications', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id: detail.id, status: 'rejected', rejectionReason: rejectReason }),
+      })
+      setApps(prev => prev.map(a => a.id === detail.id ? { ...a, status: 'rejected' } : a))
+      showToast('Rejection email sent to ' + detail.first_name)
+      setDetail(null)
+    } catch { showToast('Failed to reject', true) }
+  }
+
+  const pendingApps = apps.filter(a => ['pending', 'docs_received'].includes(a.status))
   const unreadMsgs = msgs.filter(m => !m.read)
   const filteredApps = appTab === 'pending' ? pendingApps : apps
 
@@ -431,7 +945,7 @@ export default function Admin() {
           </div>
         </div>
       ) : (
-      <div className="aw-admin">
+      <div className={`aw-admin${theme === 'light' ? ' aw-light' : ''}`}>
 
         {/* SIDEBAR */}
         <div className="aw-admin-sb">
@@ -447,11 +961,16 @@ export default function Admin() {
             {unreadMsgs.length > 0 && <span className="aw-admin-sb-badge">{unreadMsgs.length}</span>}
           </div>
 
-          <div className="aw-admin-sb-label">Coming Soon</div>
-          <div className="aw-admin-sb-item" style={{ opacity: 0.4, cursor: 'default' }}><span>👥</span> User Management</div>
+          <div className="aw-admin-sb-label">Products</div>
+          <div className={`aw-admin-sb-item${page === 'families' ? ' active' : ''}`} onClick={() => { setPage('families'); if (!familiesData) loadFamilies() }}><span>📦</span> Product Families</div>
+          <div className={`aw-admin-sb-item${page === 'grades' ? ' active' : ''}`} onClick={() => { setPage('grades'); if (!gradesData) loadGrades() }}><span>⚙️</span> Pricing & Grades</div>
+          <div className={`aw-admin-sb-item${page === 'review' ? ' active' : ''}`} onClick={() => { setPage('review'); if (!reviewData) loadReview() }}><span>🔍</span> Unassigned SKUs{reviewData?.stats?.noGradeWithStock > 0 ? <span className="aw-admin-sb-badge">{reviewData.stats.noGradeWithStock}</span> : null}</div>
+
+          <div className="aw-admin-sb-label">System</div>
           <div className={`aw-admin-sb-item${page === 'sync' ? ' active' : ''}`} onClick={() => setPage('sync')}><span>🔄</span> Sync Dashboard</div>
-          <div className="aw-admin-sb-item" style={{ opacity: 0.4, cursor: 'default' }}><span>📦</span> Product Families</div>
-          <div className="aw-admin-sb-item" style={{ opacity: 0.4, cursor: 'default' }}><span>⚙️</span> Grade Multipliers</div>
+
+          <div className="aw-admin-sb-label">Admin</div>
+          <div className={`aw-admin-sb-item${page === 'users' ? ' active' : ''}`} onClick={() => setPage('users')}><span>👥</span> Users</div>
           <div className="aw-admin-sb-item" style={{ opacity: 0.4, cursor: 'default' }}><span>📋</span> Quote Requests</div>
 
           <div className="aw-admin-sb-footer">
@@ -466,10 +985,15 @@ export default function Admin() {
         {/* CONTENT */}
         <div className="aw-admin-content">
           <div className="aw-admin-topbar">
-            <div className="aw-admin-topbar-title">{page === 'applications' ? 'Account Applications' : page === 'messages' ? 'Contact Messages' : 'SellerCloud Sync'}</div>
+            <div className="aw-admin-topbar-title">{page === 'applications' ? 'Account Applications' : page === 'messages' ? 'Contact Messages' : page === 'families' ? 'Product Families' : page === 'grades' ? 'Pricing & Grades' : page === 'review' ? 'Unassigned SKUs' : page === 'users' ? 'User Management' : 'SellerCloud Sync'}</div>
+            <button className="aw-theme-toggle" onClick={toggleTheme}>
+              {theme === 'dark' ? '☀️' : '🌙'}
+              <span>{theme === 'dark' ? 'Light' : 'Dark'}</span>
+              <div className="aw-toggle-track"><div className="aw-toggle-thumb" /></div>
+            </button>
           </div>
 
-         {page !== 'sync' && <div className="aw-admin-page">
+         {page !== 'sync' && page !== 'families' && page !== 'grades' && page !== 'review' && page !== 'users' && <div className="aw-admin-page">
             {loading ? (
               <div className="aw-admin-loading">Loading...</div>
             ) : page === 'applications' ? (
@@ -520,7 +1044,7 @@ export default function Admin() {
                             <td><span className={`aw-admin-badge ${statusBadge(app.status)}`}>{app.status.replace('_', ' ')}</span></td>
                             <td>
                               <div style={{ display: 'flex', gap: 5 }}>
-                                <button className="aw-admin-btn aw-admin-btn-view" onClick={() => setDetail(app)}>View</button>
+                                <button className="aw-admin-btn aw-admin-btn-view" onClick={() => openDetail(app)}>View</button>
                                 {app.status === 'pending' && (
                                   <>
                                     <button className="aw-admin-btn aw-admin-btn-approve" onClick={() => approveApp(app)}>{approving === app.id ? '...' : 'Approve'}</button>
@@ -537,7 +1061,7 @@ export default function Admin() {
                   </div>
                 )}
               </>
-            ) : (
+            ) : page === 'messages' ? (
               <>
                 {/* MESSAGES */}
                 <div className="aw-admin-stats" style={{ gridTemplateColumns: 'repeat(3, 1fr)' }}>
@@ -571,16 +1095,16 @@ export default function Admin() {
         {/* APPLICATION DETAIL MODAL */}
         {detail && (
           <div className="aw-admin-detail-overlay" onClick={() => setDetail(null)}>
-            <div className="aw-admin-detail" onClick={e => e.stopPropagation()}>
+            <div className="aw-admin-detail" style={{ maxWidth: 640, width: '95vw' }} onClick={e => e.stopPropagation()}>
               <div className="aw-admin-detail-title">{detail.company_name}</div>
-              <div className="aw-admin-detail-sub">Applied {timeAgo(detail.created_at)} · <span className={`aw-admin-badge ${statusBadge(detail.status)}`}>{detail.status.replace('_', ' ')}</span></div>
+              <div className="aw-admin-detail-sub">Applied {timeAgo(detail.created_at)} · <span className={`aw-admin-badge ${statusBadge(detail.status)}`}>{detail.status.replace(/_/g, ' ')}</span></div>
 
               <div className="aw-admin-detail-grid">
                 <div className="aw-admin-detail-field"><div className="aw-admin-detail-label">Contact</div><div className="aw-admin-detail-value">{detail.first_name} {detail.last_name}</div></div>
                 <div className="aw-admin-detail-field"><div className="aw-admin-detail-label">Email</div><div className="aw-admin-detail-value">{detail.email}</div></div>
                 <div className="aw-admin-detail-field"><div className="aw-admin-detail-label">Phone</div><div className="aw-admin-detail-value">{detail.phone}</div></div>
                 <div className="aw-admin-detail-field"><div className="aw-admin-detail-label">Job Title</div><div className="aw-admin-detail-value">{detail.job_title || '—'}</div></div>
-                <div className="aw-admin-detail-field"><div className="aw-admin-detail-label">EIN / Tax ID</div><div className="aw-admin-detail-value">{detail.ein}</div></div>
+                <div className="aw-admin-detail-field"><div className="aw-admin-detail-label">EIN / Tax ID</div><div className="aw-admin-detail-value" style={{ fontFamily: 'monospace' }}>{detail.ein}</div></div>
                 <div className="aw-admin-detail-field"><div className="aw-admin-detail-label">Website</div><div className="aw-admin-detail-value">{detail.website || '—'}</div></div>
                 <div className="aw-admin-detail-field"><div className="aw-admin-detail-label">Location</div><div className="aw-admin-detail-value">{detail.city ? `${detail.city}, ` : ''}{detail.state}</div></div>
                 <div className="aw-admin-detail-field"><div className="aw-admin-detail-label">Years in Business</div><div className="aw-admin-detail-value">{detail.years_in_business || '—'}</div></div>
@@ -591,19 +1115,82 @@ export default function Admin() {
                 <div className="aw-admin-detail-field"><div className="aw-admin-detail-label">How They Found Us</div><div className="aw-admin-detail-value">{detail.heard_about || '—'}</div></div>
               </div>
 
-              {detail.notes && (
-                <div style={{ marginBottom: 24 }}>
-                  <div className="aw-admin-detail-label">Notes</div>
-                  <div style={{ fontSize: 13, color: '#94a3b8', lineHeight: 1.6, marginTop: 4 }}>{detail.notes}</div>
+              {/* UPLOADED DOCUMENTS */}
+              <div style={{ marginBottom: 20 }}>
+                <div className="aw-admin-detail-label" style={{ marginBottom: 8 }}>Uploaded Documents</div>
+                {uploadsLoading ? (
+                  <div style={{ fontSize: 12, color: '#475569' }}>Loading documents...</div>
+                ) : appUploads.length === 0 ? (
+                  <div style={{ fontSize: 12, color: '#475569', fontStyle: 'italic' }}>No documents uploaded yet.</div>
+                ) : (
+                  appUploads.map(u => (
+                    <div key={u.id} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '8px 12px', background: '#0a0f1a', border: '1px solid #1e2d4a', borderRadius: 8, marginBottom: 6 }}>
+                      <span style={{ fontSize: 16 }}>📄</span>
+                      <div style={{ flex: 1 }}>
+                        <div style={{ fontSize: 12, fontWeight: 700, color: '#e2e8f0' }}>{u.doc_type.toUpperCase()}</div>
+                        <div style={{ fontSize: 11, color: '#475569' }}>{u.file_name} · {u.file_size ? `${Math.round(u.file_size/1024)} KB` : ''} · {timeAgo(u.uploaded_at)}</div>
+                      </div>
+                      <a href={u.file_url} target="_blank" rel="noreferrer" style={{ fontSize: 11, fontWeight: 700, padding: '4px 10px', background: '#1e3a8a', color: '#93c5fd', border: '1px solid #1e3a8a', borderRadius: 6, textDecoration: 'none' }}>⬇ Download</a>
+                    </div>
+                  ))
+                )}
+              </div>
+
+              {/* ADMIN NOTES LOG */}
+              <div style={{ marginBottom: 20 }}>
+                <div className="aw-admin-detail-label" style={{ marginBottom: 8 }}>Notes Log</div>
+                <div style={{ display: 'flex', gap: 8, marginBottom: 10 }}>
+                  <input
+                    value={noteText}
+                    onChange={e => setNoteText(e.target.value)}
+                    onKeyDown={e => e.key === 'Enter' && !e.shiftKey && saveNote()}
+                    placeholder="Add a note... (Enter to save)"
+                    style={{ flex: 1, padding: '8px 12px', background: '#0a0f1a', border: '1.5px solid #1e2d4a', borderRadius: 8, fontSize: 13, color: '#e2e8f0', fontFamily: 'inherit', outline: 'none' }}
+                  />
+                  <button
+                    className="aw-admin-btn aw-admin-btn-primary"
+                    disabled={savingNote || !noteText.trim()}
+                    onClick={saveNote}
+                    style={{ whiteSpace: 'nowrap', fontSize: 12 }}
+                  >{savingNote ? '...' : 'Save'}</button>
+                </div>
+                {appNotes.length === 0 ? (
+                  <div style={{ fontSize: 12, color: '#475569', fontStyle: 'italic' }}>No notes yet.</div>
+                ) : (
+                  appNotes.map(n => (
+                    <div key={n.id} style={{ padding: '10px 12px', background: '#0a0f1a', border: '1px solid #1e2d4a', borderRadius: 8, marginBottom: 6 }}>
+                      <div style={{ fontSize: 11, color: '#475569', marginBottom: 4 }}>{n.author} · {timeAgo(n.created_at)}</div>
+                      <div style={{ fontSize: 13, color: '#cbd5e1', lineHeight: 1.5 }}>{n.note}</div>
+                    </div>
+                  ))
+                )}
+              </div>
+
+              {/* REJECT PANEL */}
+              {showRejectPanel && (
+                <div style={{ background: '#1c0606', border: '1px solid #7f1d1d', borderRadius: 10, padding: 16, marginBottom: 16 }}>
+                  <div style={{ fontSize: 11, fontWeight: 700, color: '#ef4444', marginBottom: 8 }}>Rejection reason (included in email):</div>
+                  <textarea
+                    value={rejectReason}
+                    onChange={e => setRejectReason(e.target.value)}
+                    rows={3}
+                    placeholder="e.g. Unable to verify business credentials at this time. You may reapply in 90 days."
+                    style={{ width: '100%', padding: '8px 12px', background: '#0a0f1a', border: '1.5px solid #7f1d1d', borderRadius: 8, fontSize: 13, color: '#e2e8f0', fontFamily: 'inherit', resize: 'none', outline: 'none', marginBottom: 10, boxSizing: 'border-box' as const }}
+                  />
+                  <button
+                    className="aw-admin-btn aw-admin-btn-reject"
+                    style={{ width: '100%', justifyContent: 'center', padding: '9px' }}
+                    onClick={rejectApp}
+                  >Send Rejection Email →</button>
                 </div>
               )}
 
               <div className="aw-admin-detail-actions">
-                {detail.status === 'pending' && (
+                {(detail.status === 'pending' || detail.status === 'docs_received') && (
                   <>
                     <button className="aw-admin-btn aw-admin-btn-approve" disabled={approving === detail.id} onClick={() => approveApp(detail)}>{approving === detail.id ? '...' : '✓ Approve'}</button>
-                    <button className="aw-admin-btn aw-admin-btn-docs" onClick={() => { setDocsModal(detail); setSelectedDocs([]) }}>📄 Request Documents</button>
-                    <button className="aw-admin-btn aw-admin-btn-reject" onClick={() => updateAppStatus(detail.id, 'rejected')}>✗ Reject</button>
+                    <button className="aw-admin-btn aw-admin-btn-docs" onClick={() => { setDocsModal(detail); setSelectedDocs([]) }}>📄 Request Docs</button>
+                    <button className="aw-admin-btn aw-admin-btn-reject" onClick={() => setShowRejectPanel(p => !p)}>✗ Reject</button>
                   </>
                 )}
                 {detail.status === 'docs_requested' && (
@@ -795,53 +1382,49 @@ export default function Admin() {
                     </tr>
                     <tr>
                       <td className="aw-admin-td-bold">Website Catalog</td>
-                      <td><span className="aw-admin-badge aw-admin-badge-yellow">Pending</span></td>
-                      <td>Not yet wired to live data</td>
+                      <td><span className="aw-admin-badge aw-admin-badge-green">Live</span></td>
+                      <td>Connected — grade validation active, hidden products filtered</td>
                     </tr>
                     <tr>
                       <td className="aw-admin-td-bold">Auto-Sync Schedule</td>
-                      <td><span className="aw-admin-badge aw-admin-badge-gray">Not Set</span></td>
-                      <td>Manual sync only</td>
+                      <td><span className="aw-admin-badge aw-admin-badge-green">Active</span></td>
+                      <td>Runs every hour via Vercel cron</td>
                     </tr>
                   </tbody>
                 </table>
               </div>
             )}
 
+
             {/* Catalog Tab */}
             {syncTab === 'catalog' && catalogData?.items && (
               <div className="aw-admin-table-card">
                 <div className="aw-admin-table-header">
-                  <div className="aw-admin-table-title">SellerCloud Catalog ({catalogData.total?.toLocaleString()} products)</div>
+                  <div className="aw-admin-table-title">Website Catalog ({catalogData.total?.toLocaleString()} products)</div>
                 </div>
                 <div style={{ overflowX: 'auto' }}>
                   <table className="aw-admin-table">
                     <thead>
                       <tr>
-                        <th>SKU</th>
                         <th>Product</th>
-                        <th>Qty</th>
-                        <th>Avg Cost</th>
-                        <th>Sold 30d</th>
-                        <th>Sold 90d</th>
-                        <th>Channels</th>
+                        <th>Brand</th>
+                        <th>Category</th>
+                        <th>Grades</th>
+                        <th>SKUs</th>
+                        <th>Total Qty</th>
+                        <th>Image</th>
                       </tr>
                     </thead>
                     <tbody>
                       {catalogData.items.map((item: any, i: number) => (
                         <tr key={i}>
-                          <td><span className="aw-admin-td-bold" style={{ fontSize: 11, fontFamily: 'monospace' }}>{item.sku}</span></td>
-                          <td>
-                            <div className="aw-admin-td-bold">{item.name}</div>
-                            {item.parsed && <div className="aw-admin-td-sub">{item.parsed.deviceType} · {item.parsed.manufacturer} · {item.parsed.gradeDescription}</div>}
-                          </td>
-                          <td style={{ color: item.physicalQty > 0 ? '#22c55e' : '#ef4444', fontWeight: 700 }}>{item.physicalQty}</td>
-                          <td>{item.avgCost > 0 ? `${item.avgCost.toFixed(2)}` : '—'}</td>
-                          <td>{item.sold30 || '—'}</td>
-                          <td>{item.sold90 || '—'}</td>
-                          <td style={{ fontSize: 11 }}>
-                            {[item.backMarketEnabled && 'BM', item.ebayEnabled && 'eBay', item.walmartEnabled && 'WM', item.amazonEnabled && 'AMZ'].filter(Boolean).join(', ') || '—'}
-                          </td>
+                          <td className="aw-admin-td-bold">{item.name}</td>
+                          <td>{item.brand}</td>
+                          <td>{item.category}</td>
+                          <td style={{ fontSize: 11 }}>{Array.isArray(item.grades) ? item.grades.join(', ') : '—'}</td>
+                          <td>{item.skuCount || 0}</td>
+                          <td style={{ color: '#22c55e', fontWeight: 700 }}>{item.totalStock || 0}</td>
+                          <td>{item.image && !item.image.includes('NoImage') ? <span style={{ color: '#10b981' }}>✓</span> : <span style={{ color: '#ef4444' }}>✗</span>}</td>
                         </tr>
                       ))}
                     </tbody>
@@ -853,7 +1436,7 @@ export default function Admin() {
             {syncTab === 'catalog' && !catalogData?.items && (
               <div className="aw-admin-empty">
                 <div className="aw-admin-empty-icon">{'📦'}</div>
-                <div className="aw-admin-empty-text">Click "Load Catalog" or search to see products</div>
+                <div className="aw-admin-empty-text">Click "Load Catalog" to see the public website catalog</div>
               </div>
             )}
 
@@ -901,6 +1484,502 @@ export default function Admin() {
                 <div className="aw-admin-empty-icon">{'📊'}</div>
                 <div className="aw-admin-empty-text">Click "Load Inventory" or search to see stock levels</div>
               </div>
+            )}
+          </div>
+        )}
+
+        {/* ═══ PRODUCT FAMILIES PAGE ═══ */}
+        {page === 'families' && (
+          <div className="aw-admin-page">
+            {/* Edit Modal */}
+            {editingFamily && (
+              <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.5)', zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <div style={{ background: '#fff', color: '#1e293b', borderRadius: 12, padding: 24, width: 500, maxHeight: '85vh', overflow: 'auto' }}>
+                  <div style={{ fontSize: 16, fontWeight: 700, marginBottom: 16 }}>{editingFamily.id ? 'Edit' : 'Add'} Product Family</div>
+                  <div style={{ display: 'grid', gap: 12 }}>
+                    <div>
+                      <label style={{ fontSize: 12, fontWeight: 600, color: '#64748b', display: 'block', marginBottom: 4 }}>Model Code</label>
+                      <input style={{ width: '100%', padding: '8px 12px', border: '1px solid #cbd5e1', borderRadius: 6, fontSize: 14, fontFamily: 'inherit', boxSizing: 'border-box', color: '#1e293b' }} value={editingFamily.model_code || editingFamily.modelCode || ''} onChange={e => setEditingFamily({...editingFamily, model_code: e.target.value})} />
+                    </div>
+                    <div>
+                      <label style={{ fontSize: 12, fontWeight: 600, color: '#64748b', display: 'block', marginBottom: 4 }}>Display Name</label>
+                      <input style={{ width: '100%', padding: '8px 12px', border: '1px solid #cbd5e1', borderRadius: 6, fontSize: 14, fontFamily: 'inherit', boxSizing: 'border-box', color: '#1e293b' }} value={editingFamily.name} onChange={e => setEditingFamily({...editingFamily, name: e.target.value})} />
+                    </div>
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+                      <div>
+                        <label style={{ fontSize: 12, fontWeight: 600, color: '#64748b', display: 'block', marginBottom: 4 }}>Brand</label>
+                        <input style={{ width: '100%', padding: '8px 12px', border: '1px solid #cbd5e1', borderRadius: 6, fontSize: 14, fontFamily: 'inherit', boxSizing: 'border-box', color: '#1e293b' }} value={editingFamily.brand} onChange={e => setEditingFamily({...editingFamily, brand: e.target.value})} />
+                      </div>
+                      <div>
+                        <label style={{ fontSize: 12, fontWeight: 600, color: '#64748b', display: 'block', marginBottom: 4 }}>Category</label>
+                        <select style={{ width: '100%', padding: '8px 12px', border: '1px solid #e2e8f0', borderRadius: 6, fontSize: 14, fontFamily: 'inherit' }} value={editingFamily.category} onChange={e => setEditingFamily({...editingFamily, category: e.target.value})}>
+                          <option value="Phones">Phones</option><option value="Tablets">Tablets</option><option value="Laptops">Laptops</option><option value="Wearables">Wearables</option><option value="Accessories">Accessories</option>
+                        </select>
+                      </div>
+                    </div>
+                    <div>
+                      <label style={{ fontSize: 12, fontWeight: 600, color: '#64748b', display: 'block', marginBottom: 4 }}>Image URL</label>
+                      <input style={{ width: '100%', padding: '8px 12px', border: '1px solid #cbd5e1', borderRadius: 6, fontSize: 14, fontFamily: 'inherit', boxSizing: 'border-box', color: '#1e293b' }} value={editingFamily.image_url || editingFamily.imageUrl || ''} onChange={e => setEditingFamily({...editingFamily, image_url: e.target.value})} placeholder="https://..." />
+                    </div>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                      <input type="checkbox" checked={editingFamily.visible !== false} onChange={e => setEditingFamily({...editingFamily, visible: e.target.checked})} />
+                      <label style={{ fontSize: 13, color: '#334155' }}>Visible on catalog</label>
+                    </div>
+                  </div>
+                  <div style={{ display: 'flex', gap: 8, marginTop: 20, justifyContent: 'flex-end' }}>
+                    <button onClick={() => setEditingFamily(null)} style={{ padding: '8px 16px', border: '1px solid #e2e8f0', borderRadius: 6, background: '#fff', cursor: 'pointer', fontFamily: 'inherit', fontSize: 13 }}>Cancel</button>
+                    <button onClick={() => saveFamily(editingFamily)} disabled={familySaving} style={{ padding: '8px 16px', border: 'none', borderRadius: 6, background: '#132347', color: '#fff', cursor: 'pointer', fontFamily: 'inherit', fontSize: 13, fontWeight: 600 }}>{familySaving ? 'Saving...' : 'Save'}</button>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {familiesLoading ? (
+              <div style={{ padding: 40, textAlign: 'center', color: '#94a3b8' }}>Loading product families...</div>
+            ) : (familiesData && familiesData.families) ? (
+              <>
+                {/* KPI Stats */}
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 14, marginBottom: 20 }}>
+                  <div className="aw-admin-stat" style={{ cursor: 'default' }}><div className="aw-admin-stat-label">Total Families</div><div className="aw-admin-stat-val" style={{ color: '#fff' }}>{familiesData.totals.totalFamilies}</div><div style={{ fontSize: 11, color: '#94a3b8', marginTop: 2 }}>{familiesData.totals.visibleFamilies} visible</div></div>
+                  <div className="aw-admin-stat"><div className="aw-admin-stat-label">Total SKUs</div><div className="aw-admin-stat-val" style={{ color: '#60a5fa' }}>{familiesData.totals.totalSkus?.toLocaleString()}</div></div>
+                  <div className="aw-admin-stat"><div className="aw-admin-stat-label">Total Stock</div><div className="aw-admin-stat-val" style={{ color: '#10b981' }}>{familiesData.totals.totalStock?.toLocaleString()}</div></div>
+                  <div className="aw-admin-stat" style={{ cursor: 'pointer' }} onClick={() => { setPage('review'); if (!reviewData) loadReview() }}><div className="aw-admin-stat-label">Needs Review</div><div className="aw-admin-stat-val" style={{ color: '#f59e0b' }}>{reviewData?.stats?.noGradeWithStock || '—'}</div></div>
+                </div>
+
+                {/* Table Card */}
+                <div className="aw-admin-table-card">
+                  <div className="aw-admin-table-header">
+                    <div className="aw-admin-table-title">Product Families</div>
+                    <div style={{ display: 'flex', gap: 8 }}>
+                      <button onClick={() => exportBulk('in-stock')} className="aw-admin-btn aw-admin-btn-view" style={{ fontSize: 12 }}>⬇ Export CSV</button>
+                      <button onClick={() => setEditingFamily({ model_code: '', name: '', brand: '', category: 'Phones', image_url: '', visible: true })} className="aw-admin-btn aw-admin-btn-primary" style={{ fontSize: 12 }}>+ Add Family</button>
+                      <button onClick={loadFamilies} className="aw-admin-btn aw-admin-btn-view" style={{ fontSize: 12 }}>Refresh</button>
+                    </div>
+                  </div>
+                  {/* Filters */}
+                  <div style={{ padding: '12px 16px', borderBottom: '1px solid #1e2d4a', display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'center' }}>
+                    <input placeholder="Search name/code..." value={familyFilter} onChange={e => setFamilyFilter(e.target.value)} style={{ padding: '6px 10px', border: '1px solid #2d3548', borderRadius: 6, fontSize: 12, fontFamily: 'inherit', width: 180, background: '#0f1729', color: '#e2e8f0' }} />
+                    <select value={familyBrandFilter} onChange={e => setFamilyBrandFilter(e.target.value)} style={{ padding: '6px 10px', border: '1px solid #2d3548', borderRadius: 6, fontSize: 12, fontFamily: 'inherit', background: '#0f1729', color: '#e2e8f0' }}>
+                      <option value="">All Brands</option>
+                      {familiesData.filters?.brands?.map((b: string) => <option key={b} value={b}>{b}</option>)}
+                    </select>
+                    <select value={familyCatFilter} onChange={e => setFamilyCatFilter(e.target.value)} style={{ padding: '6px 10px', border: '1px solid #2d3548', borderRadius: 6, fontSize: 12, fontFamily: 'inherit', background: '#0f1729', color: '#e2e8f0' }}>
+                      <option value="">All Categories</option>
+                      {familiesData.filters?.categories?.map((c: string) => <option key={c} value={c}>{c}</option>)}
+                    </select>
+                    <select value={familyStockFilter} onChange={e => setFamilyStockFilter(e.target.value as any)} style={{ padding: '6px 10px', border: '1px solid #2d3548', borderRadius: 6, fontSize: 12, fontFamily: 'inherit', background: '#0f1729', color: '#e2e8f0' }}>
+                      <option value="">All Stock</option><option value="instock">In Stock</option><option value="nostock">No Stock</option>
+                    </select>
+                    <select value={familyVisFilter} onChange={e => setFamilyVisFilter(e.target.value as any)} style={{ padding: '6px 10px', border: '1px solid #2d3548', borderRadius: 6, fontSize: 12, fontFamily: 'inherit', background: '#0f1729', color: '#e2e8f0' }}>
+                      <option value="">All Visibility</option><option value="yes">Visible</option><option value="no">Hidden</option>
+                    </select>
+                    <select value={familySort} onChange={e => setFamilySort(e.target.value as any)} style={{ padding: '6px 10px', border: '1px solid #2d3548', borderRadius: 6, fontSize: 12, fontFamily: 'inherit', background: '#0f1729', color: '#e2e8f0' }}>
+                      <option value="name">Sort: Name</option><option value="brand">Sort: Brand</option><option value="stock">Sort: Stock ↓</option><option value="category">Sort: Category</option>
+                    </select>
+                  </div>
+
+                  {/* Families Table with Accordion */}
+                  <div style={{ overflowX: 'auto', overflowY: 'auto', maxHeight: '70vh' }}>
+                    <table className="aw-admin-table">
+                      <thead style={{ position: 'sticky', top: 0, zIndex: 5, background: '#111827' }}><tr>
+                        <th style={{ color: '#cbd5e1' }}>Code</th><th style={{ color: '#cbd5e1' }}>Name</th><th style={{ color: '#cbd5e1' }}>Brand</th><th style={{ color: '#cbd5e1' }}>Category</th><th style={{ color: '#cbd5e1' }}>Stock</th><th style={{ color: '#cbd5e1' }}>SKUs</th><th style={{ color: '#cbd5e1' }}>Visible</th><th></th>
+                      </tr></thead>
+                      <tbody>
+                        {familiesData.families
+                          .filter((f: any) => {
+                            if (familyFilter) {
+                              const q = familyFilter.toLowerCase()
+                              if (!f.name.toLowerCase().includes(q) && !f.modelCode.toLowerCase().includes(q)) return false
+                            }
+                            if (familyBrandFilter && f.brand !== familyBrandFilter) return false
+                            if (familyCatFilter && f.category !== familyCatFilter) return false
+                            if (familyStockFilter === 'instock' && (f.totalStock || 0) === 0) return false
+                            if (familyStockFilter === 'nostock' && (f.totalStock || 0) > 0) return false
+                            if (familyVisFilter === 'yes' && !f.visible) return false
+                            if (familyVisFilter === 'no' && f.visible) return false
+                            return true
+                          })
+                          .sort((a: any, b: any) => {
+                            if (familySort === 'stock') return (b.totalStock || 0) - (a.totalStock || 0)
+                            if (familySort === 'brand') return a.brand.localeCompare(b.brand) || a.name.localeCompare(b.name)
+                            if (familySort === 'category') return a.category.localeCompare(b.category) || a.name.localeCompare(b.name)
+                            return a.name.localeCompare(b.name)
+                          })
+                          .map((f: any) => (
+                          <React.Fragment key={f.id}>
+                            <tr onClick={() => loadFamilyDetail(f.modelCode)} style={{ opacity: f.visible ? 1 : 0.5, cursor: 'pointer', background: expandedFamily === f.modelCode ? '#1a2234' : 'transparent' }} onMouseEnter={e => { if (expandedFamily !== f.modelCode) e.currentTarget.style.background = '#131b2e' }} onMouseLeave={e => { if (expandedFamily !== f.modelCode) e.currentTarget.style.background = 'transparent' }}>
+                              <td style={{ fontFamily: 'monospace', fontSize: 12, fontWeight: 600, color: '#60a5fa' }}>{f.modelCode}</td>
+                              <td style={{ fontWeight: 600, color: '#fff' }}>{f.name}</td>
+                              <td style={{ color: '#cbd5e1' }}>{f.brand}</td>
+                              <td><span style={{ fontSize: 10, padding: '2px 6px', borderRadius: 3, background: '#1e293b', color: '#cbd5e1' }}>{f.category}</span></td>
+                              <td style={{ fontWeight: 700, color: (f.totalStock || 0) > 0 ? '#10b981' : '#64748b', fontFamily: 'monospace' }}>{(f.totalStock || 0).toLocaleString()}</td>
+                              <td style={{ color: '#cbd5e1' }}>{f.skuCount || 0}</td>
+                              <td>{f.visible ? <span style={{ color: '#10b981' }}>✓</span> : <span style={{ color: '#ef4444' }}>✗</span>}</td>
+                              <td>
+                                <div style={{ display: 'flex', gap: 4, alignItems: 'center' }}>
+                                  <button onClick={(e) => { e.stopPropagation(); setEditingFamily(f) }} style={{ padding: '3px 8px', fontSize: 11, border: '1px solid #2d3548', borderRadius: 4, background: 'transparent', color: '#e2e8f0', cursor: 'pointer', fontFamily: 'inherit' }}>Edit</button>
+                                  <button onClick={(e) => { e.stopPropagation(); deleteFamily(f.id) }} style={{ padding: '3px 8px', fontSize: 11, border: '1px solid #7f1d1d', borderRadius: 4, background: 'transparent', color: '#ef4444', cursor: 'pointer', fontFamily: 'inherit' }}>Del</button>
+                                  <span style={{ color: '#64748b', fontSize: 14, marginLeft: 4 }}>{expandedFamily === f.modelCode ? '▾' : '▸'}</span>
+                                </div>
+                              </td>
+                            </tr>
+
+                            {/* ═══ ACCORDION SKU DETAIL ═══ */}
+                            {expandedFamily === f.modelCode && (
+                              <tr><td colSpan={8} style={{ padding: 0, background: '#0d1321', borderBottom: '2px solid #1e2d4a' }}>
+                                {familyDetailLoading ? (
+                                  <div style={{ padding: 24, textAlign: 'center', color: '#94a3b8' }}>Loading SKUs...</div>
+                                ) : familyDetail ? (
+                                  <div style={{ padding: '16px 20px' }}>
+                                    {/* Stats Row */}
+                                    <div style={{ display: 'flex', gap: 12, marginBottom: 16, flexWrap: 'wrap' }}>
+                                      {[
+                                        { label: 'Total SKUs', val: familyDetail.stats.totalSkus, color: '#fff' },
+                                        { label: 'Visible', val: familyDetail.stats.visibleSkus, color: '#10b981' },
+                                        { label: 'Hidden', val: familyDetail.stats.hiddenSkus, color: '#f59e0b' },
+                                        { label: 'Intake', val: familyDetail.stats.intakeSkus, color: '#64748b' },
+                                        { label: 'Total Stock', val: familyDetail.stats.totalStock.toLocaleString(), color: '#10b981' },
+                                      ].map((s, i) => (
+                                        <div key={i} style={{ background: '#111827', border: '1px solid #1e2d4a', borderRadius: 8, padding: '10px 16px', textAlign: 'center' }}>
+                                          <div style={{ fontSize: 18, fontWeight: 700, color: s.color }}>{s.val}</div>
+                                          <div style={{ fontSize: 10, color: '#94a3b8' }}>{s.label}</div>
+                                        </div>
+                                      ))}
+                                    </div>
+
+                                    {/* Tabs + Bulk Actions + Search */}
+                                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12, flexWrap: 'wrap', gap: 8 }}>
+                                      <div style={{ display: 'flex', gap: 0 }}>
+                                        {(['visible', 'hidden', 'all'] as const).map((tab, ti) => (
+                                          <button key={tab} onClick={() => { setSkuTab(tab); setSkuSelected([]) }} style={{ padding: '6px 16px', fontSize: 12, fontWeight: skuTab === tab ? 700 : 500, border: '1px solid #2d3548', borderRight: tab !== 'all' ? 'none' : '1px solid #2d3548', borderRadius: ti === 0 ? '6px 0 0 6px' : ti === 2 ? '0 6px 6px 0' : '0', background: skuTab === tab ? '#1e293b' : 'transparent', color: skuTab === tab ? '#fff' : '#94a3b8', cursor: 'pointer', fontFamily: 'inherit', textTransform: 'capitalize' as any }}>
+                                            {tab} ({tab === 'visible' ? familyDetail.skus.visible.length : tab === 'hidden' ? familyDetail.skus.hidden.length : familyDetail.skus.visible.length + familyDetail.skus.hidden.length})
+                                          </button>
+                                        ))}
+                                      </div>
+                                      <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+                                        {skuSelected.length > 0 && (<>
+                                          <button onClick={() => bulkSkuAction('hide')} style={{ padding: '5px 12px', fontSize: 11, fontWeight: 600, border: '1px solid #92400e', borderRadius: 5, background: 'transparent', color: '#f59e0b', cursor: 'pointer', fontFamily: 'inherit' }}>Hide Selected ({skuSelected.length})</button>
+                                          <button onClick={() => bulkSkuAction('show')} style={{ padding: '5px 12px', fontSize: 11, fontWeight: 600, border: '1px solid #065f46', borderRadius: 5, background: 'transparent', color: '#10b981', cursor: 'pointer', fontFamily: 'inherit' }}>Show Selected ({skuSelected.length})</button>
+                                        </>)}
+                                        <input placeholder="Search SKUs..." value={skuSearch} onChange={e => setSkuSearch(e.target.value)} style={{ padding: '5px 10px', border: '1px solid #2d3548', borderRadius: 6, fontSize: 11, fontFamily: 'inherit', width: 160, background: '#0f1729', color: '#e2e8f0' }} />
+                                      </div>
+                                    </div>
+
+                                    {/* SKU Table */}
+                                    <div style={{ overflowX: 'auto', overflowY: 'auto', maxHeight: '60vh', border: '1px solid #1e2d4a', borderRadius: 8 }}>
+                                      <table className="aw-admin-table" style={{ fontSize: 12 }}>
+                                        <thead style={{ position: 'sticky', top: 0, zIndex: 3, background: '#111827' }}>
+                                          <tr>
+                                            <th style={{ width: 30, padding: '8px' }}><input type="checkbox" onChange={e => {
+                                              const pool = (skuTab === 'visible' ? familyDetail.skus.visible : skuTab === 'hidden' ? familyDetail.skus.hidden : [...familyDetail.skus.visible, ...familyDetail.skus.hidden]).filter((s: any) => !skuSearch || s.sku.toLowerCase().includes(skuSearch.toLowerCase()))
+                                              setSkuSelected(e.target.checked ? pool.map((s: any) => s.sku) : [])
+                                            }} /></th>
+                                            <th style={{ color: '#cbd5e1' }}>SKU</th><th style={{ color: '#cbd5e1' }}>Grade</th><th style={{ color: '#cbd5e1' }}>Storage</th><th style={{ color: '#cbd5e1' }}>Carrier</th><th style={{ color: '#cbd5e1' }}>Color</th><th style={{ color: '#cbd5e1' }}>Qty</th><th style={{ color: '#cbd5e1' }}>Avail</th><th style={{ color: '#cbd5e1' }}>Cost</th><th style={{ color: '#cbd5e1' }}>Site Price</th><th style={{ color: '#cbd5e1' }}>Actions</th>
+                                          </tr>
+                                        </thead>
+                                        <tbody>
+                                          {(skuTab === 'visible' ? familyDetail.skus.visible : skuTab === 'hidden' ? familyDetail.skus.hidden : [...familyDetail.skus.visible, ...familyDetail.skus.hidden])
+                                            .filter((s: any) => !skuSearch || s.sku.toLowerCase().includes(skuSearch.toLowerCase()) || (s.carrier||'').toLowerCase().includes(skuSearch.toLowerCase()) || (s.color||'').toLowerCase().includes(skuSearch.toLowerCase()) || (s.grade||'').toLowerCase().includes(skuSearch.toLowerCase()))
+                                            .map((s: any) => (
+                                            <tr key={s.sku} style={{ opacity: s.hidden ? 0.5 : 1 }}>
+                                              <td style={{ padding: '8px' }}><input type="checkbox" checked={skuSelected.includes(s.sku)} onChange={e => setSkuSelected(e.target.checked ? [...skuSelected, s.sku] : skuSelected.filter((x: string) => x !== s.sku))} /></td>
+                                              <td style={{ fontFamily: 'monospace', fontSize: 10, color: '#94a3b8', maxWidth: 240, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' as any }} title={s.sku}>{s.sku}</td>
+                                              <td><span style={{ fontFamily: 'monospace', fontSize: 11, fontWeight: 700, color: (s.grade === 'CAP' || s.grade === 'CAP1') ? '#34d399' : s.grade === 'CA+' ? '#10b981' : s.grade === 'CA' ? '#22c55e' : s.grade === 'SD' ? '#f97316' : '#cbd5e1', background: '#1e293b', padding: '2px 6px', borderRadius: 4 }}>{s.grade || '—'}</span></td>
+                                              <td style={{ fontWeight: 600, color: '#fff' }}>{s.storage || '—'}</td>
+                                              <td style={{ color: '#cbd5e1' }}>{s.carrier || '—'}</td>
+                                              <td style={{ color: '#cbd5e1' }}>{s.color || '—'}</td>
+                                              <td style={{ fontFamily: 'monospace', fontWeight: 700, color: '#fff' }}>{s.quantity}</td>
+                                              <td style={{ fontFamily: 'monospace', color: s.available > 0 ? '#10b981' : '#64748b' }}>{s.available}</td>
+                                              <td style={{ fontFamily: 'monospace', color: '#fff' }}>{'$'}{s.cost.toFixed(2)}</td>
+                                              <td style={{ fontFamily: 'monospace', fontWeight: 700, color: s.priceOverride ? '#60a5fa' : '#10b981' }}>{s.calculatedPrice ? ('$' + s.calculatedPrice.toFixed(2)) : '—'}{s.priceOverride ? ' ✎' : ''}</td>
+                                              <td>
+                                                <button onClick={() => toggleSkuHidden(s.sku, !s.hidden)} style={{ padding: '3px 8px', fontSize: 10, fontWeight: 600, border: '1px solid ' + (s.hidden ? '#065f46' : '#92400e'), borderRadius: 4, background: 'transparent', color: s.hidden ? '#10b981' : '#f59e0b', cursor: 'pointer', fontFamily: 'inherit' }}>{s.hidden ? 'Show' : 'Hide'}</button>
+                                              </td>
+                                            </tr>
+                                          ))}
+                                        </tbody>
+                                      </table>
+                                    </div>
+
+                                    {/* INTAKE Section */}
+                                    {familyDetail.skus.intake.length > 0 && (
+                                      <div style={{ marginTop: 16, border: '1px solid #334155', borderRadius: 8, overflow: 'hidden' }}>
+                                        <div style={{ padding: '10px 16px', background: '#1a1f2e', borderBottom: '1px solid #334155' }}>
+                                          <span style={{ fontSize: 12, fontWeight: 700, color: '#cbd5e1' }}>Pre-QC (INTAKE) — {familyDetail.skus.intake.length} SKUs</span>
+                                        </div>
+                                        <table className="aw-admin-table" style={{ fontSize: 12 }}>
+                                          <thead><tr><th style={{ color: '#cbd5e1' }}>SKU</th><th style={{ color: '#cbd5e1' }}>Qty</th><th style={{ color: '#cbd5e1' }}>Cost</th></tr></thead>
+                                          <tbody>
+                                            {familyDetail.skus.intake.map((s: any) => (
+                                              <tr key={s.sku} style={{ opacity: 0.6 }}>
+                                                <td style={{ fontFamily: 'monospace', fontSize: 10, color: '#94a3b8' }}>{s.sku}</td>
+                                                <td style={{ fontFamily: 'monospace', color: '#cbd5e1' }}>{s.quantity}</td>
+                                                <td style={{ fontFamily: 'monospace', color: '#cbd5e1' }}>{'$'}{s.cost.toFixed(2)}</td>
+                                              </tr>
+                                            ))}
+                                          </tbody>
+                                        </table>
+                                      </div>
+                                    )}
+                                  </div>
+                                ) : (
+                                  <div style={{ padding: 24, textAlign: 'center', color: '#ef4444' }}>Failed to load SKU details</div>
+                                )}
+                              </td></tr>
+                            )}
+                          </React.Fragment>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              </>
+            ) : (
+              <div style={{ padding: 40, textAlign: 'center', color: '#94a3b8' }}>Loading...</div>
+            )}
+          </div>
+        )}
+
+
+        {/* ═══ REVIEW QUEUE PAGE ═══ */}
+        {page === 'review' && (
+          <div className="aw-admin-page">
+            {reviewLoading ? (
+              <div style={{ padding: 40, textAlign: 'center', color: '#64748b' }}>Loading review queue...</div>
+            ) : (reviewData && reviewData.stats) ? (
+              <>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 16, marginBottom: 20 }}>
+                  <div className="aw-admin-stat"><div className="aw-admin-stat-label">No Grade (With Stock)</div><div className="aw-admin-stat-val" style={{ color: '#f59e0b' }}>{reviewData.stats.noGradeWithStock}</div></div>
+                  <div className="aw-admin-stat"><div className="aw-admin-stat-label">No Grade (Total)</div><div className="aw-admin-stat-val">{reviewData.stats.noGrade}</div></div>
+                  <div className="aw-admin-stat"><div className="aw-admin-stat-label">Hidden from Site</div><div className="aw-admin-stat-val">{reviewData.stats.hidden}</div></div>
+                </div>
+
+                <div className="aw-admin-table-card">
+                  <div className="aw-admin-table-header">
+                    <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+                      <div className="aw-admin-table-title">SKUs Needing Review ({reviewData.items.length})</div>
+                      <select value={reviewFilter} onChange={e => { setReviewFilter(e.target.value); loadReview(e.target.value) }} style={{ padding: '4px 8px', border: '1px solid #2d3548', borderRadius: 6, fontSize: 11, background: '#0f1729', color: '#e2e8f0', fontFamily: 'inherit' }}>
+                        <option value="all">All Issues</option>
+                        <option value="no-grade">No Grade</option>
+                        <option value="hidden">Hidden</option>
+                      </select>
+                    </div>
+                    <div style={{ display: 'flex', gap: 8 }}>
+                      {reviewSelected.length > 0 && (
+                        <>
+                          <button onClick={() => reviewAction('hide', reviewSelected)} className="aw-admin-btn aw-admin-btn-reject" style={{ fontSize: 11 }}>Hide ({reviewSelected.length})</button>
+                          <button onClick={() => reviewAction('show', reviewSelected)} className="aw-admin-btn aw-admin-btn-approve" style={{ fontSize: 11 }}>Show ({reviewSelected.length})</button>
+                          <select onChange={e => { if (e.target.value) { reviewAction('set-grade', reviewSelected, e.target.value); e.target.value = '' } }} style={{ padding: '4px 8px', border: '1px solid #2d3548', borderRadius: 6, fontSize: 11, background: '#0f1729', color: '#e2e8f0', fontFamily: 'inherit' }}>
+                            <option value="">Assign Grade...</option>
+                            {(reviewData.validGrades || []).map((g: string) => <option key={g} value={g}>{g}</option>)}
+                          </select>
+                        </>
+                      )}
+                      <button onClick={() => loadReview()} className="aw-admin-btn aw-admin-btn-view" style={{ fontSize: 11 }}>Refresh</button>
+                    </div>
+                  </div>
+                  <div style={{ overflowX: 'auto', maxHeight: 600, overflowY: 'auto' }}>
+                    <table className="aw-admin-table" style={{ fontSize: 12 }}>
+                      <thead>
+                        <tr>
+                          <th><input type="checkbox" checked={reviewSelected.length === reviewData.items.length && reviewData.items.length > 0} onChange={e => setReviewSelected(e.target.checked ? reviewData.items.map((i: any) => i.sku) : [])} /></th>
+                          <th>SKU</th>
+                          <th>Model</th>
+                          <th>Brand</th>
+                          <th>Grade</th>
+                          <th>Qty</th>
+                          <th>Cost</th>
+                          <th>Hidden</th>
+                          <th>Status</th>
+                          <th>Actions</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {reviewData.items.map((item: any) => (
+                          <tr key={item.sku}>
+                            <td><input type="checkbox" checked={reviewSelected.includes(item.sku)} onChange={e => setReviewSelected(e.target.checked ? [...reviewSelected, item.sku] : reviewSelected.filter(s => s !== item.sku))} /></td>
+                            <td style={{ fontFamily: 'monospace', fontSize: 11, fontWeight: 600, maxWidth: 280, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{item.sku}</td>
+                            <td style={{ fontWeight: 600 }}>{item.model || '\u2014'}</td>
+                            <td>{item.brand || '\u2014'}</td>
+                            <td>{item.grade ? <span style={{ fontFamily: 'monospace', fontWeight: 700 }}>{item.grade}</span> : <span style={{ color: '#f59e0b' }}>\u2014</span>}</td>
+                            <td style={{ fontWeight: 600, color: (item.quantity || 0) > 0 ? '#10b981' : '#64748b' }}>{item.quantity || 0}</td>
+                            <td>{'$'}{parseFloat(item.cost || 0).toFixed(2)}</td>
+                            <td>{item.hidden_from_site ? <span style={{ color: '#ef4444' }}>Hidden</span> : <span style={{ color: '#10b981' }}>Visible</span>}</td>
+                            <td><span className={`aw-admin-badge aw-admin-badge-${item.review_status === 'hidden' ? 'red' : item.review_status === 'graded' ? 'green' : 'yellow'}`}>{item.review_status || 'pending'}</span></td>
+                            <td style={{ display: 'flex', gap: 4 }}>
+                              <button onClick={() => reviewAction('hide', [item.sku])} style={{ padding: '2px 6px', fontSize: 10, border: '1px solid #7f1d1d', borderRadius: 3, background: 'transparent', color: '#ef4444', cursor: 'pointer', fontFamily: 'inherit' }}>Hide</button>
+                              <button onClick={() => reviewAction('show', [item.sku])} style={{ padding: '2px 6px', fontSize: 10, border: '1px solid #166534', borderRadius: 3, background: 'transparent', color: '#22c55e', cursor: 'pointer', fontFamily: 'inherit' }}>Show</button>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              </>
+            ) : (
+              <div style={{ padding: 40, textAlign: 'center', color: '#64748b' }}>Loading...</div>
+            )}
+          </div>
+        )}
+
+        {/* ═══ USER MANAGEMENT PAGE ═══ */}
+        {page === 'users' && (
+          <UsersPage />
+        )}
+
+                {/* ═══ GRADES PAGE ═══ */}
+        {page === 'grades' && (
+          <div className="aw-admin-page">
+            {gradesLoading || pricingLoading ? (
+              <div style={{ padding: 40, textAlign: 'center', color: '#94a3b8' }}>Loading pricing data...</div>
+            ) : pricingData ? (
+              <>
+                <div style={{ fontSize: 13, color: '#94a3b8', marginBottom: 20 }}>
+                  Site Price = SKU Cost × Multiplier. Click any cell to edit. Changes take effect immediately.
+                </div>
+
+                {/* Category × Grade Grid */}
+                <div className="aw-admin-table-card" style={{ marginBottom: 24 }}>
+                  <div className="aw-admin-table-header">
+                    <div className="aw-admin-table-title">Multiplier Grid</div>
+                    <button onClick={loadGrades} className="aw-admin-btn aw-admin-btn-view" style={{ fontSize: 12 }}>Refresh</button>
+                  </div>
+                  <div style={{ overflowX: 'auto', overflowY: 'auto', maxHeight: '50vh' }}>
+                    <table className="aw-admin-table" style={{ fontSize: 13 }}>
+                      <thead style={{ position: 'sticky', top: 0, zIndex: 3, background: '#111827' }}>
+                        <tr>
+                          <th style={{ color: '#cbd5e1', position: 'sticky', left: 0, background: '#111827', zIndex: 4 }}>Category</th>
+                          {pricingData.grades.map((g: any) => (
+                            <th key={g.code} style={{ color: '#cbd5e1', textAlign: 'center', minWidth: 80 }}>
+                              <div style={{ fontFamily: 'monospace', fontWeight: 700 }}>{g.code}</div>
+                              <div style={{ fontSize: 9, color: '#64748b', fontWeight: 400 }}>{g.label}</div>
+                            </th>
+                          ))}
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {pricingData.categories.filter((c: string) => c !== 'default').map((cat: string) => (
+                          <tr key={cat}>
+                            <td style={{ fontWeight: 700, color: '#fff', position: 'sticky', left: 0, background: '#111827', zIndex: 2 }}>{cat}</td>
+                            {pricingData.grades.map((g: any) => {
+                              const val = pricingData.grid[cat]?.[g.code]
+                              const isEditing = editingCell?.category === cat && editingCell?.grade === g.code
+                              const margin = val ? Math.round((val - 1) * 100) : 0
+                              return (
+                                <td key={g.code} style={{ textAlign: 'center', padding: '6px 8px', cursor: 'pointer' }}
+                                    onClick={() => { if (!isEditing) setEditingCell({ category: cat, grade: g.code, value: val?.toFixed(2) || '1.00' }) }}>
+                                  {isEditing ? (
+                                    <input
+                                      autoFocus
+                                      type="number"
+                                      step="0.01"
+                                      value={editingCell.value}
+                                      onChange={e => setEditingCell({ ...editingCell, value: e.target.value })}
+                                      onBlur={() => {
+                                        const num = parseFloat(editingCell.value)
+                                        if (!isNaN(num) && num >= 1 && num <= 5) savePricingCell(cat, g.code, num)
+                                        else setEditingCell(null)
+                                      }}
+                                      onKeyDown={e => {
+                                        if (e.key === 'Enter') { const num = parseFloat(editingCell.value); if (!isNaN(num) && num >= 1 && num <= 5) savePricingCell(cat, g.code, num); else setEditingCell(null) }
+                                        if (e.key === 'Escape') setEditingCell(null)
+                                      }}
+                                      style={{ width: 60, padding: '4px 6px', textAlign: 'center', background: '#0f1729', border: '2px solid #2563eb', borderRadius: 4, color: '#fff', fontSize: 13, fontFamily: 'monospace', fontWeight: 700, outline: 'none' }}
+                                    />
+                                  ) : (
+                                    <div>
+                                      <div style={{ fontFamily: 'monospace', fontWeight: 700, color: '#fff' }}>×{val?.toFixed(2) || '—'}</div>
+                                      <div style={{ fontSize: 10, color: '#10b981', fontWeight: 600 }}>+{margin}%</div>
+                                    </div>
+                                  )}
+                                </td>
+                              )
+                            })}
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+
+                {/* Price Preview */}
+                <div className="aw-admin-table-card">
+                  <div className="aw-admin-table-header">
+                    <div className="aw-admin-table-title">Price Preview</div>
+                  </div>
+                  <div style={{ padding: '12px 16px', borderBottom: '1px solid #1e2d4a', position: 'relative' }}>
+                    <input
+                      placeholder="Search by SKU, model, or brand..."
+                      value={previewProduct}
+                      onChange={e => searchPreviewSku(e.target.value)}
+                      onFocus={() => { if (previewResults.length > 0) setPreviewResults([...previewResults]) }}
+                      style={{ width: '100%', padding: '8px 12px', border: '1px solid #2d3548', borderRadius: 6, fontSize: 13, fontFamily: 'inherit', background: '#0f1729', color: '#e2e8f0', boxSizing: 'border-box' }}
+                    />
+                    {previewResults.length > 0 && !previewSku && (
+                      <div style={{ position: 'absolute', top: '100%', left: 16, right: 16, background: '#1a2234', border: '1px solid #2d3548', borderRadius: 8, zIndex: 20, maxHeight: 300, overflowY: 'auto', boxShadow: '0 8px 24px rgba(0,0,0,0.4)' }}>
+                        {previewResults.map((r: any) => (
+                          <div key={r.sku} onClick={() => selectPreviewSku(r)} style={{ padding: '10px 14px', cursor: 'pointer', borderBottom: '1px solid #1e2d4a', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}
+                               onMouseEnter={e => e.currentTarget.style.background = '#111827'} onMouseLeave={e => e.currentTarget.style.background = 'transparent'}>
+                            <div>
+                              <div style={{ fontSize: 11, fontFamily: 'monospace', color: '#94a3b8' }}>{r.sku}</div>
+                              <div style={{ fontSize: 12, color: '#fff', fontWeight: 600 }}>{r.model || r.brand} — {r.storage} {r.color}</div>
+                            </div>
+                            <div style={{ textAlign: 'right' }}>
+                              <span style={{ fontFamily: 'monospace', fontSize: 11, fontWeight: 700, color: '#34d399', background: '#1e293b', padding: '2px 6px', borderRadius: 4 }}>{r.grade}</span>
+                              <div style={{ fontSize: 11, color: '#64748b', marginTop: 2 }}>Qty: {r.quantity} · ${r.cost.toFixed(2)}</div>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                  {previewSku && pricingData ? (() => {
+                    const s = previewSku
+                    const cat = s.category || 'Phones'
+                    const mult = pricingData.grid[cat]?.[s.grade] || pricingData.grid['default']?.[s.grade] || 1
+                    const price = s.cost * mult
+                    const margin = price - s.cost
+                    return (
+                      <div style={{ padding: '16px' }}>
+                        <div style={{ display: 'flex', gap: 16, marginBottom: 16, flexWrap: 'wrap' }}>
+                          <div style={{ background: '#111827', border: '1px solid #1e2d4a', borderRadius: 8, padding: '12px 20px', textAlign: 'center' }}>
+                            <div style={{ fontSize: 10, color: '#94a3b8', marginBottom: 4 }}>Cost</div>
+                            <div style={{ fontSize: 20, fontWeight: 700, color: '#fff', fontFamily: 'monospace' }}>${s.cost.toFixed(2)}</div>
+                          </div>
+                          <div style={{ background: '#111827', border: '1px solid #1e2d4a', borderRadius: 8, padding: '12px 20px', textAlign: 'center' }}>
+                            <div style={{ fontSize: 10, color: '#94a3b8', marginBottom: 4 }}>Multiplier ({cat})</div>
+                            <div style={{ fontSize: 20, fontWeight: 700, color: '#60a5fa', fontFamily: 'monospace' }}>×{mult.toFixed(2)}</div>
+                          </div>
+                          <div style={{ background: '#111827', border: '1px solid #1e2d4a', borderRadius: 8, padding: '12px 20px', textAlign: 'center' }}>
+                            <div style={{ fontSize: 10, color: '#94a3b8', marginBottom: 4 }}>Site Price</div>
+                            <div style={{ fontSize: 20, fontWeight: 700, color: '#10b981', fontFamily: 'monospace' }}>${price.toFixed(2)}</div>
+                          </div>
+                          <div style={{ background: '#111827', border: '1px solid #1e2d4a', borderRadius: 8, padding: '12px 20px', textAlign: 'center' }}>
+                            <div style={{ fontSize: 10, color: '#94a3b8', marginBottom: 4 }}>Margin</div>
+                            <div style={{ fontSize: 20, fontWeight: 700, color: '#10b981', fontFamily: 'monospace' }}>+${margin.toFixed(2)}</div>
+                          </div>
+                        </div>
+                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(140px, 1fr))', gap: 8, fontSize: 12 }}>
+                          <div><span style={{ color: '#64748b' }}>SKU:</span> <span style={{ color: '#94a3b8', fontFamily: 'monospace', fontSize: 10 }}>{s.sku}</span></div>
+                          <div><span style={{ color: '#64748b' }}>Grade:</span> <span style={{ fontFamily: 'monospace', fontWeight: 700, color: '#34d399' }}>{s.grade}</span></div>
+                          <div><span style={{ color: '#64748b' }}>Category:</span> <span style={{ color: '#fff' }}>{cat}</span></div>
+                          <div><span style={{ color: '#64748b' }}>Storage:</span> <span style={{ color: '#fff' }}>{s.storage || '—'}</span></div>
+                          <div><span style={{ color: '#64748b' }}>Carrier:</span> <span style={{ color: '#fff' }}>{s.carrier || '—'}</span></div>
+                          <div><span style={{ color: '#64748b' }}>Color:</span> <span style={{ color: '#fff' }}>{s.color || '—'}</span></div>
+                          <div><span style={{ color: '#64748b' }}>Qty:</span> <span style={{ color: '#fff', fontWeight: 700 }}>{s.quantity}</span></div>
+                          <div><span style={{ color: '#64748b' }}>Avail:</span> <span style={{ color: s.available > 0 ? '#10b981' : '#64748b', fontWeight: 700 }}>{s.available}</span></div>
+                        </div>
+                        <div style={{ marginTop: 12, fontSize: 11, color: '#475569' }}>Using <b style={{ color: '#94a3b8' }}>{cat}</b> × <b style={{ color: '#94a3b8' }}>{s.grade}</b> multiplier = ×{mult.toFixed(2)}</div>
+                      </div>
+                    )
+                  })() : (
+                    <div style={{ padding: 20, textAlign: 'center', color: '#64748b', fontSize: 13 }}>{previewSearching ? 'Searching...' : 'Type a SKU above to preview its calculated price'}</div>
+                  )}
+                </div>
+              </>
+            ) : (
+              <div style={{ padding: 40, textAlign: 'center', color: '#94a3b8' }}>Loading...</div>
             )}
           </div>
         )}
