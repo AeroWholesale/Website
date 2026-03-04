@@ -40,7 +40,7 @@ export default function App() {
             <Route path="/buyers/enterprise" component={Enterprise} />
             <Route path="/buyers/wholesale" component={Wholesale} />
             <Route path="/buyers/resellers" component={Resellers} />
-            <Route path="/catalog/:modelCode*" component={ProductDetail} />
+            <Route path="/catalog/:rest*" component={ProductDetail} />
             <Route>
               <div className="max-w-7xl mx-auto px-4 py-20 text-center">
                 <h1 className="text-4xl font-bold text-[#1e3a5f]">404</h1>

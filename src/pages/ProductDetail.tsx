@@ -114,10 +114,10 @@ export default function ProductDetail() {
   const [filterCarrier, setFilterCarrier] = useState('all')
   const [filterColor, setFilterColor] = useState('all')
 
-  const params = useParams<{ modelCode: string; '*': string }>()
-  // wouter wildcard (:modelCode*) may return the value under 'modelCode' or '*'
-  const rawModelCode = params.modelCode || params['*'] || ''
-  const modelCode = decodeURIComponent(rawModelCode)
+  // Read modelCode directly from URL — most reliable across wouter versions
+  const modelCode = decodeURIComponent(
+    window.location.pathname.replace(/^\/catalog\//, '')
+  )
   const dealerToken = localStorage.getItem('aw-token')
   const dealerUser = (() => { try { return JSON.parse(localStorage.getItem('aw-user') || '') } catch { return null } })()
 
