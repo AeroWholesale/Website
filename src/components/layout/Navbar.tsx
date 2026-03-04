@@ -24,9 +24,25 @@ export default function Navbar() {
   const [scrolled, setScrolled] = useState(false)
   const [mobileOpen, setMobileOpen] = useState(false)
   const [buyersOpen, setBuyersOpen] = useState(false)
+  const [cartCount, setCartCount] = useState(0)
   const [dealerUser, setDealerUser] = useState<any>(() => {
     try { const u = localStorage.getItem('aw-user'); return u ? JSON.parse(u) : null } catch { return null }
   })
+
+  // Keep cart count in sync with localStorage
+  useEffect(() => {
+    const readCart = () => {
+      try {
+        const cart = JSON.parse(localStorage.getItem('aw-quote-cart') || '[]')
+        setCartCount(cart.reduce((s: number, i: any) => s + (i.qty || 1), 0))
+      } catch { setCartCount(0) }
+    }
+    readCart()
+    window.addEventListener('storage', readCart)
+    // Poll every 2s to catch in-page updates (localStorage doesn't fire storage event on same tab)
+    const interval = setInterval(readCart, 2000)
+    return () => { window.removeEventListener('storage', readCart); clearInterval(interval) }
+  }, [])
 
   const handleSignOut = () => {
     localStorage.removeItem('aw-token')
@@ -132,12 +148,13 @@ export default function Navbar() {
           <div className="hidden lg:flex items-center gap-2">
             {dealerUser ? (
               <>
+                {/* My Account */}
                 <Link
                   href="/portal"
                   className="px-4 py-1.5 text-sm font-medium text-[#1B2E5E] hover:text-[#ea580c] transition-colors"
                   style={{ fontFamily: "'DM Sans', sans-serif" }}
                 >
-                  {dealerUser.companyName || dealerUser.firstName}
+                  My Account
                 </Link>
                 <button
                   onClick={handleSignOut}
@@ -146,31 +163,45 @@ export default function Navbar() {
                 >
                   Sign Out
                 </button>
+                {/* Quote Cart with count */}
+                <Link
+                  href="/quote"
+                  className="flex items-center gap-2 px-4 py-2 rounded-md text-sm font-semibold bg-[#ea580c] text-white hover:bg-[#c2410c] transition-all duration-150"
+                  style={{ fontFamily: "'DM Sans', sans-serif" }}
+                >
+                  🛒 Quote Cart
+                  {cartCount > 0 && (
+                    <span style={{ background: '#fff', color: '#ea580c', borderRadius: 20, fontSize: 11, fontWeight: 800, padding: '1px 7px', lineHeight: '1.6' }}>
+                      {cartCount}
+                    </span>
+                  )}
+                </Link>
               </>
             ) : (
-              <Link
-                href="/login"
-                className="px-4 py-1.5 text-sm font-medium text-gray-600 hover:text-[#1B2E5E] transition-colors"
-                style={{ fontFamily: "'DM Sans', sans-serif" }}
-              >
-                Login
-              </Link>
-            )}
-            <Link
-              href="/quote"
-              className="px-4 py-2 rounded-md text-sm font-semibold bg-[#ea580c] text-white hover:bg-[#c2410c] transition-all duration-150"
-              style={{ fontFamily: "'DM Sans', sans-serif" }}
-            >
-              Request a Quote
-            </Link>
-            {!dealerUser && (
-              <Link
-                href="/apply"
-                className="px-4 py-2 rounded-md text-sm font-semibold bg-[#1B2E5E] text-white hover:bg-[#152448] transition-all duration-150"
-                style={{ fontFamily: "'DM Sans', sans-serif" }}
-              >
-                Apply for Access
-              </Link>
+              <>
+                <Link
+                  href="/login"
+                  className="px-4 py-1.5 text-sm font-medium text-gray-600 hover:text-[#1B2E5E] transition-colors"
+                  style={{ fontFamily: "'DM Sans', sans-serif" }}
+                >
+                  Login
+                </Link>
+                {/* Non-logged-in: Request a Quote goes to /login */}
+                <Link
+                  href="/login"
+                  className="px-4 py-2 rounded-md text-sm font-semibold bg-[#ea580c] text-white hover:bg-[#c2410c] transition-all duration-150"
+                  style={{ fontFamily: "'DM Sans', sans-serif" }}
+                >
+                  Request a Quote
+                </Link>
+                <Link
+                  href="/apply"
+                  className="px-4 py-2 rounded-md text-sm font-semibold bg-[#1B2E5E] text-white hover:bg-[#152448] transition-all duration-150"
+                  style={{ fontFamily: "'DM Sans', sans-serif" }}
+                >
+                  Apply for Access
+                </Link>
+              </>
             )}
           </div>
 
@@ -229,31 +260,45 @@ export default function Navbar() {
             {dealerUser ? (
               <>
                 <Link href="/portal" className="block px-3 py-2.5 text-sm font-medium text-[#1B2E5E]" style={{ fontFamily: "'DM Sans', sans-serif" }}>
-                  {dealerUser.companyName || dealerUser.firstName}
+                  My Account
                 </Link>
                 <button onClick={handleSignOut} className="block w-full text-left px-3 py-2.5 text-sm font-medium text-red-600" style={{ fontFamily: "'DM Sans', sans-serif", background: 'none', border: 'none', cursor: 'pointer' }}>
                   Sign Out
                 </button>
+                <Link
+                  href="/quote"
+                  className="flex items-center justify-center gap-2 w-full text-center px-4 py-2.5 rounded-md text-sm font-semibold bg-[#ea580c] text-white"
+                  style={{ fontFamily: "'DM Sans', sans-serif" }}
+                >
+                  🛒 Quote Cart
+                  {cartCount > 0 && (
+                    <span style={{ background: '#fff', color: '#ea580c', borderRadius: 20, fontSize: 11, fontWeight: 800, padding: '1px 7px' }}>
+                      {cartCount}
+                    </span>
+                  )}
+                </Link>
               </>
             ) : (
-              <Link href="/login" className="block px-3 py-2.5 text-sm font-medium text-gray-600 hover:text-[#1B2E5E]" style={{ fontFamily: "'DM Sans', sans-serif" }}>
-                Login
-              </Link>
+              <>
+                <Link href="/login" className="block px-3 py-2.5 text-sm font-medium text-gray-600 hover:text-[#1B2E5E]" style={{ fontFamily: "'DM Sans', sans-serif" }}>
+                  Login
+                </Link>
+                <Link
+                  href="/login"
+                  className="block w-full text-center px-4 py-2.5 rounded-md text-sm font-semibold bg-[#ea580c] text-white"
+                  style={{ fontFamily: "'DM Sans', sans-serif" }}
+                >
+                  Request a Quote
+                </Link>
+                <Link
+                  href="/apply"
+                  className="block w-full text-center px-4 py-2.5 rounded-md text-sm font-semibold bg-[#1B2E5E] text-white"
+                  style={{ fontFamily: "'DM Sans', sans-serif" }}
+                >
+                  Apply for Access
+                </Link>
+              </>
             )}
-            <Link
-              href="/quote"
-              className="block w-full text-center px-4 py-2.5 rounded-md text-sm font-semibold bg-[#ea580c] text-white hover:bg-[#c2410c] transition-colors"
-              style={{ fontFamily: "'DM Sans', sans-serif" }}
-            >
-              Request a Quote
-            </Link>
-            {!dealerUser && <Link
-              href="/apply"
-              className="block w-full text-center px-4 py-2.5 rounded-md text-sm font-semibold bg-[#1B2E5E] text-white hover:bg-[#152448] transition-colors"
-              style={{ fontFamily: "'DM Sans', sans-serif" }}
-            >
-              Apply for Access
-            </Link>}
           </div>
         </div>
       </div>

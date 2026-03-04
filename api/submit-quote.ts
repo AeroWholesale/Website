@@ -1,5 +1,5 @@
 // api/submit-quote.ts
-// GET  — returns all quote requests (admin)
+// GET  — returns dealer's own quotes (authenticated) OR all quotes (admin/no token)
 // POST — dealer submits a new quote, triggers internal email alert
 // PATCH — admin updates status, triggers dealer notification email
 
@@ -15,8 +15,6 @@ import {
 } from '../lib/quote-emails'
 
 const sql = neon(process.env.DATABASE_URL!)
-
-// ── DB bootstrap ──────────────────────────────────────────────────────────
 
 async function ensureTable() {
   await sql`
@@ -42,20 +40,36 @@ function generateRef(): string {
   return 'QR-' + Math.random().toString(36).toUpperCase().slice(2, 8)
 }
 
-// ── Handler ───────────────────────────────────────────────────────────────
-
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   await ensureTable()
 
-  // ── GET: all quotes for admin ──────────────────────────────────────────
+  // ── GET ───────────────────────────────────────────────────────────────
   if (req.method === 'GET') {
-    const quotes = await sql`
-      SELECT * FROM quote_requests ORDER BY created_at DESC
-    `
+    const token = (req.headers.authorization || '').replace('Bearer ', '').trim()
+
+    if (token) {
+      // Check if valid dealer session — return only their quotes
+      const sessions = await sql`
+        SELECT u.email FROM sessions s
+        JOIN users u ON u.id = s.user_id
+        WHERE s.token = ${token} AND s.expires_at > NOW()
+      `
+      if (sessions.length) {
+        const quotes = await sql`
+          SELECT * FROM quote_requests
+          WHERE dealer_email = ${sessions[0].email}
+          ORDER BY created_at DESC
+        `
+        return res.status(200).json({ quotes })
+      }
+    }
+
+    // No token or invalid token = admin, return all
+    const quotes = await sql`SELECT * FROM quote_requests ORDER BY created_at DESC`
     return res.status(200).json({ quotes })
   }
 
-  // ── POST: dealer submits a quote ───────────────────────────────────────
+  // ── POST ──────────────────────────────────────────────────────────────
   if (req.method === 'POST') {
     const { items, notes, dealerEmail, dealerName, companyName } = req.body || {}
 
@@ -67,7 +81,6 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     const totalUnits = items.reduce((sum: number, i: any) => sum + (i.qty || 0), 0)
     const totalValue = items.reduce((sum: number, i: any) => sum + ((i.price || 0) * (i.qty || 0)), 0)
 
-    // Insert into DB
     await sql`
       INSERT INTO quote_requests
         (ref_number, dealer_email, dealer_name, company_name, items, notes, total_units, total_value)
@@ -76,7 +89,6 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
          ${JSON.stringify(items)}, ${notes || null}, ${totalUnits}, ${totalValue})
     `
 
-    // Send internal alert to Zack + Linda (non-blocking — don't fail the request if email fails)
     const emailData: QuoteEmailData = {
       refNumber, dealerEmail, dealerName, companyName,
       items, notes, totalUnits, totalValue,
@@ -88,24 +100,19 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     return res.status(200).json({ success: true, refNumber })
   }
 
-  // ── PATCH: admin updates status ────────────────────────────────────────
+  // ── PATCH ─────────────────────────────────────────────────────────────
   if (req.method === 'PATCH') {
     const { id, status, declineReason } = req.body || {}
 
-    if (!id || !status) {
-      return res.status(400).json({ error: 'Missing id or status' })
-    }
+    if (!id || !status) return res.status(400).json({ error: 'Missing id or status' })
 
     const validStatuses = ['pending', 'confirmed', 'processing', 'declined']
-    if (!validStatuses.includes(status)) {
-      return res.status(400).json({ error: 'Invalid status' })
-    }
+    if (!validStatuses.includes(status)) return res.status(400).json({ error: 'Invalid status' })
 
     if (status === 'declined' && declineReason && !DECLINE_REASONS[declineReason]) {
       return res.status(400).json({ error: 'Invalid decline reason' })
     }
 
-    // Update DB
     await sql`
       UPDATE quote_requests
       SET status = ${status},
@@ -114,7 +121,6 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       WHERE id = ${id}
     `
 
-    // Fetch full quote to populate email
     const rows = await sql`SELECT * FROM quote_requests WHERE id = ${id}`
     if (!rows.length) return res.status(404).json({ error: 'Quote not found' })
 
@@ -130,7 +136,6 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       totalValue:  Number(q.total_value),
     }
 
-    // Send dealer notification based on new status (non-blocking)
     if (status === 'confirmed') {
       sendQuoteConfirmedEmail(emailData).catch(err =>
         console.error('[quote-emails] confirmed email failed:', err)
@@ -144,7 +149,6 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         console.error('[quote-emails] declined email failed:', err)
       )
     }
-    // Note: resetting to 'pending' intentionally sends no email
 
     return res.status(200).json({ success: true })
   }
