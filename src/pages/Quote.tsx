@@ -312,15 +312,15 @@ export default function Quote() {
                 <div className="qc-form-title">Quote Details</div>
                 <div className="qc-field">
                   <label className="qc-label">Company</label>
-                  <input className="qc-input" placeholder="Your company name" value={companyName} onChange={e => setCompanyName(e.target.value)} />
+                  <input className="qc-input" value={companyName} readOnly style={{ background: '#f1f4f8', color: '#475569', cursor: 'default' }} />
                 </div>
                 <div className="qc-field">
                   <label className="qc-label">Contact Name</label>
-                  <input className="qc-input" placeholder="Your full name" value={contactName} onChange={e => setContactName(e.target.value)} />
+                  <input className="qc-input" value={contactName} readOnly style={{ background: '#f1f4f8', color: '#475569', cursor: 'default' }} />
                 </div>
                 <div className="qc-field">
                   <label className="qc-label">Email</label>
-                  <input className="qc-input" type="email" placeholder="your@email.com" value={email} onChange={e => setEmail(e.target.value)} />
+                  <input className="qc-input" value={email} readOnly style={{ background: '#f1f4f8', color: '#475569', cursor: 'default' }} />
                 </div>
                 <div className="qc-field">
                   <label className="qc-label">Notes / Special Requirements</label>
@@ -334,7 +334,7 @@ export default function Quote() {
                 <button
                   className="qc-submit-btn"
                   onClick={handleSubmit}
-                  disabled={submitting || cart.length === 0 || !contactName.trim() || !email.trim() || !companyName.trim()}
+                  disabled={submitting || cart.length === 0}
                 >
                   {submitting ? 'Submitting...' : `Submit Quote Request (${totalUnits} unit${totalUnits !== 1 ? 's' : ''})`}
                 </button>
