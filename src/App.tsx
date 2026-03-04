@@ -17,6 +17,7 @@ import ProductDetail from '@/pages/ProductDetail'
 import Portal from '@/pages/Portal'
 import ForgotPassword from '@/pages/ForgotPassword'
 import ResetPassword from '@/pages/ResetPassword'
+import Quote from '@/pages/Quote'
 
 export default function App() {
   return (
@@ -37,6 +38,7 @@ export default function App() {
             <Route path="/apply" component={Apply} />
             <Route path="/login" component={Login} />
             <Route path="/portal" component={Portal} />
+            <Route path="/quote" component={Quote} />
             <Route path="/buyers/enterprise" component={Enterprise} />
             <Route path="/buyers/wholesale" component={Wholesale} />
             <Route path="/buyers/resellers" component={Resellers} />
