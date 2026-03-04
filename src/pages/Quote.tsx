@@ -130,11 +130,12 @@ export default function Quote() {
   const [submitting, setSubmitting] = useState(false)
   const [submitted, setSubmitted] = useState(false)
   const [refNumber, setRefNumber] = useState('')
-
-  const dealerUser = (() => {
-    try { return JSON.parse(localStorage.getItem('aw-user') || '') } catch { return null }
-  })()
+  const dealerUser = (() => { try { return JSON.parse(localStorage.getItem('aw-user') || '') } catch { return null } })()
   const dealerToken = localStorage.getItem('aw-token')
+
+  const [companyName, setCompanyName] = useState(dealerUser?.companyName || '')
+  const [contactName, setContactName] = useState(dealerUser ? `${dealerUser.firstName || ''} ${dealerUser.lastName || ''}`.trim() : '')
+  const [email, setEmail] = useState(dealerUser?.email || '')
 
   useEffect(() => {
     try {
@@ -181,9 +182,9 @@ export default function Quote() {
         body: JSON.stringify({
           items: cart,
           notes,
-          dealerEmail: dealerUser?.email || '',
-          dealerName: dealerUser ? `${dealerUser.first_name} ${dealerUser.last_name}` : '',
-          companyName: dealerUser?.company_name || '',
+          dealerEmail: email,
+          dealerName: contactName,
+          companyName,
         }),
       })
 
@@ -311,15 +312,15 @@ export default function Quote() {
                 <div className="qc-form-title">Quote Details</div>
                 <div className="qc-field">
                   <label className="qc-label">Company</label>
-                  <input className="qc-input" value={dealerUser?.company_name || ''} readOnly style={{ background: '#f1f4f8', color: '#64748b' }} />
+                  <input className="qc-input" placeholder="Your company name" value={companyName} onChange={e => setCompanyName(e.target.value)} />
                 </div>
                 <div className="qc-field">
                   <label className="qc-label">Contact Name</label>
-                  <input className="qc-input" value={dealerUser ? `${dealerUser.first_name} ${dealerUser.last_name}` : ''} readOnly style={{ background: '#f1f4f8', color: '#64748b' }} />
+                  <input className="qc-input" placeholder="Your full name" value={contactName} onChange={e => setContactName(e.target.value)} />
                 </div>
                 <div className="qc-field">
                   <label className="qc-label">Email</label>
-                  <input className="qc-input" value={dealerUser?.email || ''} readOnly style={{ background: '#f1f4f8', color: '#64748b' }} />
+                  <input className="qc-input" type="email" placeholder="your@email.com" value={email} onChange={e => setEmail(e.target.value)} />
                 </div>
                 <div className="qc-field">
                   <label className="qc-label">Notes / Special Requirements</label>
@@ -333,7 +334,7 @@ export default function Quote() {
                 <button
                   className="qc-submit-btn"
                   onClick={handleSubmit}
-                  disabled={submitting || cart.length === 0}
+                  disabled={submitting || cart.length === 0 || !contactName.trim() || !email.trim() || !companyName.trim()}
                 >
                   {submitting ? 'Submitting...' : `Submit Quote Request (${totalUnits} unit${totalUnits !== 1 ? 's' : ''})`}
                 </button>

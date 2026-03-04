@@ -188,7 +188,7 @@ export default function Navbar() {
                 </Link>
                 {/* Non-logged-in: Request a Quote goes to /login */}
                 <Link
-                  href="/login"
+                  href="/login?reason=quote"
                   className="px-4 py-2 rounded-md text-sm font-semibold bg-[#ea580c] text-white hover:bg-[#c2410c] transition-all duration-150"
                   style={{ fontFamily: "'DM Sans', sans-serif" }}
                 >
@@ -284,7 +284,7 @@ export default function Navbar() {
                   Login
                 </Link>
                 <Link
-                  href="/login"
+                  href="/login?reason=quote"
                   className="block w-full text-center px-4 py-2.5 rounded-md text-sm font-semibold bg-[#ea580c] text-white"
                   style={{ fontFamily: "'DM Sans', sans-serif" }}
                 >

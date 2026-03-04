@@ -7,6 +7,7 @@ const css =
   '.aw-login-logo-text{font-size:18px;font-weight:800;color:#132347;}' +
   '.aw-login-logo-dot{display:inline-block;width:7px;height:7px;background:#ea580c;border-radius:50%;margin-right:8px;vertical-align:middle;}' +
   '.aw-login-sub{text-align:center;font-size:13px;color:#64748b;margin-bottom:32px;}' +
+  '.aw-login-notice{background:#fff7ed;border:1px solid #fed7aa;border-radius:8px;padding:12px 14px;font-size:13px;color:#9a3412;margin-bottom:20px;line-height:1.5;}' +
   '.aw-login-label{display:block;font-size:12px;font-weight:700;color:#475569;text-transform:uppercase;letter-spacing:0.06em;margin-bottom:6px;}' +
   '.aw-login-input{width:100%;box-sizing:border-box;padding:12px 14px;border:1.5px solid #e2e8f0;border-radius:8px;font-size:15px;font-family:DM Sans,sans-serif;color:#132347;outline:none;margin-bottom:16px;}' +
   '.aw-login-input:focus{border-color:#132347;}' +
@@ -14,15 +15,17 @@ const css =
   '.aw-login-btn:hover{background:#0f1b35;}' +
   '.aw-login-btn:disabled{opacity:0.5;cursor:not-allowed;}' +
   '.aw-login-error{background:#fef2f2;border:1px solid #fecaca;border-radius:8px;padding:12px 14px;font-size:13px;color:#dc2626;margin-bottom:16px;}' +
-  '.aw-login-footer{text-align:center;margin-top:24px;font-size:13px;color:#94a3b8;line-height:2;}' +
-  '.aw-login-footer a{color:#ea580c;text-decoration:none;font-weight:600;}' +
-  '.aw-login-forgot{display:block;text-align:center;margin-top:12px;font-size:13px;color:#64748b;text-decoration:none;}'
+  '.aw-login-footer{text-align:center;margin-top:24px;font-size:13px;color:#94a3b8;line-height:1.8;}' +
+  '.aw-login-footer a{color:#ea580c;text-decoration:none;font-weight:600;}'
 
 export default function Login() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
+
+  // Check if redirected from "Request a Quote"
+  const isQuoteRedirect = window.location.search.includes('reason=quote')
 
   const handleSubmit = async () => {
     if (!email.trim() || !password.trim()) return
@@ -38,7 +41,8 @@ export default function Login() {
       if (data.success) {
         localStorage.setItem('aw-token', data.token)
         localStorage.setItem('aw-user', JSON.stringify(data.user))
-        window.location.href = '/portal'
+        // If they came from quote redirect, send them to /quote after login
+        window.location.href = isQuoteRedirect ? '/quote' : '/portal'
       } else {
         setError(data.error || 'Login failed. Please try again.')
       }
@@ -64,6 +68,14 @@ export default function Login() {
             <span className="aw-login-logo-text">AeroWholesale</span>
           </div>
           <div className="aw-login-sub">Wholesale Dealer Portal</div>
+
+          {isQuoteRedirect && (
+            <div className="aw-login-notice">
+              🔒 You need an approved dealer account to request a quote. Log in below, or{' '}
+              <a href="/apply" style={{ color: '#ea580c', fontWeight: 700 }}>apply for access</a>.
+            </div>
+          )}
+
           {error && <div className="aw-login-error">{error}</div>}
           <label className="aw-login-label">Email Address</label>
           <input
@@ -91,8 +103,8 @@ export default function Login() {
           >
             {loading ? 'Signing in...' : 'Sign In'}
           </button>
-          <a href="/forgot-password" className="aw-login-forgot">Forgot your password?</a>
           <div className="aw-login-footer">
+            <a href="/forgot-password" style={{ color: '#64748b', textDecoration: 'none', fontSize: '13px' }}>Forgot your password?</a><br />
             Need access? <a href="/apply">Apply for a wholesale account</a><br />
             Questions? <a href="mailto:sales@aerowholesale.com">sales@aerowholesale.com</a>
           </div>
