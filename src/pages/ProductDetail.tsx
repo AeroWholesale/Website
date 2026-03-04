@@ -114,8 +114,10 @@ export default function ProductDetail() {
   const [filterCarrier, setFilterCarrier] = useState('all')
   const [filterColor, setFilterColor] = useState('all')
 
-  const params = useParams<{ modelCode: string }>()
-  const modelCode = decodeURIComponent(params.modelCode || '')
+  const params = useParams<{ modelCode: string; '*': string }>()
+  // wouter wildcard (:modelCode*) may return the value under 'modelCode' or '*'
+  const rawModelCode = params.modelCode || params['*'] || ''
+  const modelCode = decodeURIComponent(rawModelCode)
   const dealerToken = localStorage.getItem('aw-token')
   const dealerUser = (() => { try { return JSON.parse(localStorage.getItem('aw-user') || '') } catch { return null } })()
 
