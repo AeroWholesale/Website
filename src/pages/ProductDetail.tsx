@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { useLocation } from 'wouter'
+import { useLocation, useParams } from 'wouter'
 
 const css = `
   @import url('https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600;9..40,700;9..40,800;9..40,900&display=swap');
@@ -114,7 +114,8 @@ export default function ProductDetail() {
   const [filterCarrier, setFilterCarrier] = useState('all')
   const [filterColor, setFilterColor] = useState('all')
 
-  const modelCode = decodeURIComponent(window.location.pathname.split('/catalog/')[1] || '')
+  const params = useParams<{ modelCode: string }>()
+  const modelCode = decodeURIComponent(params.modelCode || '')
   const dealerToken = localStorage.getItem('aw-token')
   const dealerUser = (() => { try { return JSON.parse(localStorage.getItem('aw-user') || '') } catch { return null } })()
 
