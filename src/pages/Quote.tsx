@@ -196,8 +196,8 @@ export default function Quote() {
       } else {
         alert(data.error || 'Failed to submit quote. Please try again.')
       }
-    } catch {
-      alert('Network error. Please try again.')
+    } catch (err) {
+      alert('Submit failed: ' + String(err))
     } finally {
       setSubmitting(false)
     }
