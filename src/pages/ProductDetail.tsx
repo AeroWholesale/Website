@@ -123,11 +123,10 @@ export default function ProductDetail() {
     if (!modelCode) return
     const headers: Record<string, string> = {}
     if (dealerToken) headers['Authorization'] = `Bearer ${dealerToken}`
-    fetch(`/api/catalog-public?size=500`, { headers })
-      .then(r => r.json())
+    fetch(`/api/catalog-product?modelCode=${encodeURIComponent(modelCode)}`, { headers })
+      .then(r => r.ok ? r.json() : null)
       .then(data => {
-        const found = data.products?.find((p: any) => p.modelCode === modelCode)
-        setProduct(found || null)
+        setProduct(data || null)
         setLoading(false)
       })
       .catch(() => setLoading(false))
