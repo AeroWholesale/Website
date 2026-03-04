@@ -202,7 +202,6 @@ export default function Catalog() {
 
   useEffect(() => { fetchData() }, [fetchData])
 
-  // Debounced search
   useEffect(() => {
     const t = setTimeout(() => { setSearch(searchInput); setPage(1) }, 400)
     return () => clearTimeout(t)
@@ -226,6 +225,8 @@ export default function Catalog() {
     const ai = GRADE_ORDER.indexOf(a), bi = GRADE_ORDER.indexOf(b)
     return (ai === -1 ? 99 : ai) - (bi === -1 ? 99 : bi)
   })
+
+  const goToProduct = (modelCode: string) => navigate(`/catalog/${encodeURIComponent(modelCode)}`)
 
   return (
     <>
@@ -260,7 +261,6 @@ export default function Catalog() {
         </div>
 
         <div className="aw-cat-layout">
-          {/* SIDEBAR */}
           <div className="aw-sidebar">
             <div className="aw-sidebar-header">
               <div className="aw-sidebar-title">Filters</div>
@@ -333,7 +333,6 @@ export default function Catalog() {
             </FilterGroup>
           </div>
 
-          {/* PRODUCTS */}
           <div>
             {hasFilters && (
               <div className="aw-active-filters">
@@ -362,7 +361,7 @@ export default function Catalog() {
               <>
                 <div className="aw-products-grid">
                   {data.products.map(p => (
-                    <div key={p.modelCode} className="aw-product-card">
+                    <div key={p.modelCode} className="aw-product-card" onClick={() => goToProduct(p.modelCode)}>
                       <div className="aw-card-img">
                         <IconDevice category={p.category} />
                         {p.totalStock >= 10 && <div className="aw-card-badge">{p.totalStock} in stock</div>}
@@ -396,7 +395,7 @@ export default function Catalog() {
                           )}
                           <div style={{ textAlign: 'right' }}>
                             <div className="aw-stock-label"><b>{p.totalStock}</b> units · {p.skuCount} SKUs</div>
-                            <button className="aw-view-btn" style={{ marginTop: 6 }}>View</button>
+                            <button className="aw-view-btn" style={{ marginTop: 6 }} onClick={e => { e.stopPropagation(); goToProduct(p.modelCode) }}>View</button>
                           </div>
                         </div>
                       </div>
