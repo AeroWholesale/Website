@@ -10,12 +10,13 @@ import Login from '@/pages/Login'
 import Admin from '@/pages/Admin'
 import Upload from '@/pages/Upload'
 import TermsAccept from '@/pages/TermsAccept'
-import Portal from '@/pages/Portal'
-import ForgotPassword from '@/pages/ForgotPassword'
-import ResetPassword from '@/pages/ResetPassword'
 import Enterprise from '@/pages/buyers/Enterprise'
 import Wholesale from '@/pages/buyers/Wholesale'
 import Resellers from '@/pages/buyers/Resellers'
+import ProductDetail from '@/pages/ProductDetail'
+import Portal from '@/pages/Portal'
+import ForgotPassword from '@/pages/ForgotPassword'
+import ResetPassword from '@/pages/ResetPassword'
 
 export default function App() {
   return (
@@ -23,7 +24,6 @@ export default function App() {
       <Route path="/admin" component={Admin} />
       <Route path="/upload/:token" component={Upload} />
       <Route path="/terms-accept" component={TermsAccept} />
-      <Route path="/portal" component={Portal} />
       <Route path="/forgot-password" component={ForgotPassword} />
       <Route path="/reset-password" component={ResetPassword} />
       <Route>
@@ -36,9 +36,11 @@ export default function App() {
             <Route path="/grading" component={Grading} />
             <Route path="/apply" component={Apply} />
             <Route path="/login" component={Login} />
+            <Route path="/portal" component={Portal} />
             <Route path="/buyers/enterprise" component={Enterprise} />
             <Route path="/buyers/wholesale" component={Wholesale} />
             <Route path="/buyers/resellers" component={Resellers} />
+            <Route path="/catalog/:modelCode*" component={ProductDetail} />
             <Route>
               <div className="max-w-7xl mx-auto px-4 py-20 text-center">
                 <h1 className="text-4xl font-bold text-[#1e3a5f]">404</h1>
