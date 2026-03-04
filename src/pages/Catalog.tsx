@@ -143,7 +143,6 @@ interface Product {
   totalStock: number; skuCount: number; grades: string[]; storages: string[]
   carriers: string[]; colors: string[]
   image: string; skus: any[]
-  lowestPrice?: number | null; highestPrice?: number | null
 }
 
 interface ApiResponse {
@@ -169,8 +168,6 @@ export default function Catalog() {
   const [page, setPage] = useState(1)
 
   const [openGroups, setOpenGroups] = useState({ category: true, brand: true, grade: true, storage: false, carrier: false })
-  const dealerToken = localStorage.getItem('aw-token')
-  const dealerUser = (() => { try { return JSON.parse(localStorage.getItem('aw-user') || '') } catch { return null } })()
   const toggleGroup = (key: keyof typeof openGroups) => setOpenGroups(g => ({ ...g, [key]: !g[key] }))
 
   const fetchData = useCallback(async () => {
@@ -186,10 +183,7 @@ export default function Catalog() {
       params.set('sort', sort)
       params.set('page', String(page))
       params.set('size', '24')
-      const headers: Record<string, string> = {}
-      const tok = localStorage.getItem('aw-token')
-      if (tok) headers['Authorization'] = `Bearer ${tok}`
-      const res = await fetch(`/api/catalog-public?${params}`, { headers })
+      const res = await fetch(`/api/catalog-public?${params}`)
       if (!res.ok) throw new Error(`API error: ${res.status}`)
       setData(await res.json())
       setError('')
@@ -202,6 +196,7 @@ export default function Catalog() {
 
   useEffect(() => { fetchData() }, [fetchData])
 
+  // Debounced search
   useEffect(() => {
     const t = setTimeout(() => { setSearch(searchInput); setPage(1) }, 400)
     return () => clearTimeout(t)
@@ -225,8 +220,6 @@ export default function Catalog() {
     const ai = GRADE_ORDER.indexOf(a), bi = GRADE_ORDER.indexOf(b)
     return (ai === -1 ? 99 : ai) - (bi === -1 ? 99 : bi)
   })
-
-  const goToProduct = (modelCode: string) => navigate(`/catalog/${encodeURIComponent(modelCode)}`)
 
   return (
     <>
@@ -261,6 +254,7 @@ export default function Catalog() {
         </div>
 
         <div className="aw-cat-layout">
+          {/* SIDEBAR */}
           <div className="aw-sidebar">
             <div className="aw-sidebar-header">
               <div className="aw-sidebar-title">Filters</div>
@@ -333,6 +327,7 @@ export default function Catalog() {
             </FilterGroup>
           </div>
 
+          {/* PRODUCTS */}
           <div>
             {hasFilters && (
               <div className="aw-active-filters">
@@ -361,9 +356,9 @@ export default function Catalog() {
               <>
                 <div className="aw-products-grid">
                   {data.products.map(p => (
-                    <div key={p.modelCode} className="aw-product-card" onClick={() => goToProduct(p.modelCode)}>
+                    <div key={p.modelCode} className="aw-product-card">
                       <div className="aw-card-img">
-                        <IconDevice category={p.category} />
+                        {p.image && p.image !== noImg ? <img src={p.image} alt={p.name} loading="lazy" /> : <IconDevice category={p.category} />}
                         {p.totalStock >= 10 && <div className="aw-card-badge">{p.totalStock} in stock</div>}
                       </div>
                       <div className="aw-card-body">
@@ -382,20 +377,13 @@ export default function Catalog() {
                           ))}
                         </div>
                         <div className="aw-card-footer">
-                          {p.lowestPrice ? (
-                            <div style={{ fontSize: 13, fontWeight: 700, color: '#132347' }}>
-                              From <span style={{ fontSize: 18, fontWeight: 800 }}>${p.lowestPrice.toFixed(2)}</span>
-                              {p.highestPrice && p.highestPrice !== p.lowestPrice && <span style={{ fontSize: 12, color: '#64748b', fontWeight: 500 }}> – ${p.highestPrice.toFixed(2)}</span>}
-                            </div>
-                          ) : (
-                            <div style={{ display: 'flex', alignItems: 'center', gap: 6, color: '#64748b', fontSize: 12, fontWeight: 600 }}>
-                              <svg fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24" style={{ width: 14, height: 14 }}><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>
-                              Login for pricing
-                            </div>
-                          )}
+                          <div style={{ display: 'flex', alignItems: 'center', gap: 6, color: '#64748b', fontSize: 12, fontWeight: 600 }}>
+                            <svg fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24" style={{ width: 14, height: 14 }}><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>
+                            Login for pricing
+                          </div>
                           <div style={{ textAlign: 'right' }}>
                             <div className="aw-stock-label"><b>{p.totalStock}</b> units · {p.skuCount} SKUs</div>
-                            <button className="aw-view-btn" style={{ marginTop: 6 }} onClick={e => { e.stopPropagation(); goToProduct(p.modelCode) }}>View</button>
+                            <button className="aw-view-btn" style={{ marginTop: 6 }}>View</button>
                           </div>
                         </div>
                       </div>
@@ -417,32 +405,18 @@ export default function Catalog() {
           </div>
         </div>
 
-        {dealerToken ? (
-          <div className="aw-login-banner">
-            <div className="aw-login-banner-inner">
-              <div>
-                <div className="aw-banner-title">Logged in as {dealerUser?.companyName || 'Dealer'}</div>
-                <div className="aw-banner-sub">You are viewing wholesale prices. <a href="/portal" style={{ color: '#ea580c', textDecoration: 'none', fontWeight: 700 }}>Go to portal →</a></div>
-              </div>
-              <div className="aw-banner-btns">
-                <button className="aw-banner-btn-ghost" onClick={() => { localStorage.removeItem('aw-token'); localStorage.removeItem('aw-user'); window.location.reload() }}>Sign Out</button>
-              </div>
+        <div className="aw-login-banner">
+          <div className="aw-login-banner-inner">
+            <div>
+              <div className="aw-banner-title">Ready to buy? Apply for wholesale access</div>
+              <div className="aw-banner-sub">Get access to bulk pricing and place orders directly</div>
+            </div>
+            <div className="aw-banner-btns">
+              <button className="aw-banner-btn-primary" onClick={() => navigate('/apply')}>Apply for Access</button>
+              <button className="aw-banner-btn-ghost" onClick={() => navigate('/login')}>Login</button>
             </div>
           </div>
-        ) : (
-          <div className="aw-login-banner">
-            <div className="aw-login-banner-inner">
-              <div>
-                <div className="aw-banner-title">Ready to buy? Apply for wholesale access</div>
-                <div className="aw-banner-sub">Get access to bulk pricing and place orders directly</div>
-              </div>
-              <div className="aw-banner-btns">
-                <button className="aw-banner-btn-primary" onClick={() => navigate('/apply')}>Apply for Access</button>
-                <button className="aw-banner-btn-ghost" onClick={() => navigate('/login')}>Login</button>
-              </div>
-            </div>
-          </div>
-        )}
+        </div>
       </div>
     </>
   )
