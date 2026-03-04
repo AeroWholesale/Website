@@ -12,7 +12,7 @@ import {
   sendQuoteDeclinedEmail,
   DECLINE_REASONS,
   type QuoteEmailData,
-} from '../lib/quote-emails'
+} from '../lib/quote-emails.js'
 
 const sql = neon(process.env.DATABASE_URL!)
 
