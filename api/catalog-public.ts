@@ -121,7 +121,21 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       const price = Math.round((row.cost || 0) * multiplier * 100) / 100
 
       // Normalize carrier and color
-      const normalizedCarrier = carrierMap[row.carrier] || row.carrier || ''
+      // For wearables, map to WiFi/Cellular instead of carrier names
+      const WEARABLE_CATEGORIES = ['Wearables', 'Headphones', 'Accessories']
+      const rawCarrier = carrierMap[row.carrier] || row.carrier || ''
+      const isWearable = mapping?.category && WEARABLE_CATEGORIES.includes(mapping.category)
+      const CELLULAR_CARRIERS = ['AT&T', 'Verizon', 'T-Mobile', 'Sprint', 'US Cellular', 'Boost', 'Cricket', 'Metro', 'Xfinity', 'Straight Talk']
+      let normalizedCarrier = rawCarrier
+      if (isWearable && rawCarrier) {
+        if (rawCarrier === 'Unlocked' || rawCarrier === 'WiFi' || rawCarrier === 'WiFi Only') {
+          normalizedCarrier = 'WiFi'
+        } else if (CELLULAR_CARRIERS.some(c => rawCarrier.toLowerCase().includes(c.toLowerCase())) || rawCarrier === 'Cellular') {
+          normalizedCarrier = 'Cellular'
+        } else if (rawCarrier) {
+          normalizedCarrier = 'WiFi'
+        }
+      }
       const normalizedColor = colorMap[row.color] || row.color || ''
 
       if (!families[modelCode]) {
@@ -152,6 +166,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         color: normalizedColor,
         quantity: row.quantity,
         available: row.available_quantity,
+        price,
       })
       family.totalStock += row.quantity || 0
       if (grade) family.grades.add(grade)
@@ -261,6 +276,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         color: s.color,
         quantity: s.quantity,
         available: s.available,
+        price: showPrices ? (s.price > 0 ? s.price : null) : null,
       }))
     }))
 
