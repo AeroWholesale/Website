@@ -9,7 +9,7 @@ function normalizeGrade(grade: string): string {
   return grade.replace(/S\d+$/, '')
 }
 
-// Generation markers that can appear anywhere in SKU (e.g., AP-IPDP11-A2435-4G-HSO...)
+// Generation markers that can appear anywhere in SKU
 const GENERATION_MARKERS = ['1G', '2G', '3G', '4G', '5G', '6G', '7G', '8G', '9G', '10G']
 
 // Extract model code from full SKU by matching against known families
@@ -18,8 +18,6 @@ function getModelCode(sku: string, familyMap: Record<string, any>): string {
   const parts = afterColon.split('-')
   if (parts.length < 2) return afterColon
 
-  // First: check if any family code uses a generation marker (e.g., AP-IPDP11-4G)
-  // Scan SKU parts for generation markers and try base + generation combo
   const baseCode = parts.slice(0, 2).join('-')
   for (const part of parts.slice(2)) {
     if (GENERATION_MARKERS.includes(part)) {
@@ -28,13 +26,11 @@ function getModelCode(sku: string, familyMap: Record<string, any>): string {
     }
   }
 
-  // Second: try progressively longer prefix matches (existing logic)
   for (let i = parts.length - 1; i >= 2; i--) {
     const candidate = parts.slice(0, i).join('-')
     if (familyMap[candidate]) return candidate
   }
 
-  // Default: first two parts
   return parts.slice(0, 2).join('-')
 }
 
@@ -42,7 +38,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   const pool = new Pool({ connectionString: process.env.DATABASE_URL })
 
   try {
-    // Check for dealer session token — if valid, include pricing
+    // Check for dealer session token
     const authHeader = req.headers.authorization || ''
     const token = authHeader.replace('Bearer ', '').trim()
     let showPrices = false
@@ -60,22 +56,51 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     } = req.query as Record<string, string>
 
     // ── Load config from DB ───────────────────────────────────────────
-    const [familyRows, gradeRows, carrierRows, colorRows] = await Promise.all([
+    const [familyRows, carrierRows, colorRows] = await Promise.all([
       pool.query(`SELECT model_code, name, brand, category, image_url, visible FROM product_families`),
-      pool.query(`SELECT grade_code, label, multiplier, sort_order, visible FROM grade_config`),
       pool.query(`SELECT code, display_name FROM carrier_map`),
       pool.query(`SELECT code, display_name FROM color_map`),
     ])
 
-    // Build lookup maps from DB
+    // Load grade_config with category-awareness + backward compat fallback
+    let gradeRows: any[] = []
+    try {
+      const r = await pool.query(
+        `SELECT grade_code, label, multiplier, sort_order, visible, category FROM grade_config ORDER BY sort_order`
+      )
+      gradeRows = r.rows
+    } catch {
+      // category column doesn't exist yet — fall back to flat query
+      const r = await pool.query(
+        `SELECT grade_code, label, multiplier, sort_order, visible FROM grade_config ORDER BY sort_order`
+      )
+      gradeRows = r.rows.map((row: any) => ({ ...row, category: null }))
+    }
+
+    // Build family lookup
     const familyMap: Record<string, { name: string; brand: string; category: string; image_url: string | null; visible: boolean }> = {}
     for (const r of familyRows.rows) {
       familyMap[r.model_code] = { name: r.name, brand: r.brand, category: r.category, image_url: r.image_url, visible: r.visible }
     }
 
-    const gradeMap: Record<string, { label: string; multiplier: number; sort_order: number; visible: boolean }> = {}
-    for (const r of gradeRows.rows) {
-      gradeMap[r.grade_code] = { label: r.label, multiplier: parseFloat(r.multiplier), sort_order: r.sort_order, visible: r.visible }
+    // Build nested gradeMap[category][grade_code] — category-aware
+    // If category is null (pre-migration), all grades go into every category bucket
+    const gradeMap: Record<string, Record<string, { label: string; multiplier: number; sort_order: number; visible: boolean }>> = {}
+    const flatGradeMap: Record<string, { label: string; multiplier: number; sort_order: number; visible: boolean }> = {}
+
+    for (const r of gradeRows) {
+      const entry = {
+        label: r.label,
+        multiplier: parseFloat(r.multiplier),
+        sort_order: r.sort_order,
+        visible: r.visible,
+      }
+      const cat = r.category || 'Phones'
+      if (!gradeMap[cat]) gradeMap[cat] = {}
+      gradeMap[cat][r.grade_code] = entry
+
+      // Also keep flat map for fallback + gradeLabels
+      if (!flatGradeMap[r.grade_code]) flatGradeMap[r.grade_code] = entry
     }
 
     const carrierMap: Record<string, string> = {}
@@ -84,7 +109,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     const colorMap: Record<string, string> = {}
     for (const r of colorRows.rows) { colorMap[r.code] = r.display_name }
 
-    // ── Get all active products with stock ─────────────────────────────
+    // ── Get all active products with stock ────────────────────────────
     const result = await pool.query(`
       SELECT sku, model, brand, device_type, grade, grade_description,
              carrier, storage, color, cost, quantity, available_quantity,
@@ -93,12 +118,12 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       FROM products
       WHERE is_active = true
         AND quantity > 0
-       AND grade NOT IN ('XF', 'XC', 'INTAKE', 'XIMEI', '')
+        AND grade NOT IN ('XF', 'XC', 'INTAKE', 'XIMEI', '')
         AND grade IS NOT NULL
         AND sku NOT LIKE 'XA-%' AND sku NOT LIKE 'XA:%'
     `)
 
-    // ── Group by parent product ────────────────────────────────────────
+    // ── Group by parent product ───────────────────────────────────────
     const families: Record<string, {
       modelCode: string; name: string; brand: string; category: string
       skus: any[]; totalStock: number
@@ -109,22 +134,28 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     for (const row of result.rows) {
       const modelCode = getModelCode(row.sku, familyMap)
       const mapping = familyMap[modelCode]
-      if (!mapping) continue // Only show mapped + visible families
-      if (!mapping.visible) continue
+      if (!mapping || !mapping.visible) continue
 
       const rawGrade = row.grade || ''
       const grade = normalizeGrade(rawGrade)
       if (UNSELLABLE_GRADES.includes(grade)) continue
 
-      const gradeConfig = gradeMap[grade]
-      const multiplier = gradeConfig?.multiplier || 1.30
-      const price = Math.round((row.cost || 0) * multiplier * 100) / 100
+      // Category-aware multiplier lookup with fallback chain
+      const productCategory = mapping.category
+      const gradeConfig =
+        gradeMap[productCategory]?.[grade] ??
+        gradeMap['Phones']?.[grade] ??
+        flatGradeMap[grade]
+      const multiplier = gradeConfig?.multiplier ?? 1.30
 
-      // Normalize carrier and color
-      // For wearables, map to WiFi/Cellular instead of carrier names
+      // Math.ceil — round up to next dollar
+      const rawPrice = (row.cost || 0) * multiplier
+      const price = Math.ceil(rawPrice)
+
+      // Normalize carrier
       const WEARABLE_CATEGORIES = ['Wearables', 'Headphones', 'Accessories']
       const rawCarrier = carrierMap[row.carrier] || row.carrier || ''
-      const isWearable = mapping?.category && WEARABLE_CATEGORIES.includes(mapping.category)
+      const isWearable = productCategory && WEARABLE_CATEGORIES.includes(productCategory)
       const CELLULAR_CARRIERS = ['AT&T', 'Verizon', 'T-Mobile', 'Sprint', 'US Cellular', 'Boost', 'Cricket', 'Metro', 'Xfinity', 'Straight Talk']
       let normalizedCarrier = rawCarrier
       if (isWearable && rawCarrier) {
@@ -132,7 +163,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
           normalizedCarrier = 'WiFi'
         } else if (CELLULAR_CARRIERS.some(c => rawCarrier.toLowerCase().includes(c.toLowerCase())) || rawCarrier === 'Cellular') {
           normalizedCarrier = 'Cellular'
-        } else if (rawCarrier) {
+        } else {
           normalizedCarrier = 'WiFi'
         }
       }
@@ -157,7 +188,6 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       }
 
       const family = families[modelCode]
-
       family.skus.push({
         sku: row.sku,
         grade,
@@ -175,7 +205,6 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       if (normalizedColor) family.colors.add(normalizedColor)
       if (price > 0 && price < family.lowestPrice) family.lowestPrice = price
       if (price > family.highestPrice) family.highestPrice = price
-      // Image only comes from product_families.image_url — no random SC fallback
     }
 
     // ── Convert to array and apply filters ────────────────────────────
@@ -187,8 +216,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       totalStock: f.totalStock,
       skuCount: f.skus.length,
       grades: Array.from(f.grades).sort((a, b) => {
-        const ao = gradeMap[a]?.sort_order ?? 99
-        const bo = gradeMap[b]?.sort_order ?? 99
+        const ao = flatGradeMap[a]?.sort_order ?? 99
+        const bo = flatGradeMap[b]?.sort_order ?? 99
         return ao - bo
       }),
       storages: Array.from(f.storages).sort(),
@@ -228,20 +257,19 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       )
     }
 
-    // Sort
     if (sort === 'stock') {
       products.sort((a, b) => b.totalStock - a.totalStock)
     } else {
       products.sort((a, b) => a.name.localeCompare(b.name))
     }
 
-    // Build filter options from ALL products (not just filtered)
+    // Filter options from all products
     const allProducts = Object.values(families)
     const filterOptions = {
       categories: [...new Set(allProducts.map(p => p.category))].sort(),
       brands: [...new Set(allProducts.map(p => p.brand))].sort(),
       grades: [...new Set(allProducts.flatMap(p => Array.from(p.grades)))].sort((a, b) => {
-        return (gradeMap[a]?.sort_order ?? 99) - (gradeMap[b]?.sort_order ?? 99)
+        return (flatGradeMap[a]?.sort_order ?? 99) - (flatGradeMap[b]?.sort_order ?? 99)
       }),
       storages: [...new Set(allProducts.flatMap(p => Array.from(p.storages)))].sort(),
       carriers: [...new Set(allProducts.flatMap(p => Array.from(p.carriers)))].sort(),
@@ -253,7 +281,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     const total = products.length
     const paginated = products.slice((pageNum - 1) * pageSize, pageNum * pageSize)
 
-    // Include prices for authenticated dealers, strip for public
+    // Strip prices for non-authenticated users
     const sanitized = paginated.map(p => ({
       modelCode: p.modelCode,
       name: p.name,
@@ -280,9 +308,9 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       }))
     }))
 
-    // Build grade labels from DB
+    // Grade labels from flat map
     const gradeLabels: Record<string, string> = {}
-    for (const [code, cfg] of Object.entries(gradeMap)) {
+    for (const [code, cfg] of Object.entries(flatGradeMap)) {
       if (cfg.visible) gradeLabels[code] = cfg.label
     }
 

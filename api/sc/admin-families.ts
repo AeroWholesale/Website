@@ -2,35 +2,98 @@ import type { VercelRequest, VercelResponse } from '@vercel/node'
 import { Pool } from '@neondatabase/serverless'
 
 /**
- * Admin Families API — full product family data with all SKUs for admin panel
- * GET /api/sc/admin-families — list all families with SKU counts
- * GET /api/sc/admin-families?family=AP-IP15 — get single family with all SKUs
+ * Admin Families API
+ * GET  /api/sc/admin-families              — list all families with SKU counts
+ * GET  /api/sc/admin-families?family=CODE  — single family with all SKUs
+ * PATCH /api/sc/admin-families             — update family visible OR sku hidden_from_site
+ *   Body: { type: 'family', id, visible }
+ *   Body: { type: 'sku', sku, hidden }
+ *   Body: { type: 'bulk-hide', modelCode }  — hide all SKUs for a family
+ *   Body: { type: 'rename', id, name }
  */
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   const pool = new Pool({ connectionString: process.env.DATABASE_URL })
 
   try {
+
+    // ── PATCH ─────────────────────────────────────────────────────────
+    if (req.method === 'PATCH') {
+      const { type } = req.body || {}
+
+      if (type === 'family') {
+        const { id, visible } = req.body
+        if (!id || visible === undefined) {
+          res.status(400).json({ error: 'id and visible required' }); return
+        }
+        await pool.query(
+          `UPDATE product_families SET visible = $1, updated_at = NOW() WHERE id = $2`,
+          [visible, id]
+        )
+        res.status(200).json({ success: true }); return
+      }
+
+      if (type === 'rename') {
+        const { id, name } = req.body
+        if (!id || !name) {
+          res.status(400).json({ error: 'id and name required' }); return
+        }
+        await pool.query(
+          `UPDATE product_families SET name = $1, updated_at = NOW() WHERE id = $2`,
+          [name.trim(), id]
+        )
+        res.status(200).json({ success: true }); return
+      }
+
+      if (type === 'sku') {
+        const { sku, hidden } = req.body
+        if (!sku || hidden === undefined) {
+          res.status(400).json({ error: 'sku and hidden required' }); return
+        }
+        await pool.query(
+          `UPDATE products SET hidden_from_site = $1, updated_at = NOW() WHERE sku = $2`,
+          [hidden, sku]
+        )
+        res.status(200).json({ success: true }); return
+      }
+
+      if (type === 'bulk-hide') {
+        const { modelCode } = req.body
+        if (!modelCode) {
+          res.status(400).json({ error: 'modelCode required' }); return
+        }
+        await pool.query(
+          `UPDATE products SET hidden_from_site = true, updated_at = NOW()
+           WHERE sku LIKE $1 AND grade NOT IN ('XF', 'XC', 'INTAKE')`,
+          [`%${modelCode}%`]
+        )
+        res.status(200).json({ success: true }); return
+      }
+
+      res.status(400).json({ error: 'Invalid patch type' }); return
+    }
+
+    if (req.method !== 'GET') {
+      res.status(405).json({ error: 'Method not allowed' }); return
+    }
+
     const { family, search, brand, category, visibility, sort } = req.query
 
-    // ── Single family detail with all SKUs ──
+    // ── Single family detail with all SKUs ────────────────────────────
     if (family) {
       const familyCode = String(family)
-      
-      // Get family info
+
       const famResult = await pool.query(
         `SELECT id, model_code, name, brand, category, image_url, visible, sort_order, created_at, updated_at
          FROM product_families WHERE model_code = $1`,
         [familyCode]
       )
-      
+
       if (famResult.rows.length === 0) {
-        res.status(404).json({ error: 'Family not found' })
-        return
+        res.status(404).json({ error: 'Family not found' }); return
       }
 
       const fam = famResult.rows[0]
 
-      // Get ALL SKUs for this family (including hidden, intake, zero-stock)
       const skuResult = await pool.query(
         `SELECT sku, model, brand, device_type, grade, grade_description,
                 carrier, storage, color, cost, quantity, available_quantity,
@@ -38,10 +101,10 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
                 is_active, warehouse_name, sold_30, sold_90, created_at, updated_at
          FROM products
          WHERE sku LIKE $1
-         ORDER BY 
+         ORDER BY
            CASE WHEN grade = 'INTAKE' THEN 1 ELSE 0 END,
            CASE grade
-             WHEN 'CAP1' THEN 1 WHEN 'NE' THEN 2 WHEN 'CAP' THEN 3 
+             WHEN 'CAP1' THEN 1 WHEN 'NE' THEN 2 WHEN 'CAP' THEN 3
              WHEN 'CA+' THEN 4 WHEN 'CA' THEN 5 WHEN 'CAB' THEN 6
              WHEN 'SD' THEN 7 WHEN 'SD-' THEN 8 WHEN 'SDB' THEN 9
              ELSE 10 END,
@@ -49,19 +112,43 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         [`%${familyCode}%`]
       )
 
-      // Get grade multipliers for price calculation
-      const gradeResult = await pool.query(
-        `SELECT grade_code, multiplier, label FROM grade_config WHERE visible = true`
-      )
+      // Grade multipliers — category-aware with fallback
+      let gradeRows: any[] = []
+      try {
+        const r = await pool.query(
+          `SELECT grade_code, multiplier, label, category FROM grade_config WHERE visible = true`
+        )
+        gradeRows = r.rows
+      } catch {
+        const r = await pool.query(
+          `SELECT grade_code, multiplier, label FROM grade_config WHERE visible = true`
+        )
+        gradeRows = r.rows.map((row: any) => ({ ...row, category: null }))
+      }
+
+      // Build category-aware gradeMap
       const gradeMap: Record<string, { multiplier: number; label: string }> = {}
-      for (const g of gradeResult.rows) {
-        gradeMap[g.grade_code] = { multiplier: parseFloat(g.multiplier), label: g.label }
+      const famCategory = fam.category || 'Phones'
+      for (const g of gradeRows) {
+        const cat = g.category || 'Phones'
+        if (cat === famCategory) {
+          gradeMap[g.grade_code] = { multiplier: parseFloat(g.multiplier), label: g.label }
+        }
+      }
+      // Fallback: if no category match, use any
+      if (Object.keys(gradeMap).length === 0) {
+        for (const g of gradeRows) {
+          if (!gradeMap[g.grade_code]) {
+            gradeMap[g.grade_code] = { multiplier: parseFloat(g.multiplier), label: g.label }
+          }
+        }
       }
 
       const skus = skuResult.rows.map(s => {
         const cost = parseFloat(s.cost) || 0
         const gradeInfo = gradeMap[s.grade]
-        const calculatedPrice = gradeInfo ? Math.round(cost * gradeInfo.multiplier * 100) / 100 : null
+        // Math.ceil — round up to next dollar
+        const calculatedPrice = gradeInfo ? Math.ceil(cost * gradeInfo.multiplier) : null
         const sitePrice = parseFloat(s.site_price) || null
 
         return {
@@ -117,13 +204,12 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       return
     }
 
-    // ── Family list (no SKU detail) ──
+    // ── Family list ───────────────────────────────────────────────────
     const familiesResult = await pool.query(
       `SELECT id, model_code, name, brand, category, image_url, visible, sort_order
        FROM product_families ORDER BY name`
     )
 
-    // Get SKU counts and stock per family
     const skuStatsResult = await pool.query(`
       SELECT pf.model_code,
              COUNT(p.id) as sku_count,
@@ -160,7 +246,6 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       ...(statsMap[f.model_code] || { skuCount: 0, totalStock: 0, totalAvail: 0, hiddenCount: 0, intakeCount: 0, visibleCount: 0 }),
     }))
 
-    // Apply filters
     if (search) {
       const q = String(search).toLowerCase()
       families = families.filter(f => f.name.toLowerCase().includes(q) || f.modelCode.toLowerCase().includes(q))
@@ -170,7 +255,6 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     if (visibility === 'visible') families = families.filter(f => f.visible)
     if (visibility === 'hidden') families = families.filter(f => !f.visible)
 
-    // Sort
     const sortBy = String(sort || 'name')
     families.sort((a, b) => {
       if (sortBy === 'stock') return b.totalStock - a.totalStock
@@ -180,20 +264,41 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       return a.name.localeCompare(b.name)
     })
 
-    // Totals
     const totalFamilies = families.length
     const totalSkus = families.reduce((s, f) => s + f.skuCount, 0)
     const totalStock = families.reduce((s, f) => s + f.totalStock, 0)
     const visibleFamilies = families.filter(f => f.visible).length
 
-    // Brands and categories for filter dropdowns
     const allBrands = [...new Set(familiesResult.rows.map(f => f.brand))].sort()
     const allCategories = [...new Set(familiesResult.rows.map(f => f.category))].sort()
+
+    // Unmapped SKUs — products with no matching family
+    const unmappedResult = await pool.query(`
+      SELECT p.sku, p.model, p.brand, p.grade, p.quantity
+      FROM products p
+      WHERE p.is_active = true
+        AND p.quantity > 0
+        AND p.grade NOT IN ('XF', 'XC', 'INTAKE', 'XIMEI')
+        AND NOT EXISTS (
+          SELECT 1 FROM product_families pf
+          WHERE p.sku LIKE '%' || pf.model_code || '%'
+        )
+      ORDER BY p.quantity DESC
+      LIMIT 50
+    `)
 
     res.status(200).json({
       families,
       totals: { totalFamilies, visibleFamilies, totalSkus, totalStock },
       filters: { brands: allBrands, categories: allCategories },
+      unmapped: unmappedResult.rows.map(r => ({
+        sku: r.sku,
+        model: r.model || '',
+        brand: r.brand || '',
+        grade: r.grade || '',
+        quantity: parseInt(r.quantity) || 0,
+        reason: 'No family match',
+      })),
     })
 
   } catch (err: any) {
