@@ -45,7 +45,6 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       ALTER TABLE grade_config
       ADD CONSTRAINT grade_config_grade_category_unique
       UNIQUE (grade_code, category)
-      DEFERRABLE INITIALLY DEFERRED
     `).catch(() => {
       // Constraint already exists — safe to ignore
     })
