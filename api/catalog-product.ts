@@ -100,7 +100,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       if (UNSELLABLE_GRADES.includes(grade)) continue
 
       const multiplier = gradeMap[grade]?.multiplier || 1.30
-      const price = Math.round((row.cost || 0) * multiplier * 100) / 100
+      const price = Math.ceil((row.cost || 0) * multiplier)
 
       const rawCarrier = carrierMap[row.carrier] || row.carrier || ''
       const isWearable = WEARABLE_CATEGORIES.includes(mapping.category)
