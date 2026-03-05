@@ -70,7 +70,6 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       )
       gradeRows = r.rows
     } catch {
-      // category column doesn't exist yet — fall back to flat query
       const r = await pool.query(
         `SELECT grade_code, label, multiplier, sort_order, visible FROM grade_config ORDER BY sort_order`
       )
@@ -84,7 +83,6 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     }
 
     // Build nested gradeMap[category][grade_code] — category-aware
-    // If category is null (pre-migration), all grades go into every category bucket
     const gradeMap: Record<string, Record<string, { label: string; multiplier: number; sort_order: number; visible: boolean }>> = {}
     const flatGradeMap: Record<string, { label: string; multiplier: number; sort_order: number; visible: boolean }> = {}
 
@@ -99,7 +97,6 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       if (!gradeMap[cat]) gradeMap[cat] = {}
       gradeMap[cat][r.grade_code] = entry
 
-      // Also keep flat map for fallback + gradeLabels
       if (!flatGradeMap[r.grade_code]) flatGradeMap[r.grade_code] = entry
     }
 
@@ -109,7 +106,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     const colorMap: Record<string, string> = {}
     for (const r of colorRows.rows) { colorMap[r.code] = r.display_name }
 
-    // ── Get all active products with stock ────────────────────────────
+    // ── Get all active products with stock — AW Main only ─────────────
     const result = await pool.query(`
       SELECT sku, model, brand, device_type, grade, grade_description,
              carrier, storage, color, cost, quantity, available_quantity,
@@ -121,6 +118,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         AND grade NOT IN ('XF', 'XC', 'INTAKE', 'XIMEI', '')
         AND grade IS NOT NULL
         AND sku NOT LIKE 'XA-%' AND sku NOT LIKE 'XA:%'
+        AND warehouse_name = 'AW Main'
     `)
 
     // ── Group by parent product ───────────────────────────────────────
@@ -149,8 +147,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       const multiplier = gradeConfig?.multiplier ?? 1.30
 
       // Math.ceil — round up to next dollar
-      const rawPrice = (row.cost || 0) * multiplier
-      const price = Math.ceil(rawPrice)
+      const price = Math.ceil((row.cost || 0) * multiplier)
 
       // Normalize carrier
       const WEARABLE_CATEGORIES = ['Wearables', 'Headphones', 'Accessories']

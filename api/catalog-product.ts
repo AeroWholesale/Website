@@ -81,6 +81,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         AND grade NOT IN ('XF', 'XC', 'INTAKE', 'XIMEI', '')
         AND grade IS NOT NULL
         AND sku NOT LIKE 'XA-%' AND sku NOT LIKE 'XA:%'
+        AND warehouse_name = 'AW Main'
     `)
 
     const skus: any[] = []
