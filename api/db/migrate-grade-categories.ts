@@ -1,23 +1,11 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node'
 import { Pool } from '@neondatabase/serverless'
 
-/**
- * Migration: Add category to grade_config for per-category pricing grid
- * GET /api/db/migrate-grade-categories
- * Safe to run multiple times (idempotent)
- *
- * Changes:
- *   1. ALTER grade_config ADD COLUMN category TEXT
- *   2. Update existing rows to category = 'Phones'
- *   3. Drop old UNIQUE(grade_code) constraint
- *   4. Add UNIQUE(grade_code, category)
- *   5. Seed Tablets, Laptops, Wearables rows (copying Phones multipliers)
- */
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   const pool = new Pool({ connectionString: process.env.DATABASE_URL })
 
   try {
-    // Step 1 — Add category column if it doesn't exist
+    // Step 1 — Add category column if missing
     await pool.query(`
       ALTER TABLE grade_config
       ADD COLUMN IF NOT EXISTS category TEXT NOT NULL DEFAULT 'Phones'
@@ -28,33 +16,27 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       UPDATE grade_config SET category = 'Phones' WHERE category IS NULL OR category = ''
     `)
 
-    // Step 3 — Drop old unique constraint on grade_code alone (if it exists)
-    // Get constraint name first
+    // Step 3 — Drop ALL unique constraints on grade_config (single-col and composite)
+    // This removes both the old grade_code-only and any deferrable composite from prior runs
     const constraintResult = await pool.query(`
       SELECT conname FROM pg_constraint
-      WHERE conrelid = 'grade_config'::regclass
-        AND contype = 'u'
-        AND array_length(conkey, 1) = 1
+      WHERE conrelid = 'grade_config'::regclass AND contype = 'u'
     `)
     for (const row of constraintResult.rows) {
       await pool.query(`ALTER TABLE grade_config DROP CONSTRAINT IF EXISTS "${row.conname}"`)
     }
 
-    // Step 4 — Add composite unique constraint
+    // Step 4 — Add clean non-deferrable composite unique constraint
     await pool.query(`
       ALTER TABLE grade_config
       ADD CONSTRAINT grade_config_grade_category_unique
       UNIQUE (grade_code, category)
-    `).catch(() => {
-      // Constraint already exists — safe to ignore
-    })
+    `)
 
-    // Step 5 — Get current Phones multipliers to copy across categories
+    // Step 5 — Seed Tablets, Laptops, Wearables from Phones multipliers
     const phonesResult = await pool.query(`
       SELECT grade_code, label, multiplier, sort_order, visible
-      FROM grade_config
-      WHERE category = 'Phones'
-      ORDER BY sort_order
+      FROM grade_config WHERE category = 'Phones' ORDER BY sort_order
     `)
 
     const otherCategories = ['Tablets', 'Laptops', 'Wearables']
@@ -71,12 +53,9 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       }
     }
 
-    // Verify final state
     const countResult = await pool.query(`
       SELECT category, COUNT(*) as grade_count
-      FROM grade_config
-      GROUP BY category
-      ORDER BY category
+      FROM grade_config GROUP BY category ORDER BY category
     `)
 
     res.status(200).json({
