@@ -5,10 +5,10 @@ import { Pool } from '@neondatabase/serverless'
  * Admin Families API
  * GET  /api/sc/admin-families              — list all families with SKU counts
  * GET  /api/sc/admin-families?family=CODE  — single family with all SKUs
- * PATCH /api/sc/admin-families             — update family visible OR sku hidden_from_site
- *   Body: { type: 'family', id, visible }
+ * PATCH /api/sc/admin-families
+ *   Body: { type: 'family', id, visible?, image_url? }  ← image_url now supported
  *   Body: { type: 'sku', sku, hidden }
- *   Body: { type: 'bulk-hide', modelCode }  — hide all SKUs for a family
+ *   Body: { type: 'bulk-hide', modelCode }
  *   Body: { type: 'rename', id, name }
  */
 export default async function handler(req: VercelRequest, res: VercelResponse) {
@@ -21,13 +21,34 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       const { type } = req.body || {}
 
       if (type === 'family') {
-        const { id, visible } = req.body
-        if (!id || visible === undefined) {
-          res.status(400).json({ error: 'id and visible required' }); return
+        const { id, visible, image_url } = req.body
+        if (!id) {
+          res.status(400).json({ error: 'id required' }); return
         }
+
+        // Build dynamic SET clause — only update fields that were provided
+        const setClauses: string[] = ['updated_at = NOW()']
+        const values: any[] = []
+
+        if (visible !== undefined) {
+          values.push(visible)
+          setClauses.push(`visible = $${values.length}`)
+        }
+
+        if (image_url !== undefined) {
+          // Empty string clears the photo; null also clears it
+          values.push(image_url === '' ? null : image_url)
+          setClauses.push(`image_url = $${values.length}`)
+        }
+
+        if (values.length === 0) {
+          res.status(400).json({ error: 'No fields to update' }); return
+        }
+
+        values.push(id)
         await pool.query(
-          `UPDATE product_families SET visible = $1, updated_at = NOW() WHERE id = $2`,
-          [visible, id]
+          `UPDATE product_families SET ${setClauses.join(', ')} WHERE id = $${values.length}`,
+          values
         )
         res.status(200).json({ success: true }); return
       }
@@ -147,7 +168,6 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       const skus = skuResult.rows.map(s => {
         const cost = parseFloat(s.cost) || 0
         const gradeInfo = gradeMap[s.grade]
-        // Math.ceil — round up to next dollar
         const calculatedPrice = gradeInfo ? Math.ceil(cost * gradeInfo.multiplier) : null
         const sitePrice = parseFloat(s.site_price) || null
 
