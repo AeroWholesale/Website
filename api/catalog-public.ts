@@ -311,6 +311,9 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       if (cfg.visible) gradeLabels[code] = cfg.label
     }
 
+    // ── CRITICAL: Disable caching so visibility changes take effect immediately
+    res.setHeader('Cache-Control', 'no-store')
+
     res.status(200).json({
       products: sanitized,
       total,
