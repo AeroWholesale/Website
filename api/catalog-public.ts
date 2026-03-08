@@ -119,6 +119,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         AND grade IS NOT NULL
         AND sku NOT LIKE 'XA-%' AND sku NOT LIKE 'XA:%'
         AND warehouse_name = 'AW Main'
+        AND (hidden_from_site IS NULL OR hidden_from_site = false)
     `)
 
     // ── Group by parent product ───────────────────────────────────────
