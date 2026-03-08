@@ -1,9 +1,7 @@
+import { useState, useEffect } from 'react'
 import { useLocation } from 'wouter'
 
 // ── INLINE STYLES ────────────────────────────────────────────────────────
-// All styles are scoped inline or via a <style> tag injected once.
-// No Tailwind required — matches the final mockup exactly.
-
 const css = `
   @import url('https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600;9..40,700;9..40,800;9..40,900&display=swap');
 
@@ -99,24 +97,34 @@ const css = `
   .aw-products-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; }
   .aw-product-card { background: var(--white); border: 1px solid var(--border); border-radius: 10px; overflow: hidden; cursor: pointer; transition: box-shadow 0.15s, transform 0.15s; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
   .aw-product-card:hover { box-shadow: 0 8px 28px rgba(19,35,71,0.12); transform: translateY(-2px); }
-  .aw-card-img { height: 150px; background: var(--slate-bg); display: flex; align-items: center; justify-content: center; border-bottom: 1px solid var(--border); position: relative; }
+  .aw-card-img { height: 150px; background: var(--slate-bg); display: flex; align-items: center; justify-content: center; border-bottom: 1px solid var(--border); position: relative; overflow: hidden; }
+  .aw-card-img img { max-height: 120px; max-width: 120px; object-fit: contain; }
   .aw-card-img svg { width: 56px; height: 56px; color: var(--steel); opacity: 0.5; }
   .aw-card-badge { position: absolute; top: 10px; left: 10px; background: var(--navy); color: var(--white); font-size: 9px; font-weight: 800; padding: 3px 8px; border-radius: 3px; letter-spacing: 0.06em; }
   .aw-card-badge.hot { background: var(--orange); }
   .aw-card-body { padding: 14px; }
   .aw-card-meta { display: flex; gap: 4px; margin-bottom: 6px; }
   .aw-card-meta-tag { font-size: 10px; font-weight: 600; color: var(--steel-dim); background: var(--slate-bg); padding: 2px 7px; border-radius: 3px; text-transform: uppercase; letter-spacing: 0.04em; border: 1px solid var(--border); }
-  .aw-card-name { font-size: 13.5px; font-weight: 700; color: var(--navy); margin-bottom: 8px; letter-spacing: -0.01em; }
+  .aw-card-name { font-size: 13.5px; font-weight: 700; color: var(--navy); margin-bottom: 8px; letter-spacing: -0.01em; line-height: 1.3; }
   .aw-card-grades { display: flex; gap: 4px; flex-wrap: wrap; margin-bottom: 10px; }
   .aw-grade-pill { font-size: 10px; font-weight: 600; padding: 2px 7px; border-radius: 3px; border: 1px solid; }
   .aw-grade-cap1 { background: #f0fdf4; color: #15803d; border-color: #bbf7d0; }
   .aw-grade-cap  { background: #eff6ff; color: #1d4ed8; border-color: #bfdbfe; }
+  .aw-grade-cap-plus { background: #f5f3ff; color: #6d28d9; border-color: #ddd6fe; }
   .aw-grade-ca   { background: #fefce8; color: #854d0e; border-color: #fef08a; }
+  .aw-grade-sd   { background: #fff7ed; color: #9a3412; border-color: #fed7aa; }
   .aw-card-footer { display: flex; align-items: center; justify-content: space-between; border-top: 1px solid var(--border); padding-top: 10px; }
   .aw-stock-dot { display: flex; align-items: center; gap: 5px; font-size: 11px; font-weight: 600; color: #15803d; }
   .aw-stock-dot::before { content: ''; width: 6px; height: 6px; background: #22c55e; border-radius: 50%; }
   .aw-view-btn { font-size: 12px; font-weight: 700; color: var(--white); background: var(--navy); padding: 5px 12px; border-radius: 5px; cursor: pointer; letter-spacing: -0.01em; transition: background 0.13s; border: none; font-family: inherit; }
   .aw-view-btn:hover { background: var(--navy-mid); }
+
+  /* ── SKELETON LOADER ── */
+  .aw-skeleton { animation: aw-pulse 1.5s ease-in-out infinite; }
+  @keyframes aw-pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } }
+  .aw-skeleton-img { height: 150px; background: #e2e8f0; border-bottom: 1px solid var(--border); }
+  .aw-skeleton-body { padding: 14px; }
+  .aw-skeleton-line { height: 10px; background: #e2e8f0; border-radius: 4px; margin-bottom: 8px; }
 
   /* ── BUYER TYPES ── */
   .aw-buyer-types { background: var(--white); }
@@ -173,6 +181,19 @@ const css = `
   .aw-cta-btn-ghost { background: rgba(255,255,255,0.07); color: rgba(255,255,255,0.7); font-size: 14px; font-weight: 600; padding: 14px 28px; border-radius: 7px; cursor: pointer; border: 1px solid rgba(255,255,255,0.12); transition: all 0.15s; font-family: inherit; }
   .aw-cta-btn-ghost:hover { background: rgba(255,255,255,0.12); color: var(--white); }
 `
+
+// ── GRADE CONFIG ──────────────────────────────────────────────────────────
+const GRADE_LABELS: Record<string, string> = {
+  'CAP1': 'Premium 100%', 'CAP': 'Premium', 'NE': 'New',
+  'CA+': 'Excellent', 'CA': 'Good', 'CAB': 'Good (Batt<80%)',
+  'SD': 'B-Grade', 'SD-': 'C-Grade', 'SDB': 'B/C (Batt<80%)',
+}
+
+const GRADE_CLASS: Record<string, string> = {
+  'CAP1': 'cap1', 'NE': 'cap1', 'CAP': 'cap',
+  'CA+': 'cap-plus', 'CA': 'ca', 'CAB': 'ca',
+  'SD': 'sd', 'SD-': 'sd', 'SDB': 'sd',
+}
 
 // ── SVG ICONS ─────────────────────────────────────────────────────────────
 const IconPin = () => (
@@ -296,9 +317,27 @@ const IconLaptopCard = () => (
   </svg>
 )
 
+const IconDeviceCard = ({ category }: { category?: string }) => {
+  if (category === 'Tablets') return <IconTabletCard />
+  if (category === 'Laptops') return <IconLaptopCard />
+  return <IconPhoneCard />
+}
+
 // ── COMPONENT ─────────────────────────────────────────────────────────────
 export default function Home() {
-const [, navigate] = useLocation()
+  const [, navigate] = useLocation()
+  const [featured, setFeatured] = useState<any[]>([])
+  const [featuredLoading, setFeaturedLoading] = useState(true)
+
+  useEffect(() => {
+    fetch('/api/catalog-public?sort=stock&size=4')
+      .then(r => r.ok ? r.json() : null)
+      .then(data => {
+        if (data?.products) setFeatured(data.products)
+        setFeaturedLoading(false)
+      })
+      .catch(() => setFeaturedLoading(false))
+  }, [])
 
   return (
     <>
@@ -401,12 +440,12 @@ const [, navigate] = useLocation()
             </div>
             <div className="aw-cat-grid">
               {[
-                { icon: <IconPhone />, name: 'Phones', meta: 'iPhone · Samsung Galaxy S & A', meta2: 'All carriers · All storage tiers', path: '/catalog' },
-                { icon: <IconTablet />, name: 'Tablets', meta: 'iPad · Samsung Galaxy Tab', meta2: 'WiFi & Cellular configs', path: '/catalog' },
-                { icon: <IconLaptop />, name: 'Laptops / Computers', meta: 'MacBook Air & Pro · M1–M3', meta2: 'Multiple storage configs', path: '/catalog' },
-                { icon: <IconWatch />, name: 'Wearables', meta: 'Apple Watch · Samsung Galaxy Watch', meta2: 'Google Pixel Watch', path: '/catalog' },
+                { icon: <IconPhone />, name: 'Phones', meta: 'iPhone · Samsung Galaxy S & A', meta2: 'All carriers · All storage tiers', category: 'Phones' },
+                { icon: <IconTablet />, name: 'Tablets', meta: 'iPad · Samsung Galaxy Tab', meta2: 'WiFi & Cellular configs', category: 'Tablets' },
+                { icon: <IconLaptop />, name: 'Laptops / Computers', meta: 'MacBook Air & Pro · M1–M3', meta2: 'Multiple storage configs', category: 'Laptops' },
+                { icon: <IconWatch />, name: 'Wearables', meta: 'Apple Watch · Samsung Galaxy Watch', meta2: 'Google Pixel Watch', category: 'Wearables' },
               ].map((cat) => (
-                <div key={cat.name} className="aw-cat-card" onClick={() => navigate(cat.path)}>
+                <div key={cat.name} className="aw-cat-card" onClick={() => navigate(`/catalog?category=${encodeURIComponent(cat.category)}`)}>
                   <div className="aw-cat-icon">{cat.icon}</div>
                   <div className="aw-cat-name">{cat.name}</div>
                   <div className="aw-cat-meta">{cat.meta}<br />{cat.meta2}</div>
@@ -428,35 +467,60 @@ const [, navigate] = useLocation()
               <div className="aw-view-all" onClick={() => navigate('/catalog')}>View full catalog <IconArrow /></div>
             </div>
             <div className="aw-products-grid">
-              {[
-                { icon: <IconPhoneCard />, badge: 'HOT', hot: true, brand: 'Apple', type: 'iPhone', name: 'iPhone 15 Pro Max', grades: [['cap1','Premium 100%'],['cap','Premium'],['ca','Good']] },
-                { icon: <IconPhoneCard />, badge: 'NEW', hot: false, brand: 'Apple', type: 'iPhone', name: 'iPhone 16 Pro', grades: [['cap1','Premium 100%'],['cap','Premium']] },
-                { icon: <IconTabletCard />, badge: null, hot: false, brand: 'Apple', type: 'iPad', name: 'iPad Pro 13" M4', grades: [['cap1','Premium 100%'],['cap','Premium']] },
-                { icon: <IconLaptopCard />, badge: null, hot: false, brand: 'Apple', type: 'MacBook', name: 'MacBook Air M2', grades: [['cap','Premium'],['ca','Good']] },
-              ].map((p) => (
-                <div key={p.name} className="aw-product-card" onClick={() => navigate('/catalog')}>
-                  <div className="aw-card-img">
-                    {p.icon}
-                    {p.badge && <div className={`aw-card-badge${p.hot ? ' hot' : ''}`}>{p.badge}</div>}
-                  </div>
-                  <div className="aw-card-body">
-                    <div className="aw-card-meta">
-                      <span className="aw-card-meta-tag">{p.brand}</span>
-                      <span className="aw-card-meta-tag">{p.type}</span>
+              {featuredLoading
+                ? Array.from({ length: 4 }).map((_, i) => (
+                    <div key={i} className="aw-product-card aw-skeleton">
+                      <div className="aw-skeleton-img" />
+                      <div className="aw-skeleton-body">
+                        <div className="aw-skeleton-line" style={{ width: '50%' }} />
+                        <div className="aw-skeleton-line" style={{ width: '80%', height: 14 }} />
+                        <div className="aw-skeleton-line" style={{ width: '40%' }} />
+                      </div>
                     </div>
-                    <div className="aw-card-name">{p.name}</div>
-                    <div className="aw-card-grades">
-                      {p.grades.map(([g, label]) => (
-                        <span key={g} className={`aw-grade-pill aw-grade-${g}`}>{label}</span>
-                      ))}
+                  ))
+                : featured.length === 0
+                ? Array.from({ length: 4 }).map((_, i) => (
+                    <div key={i} className="aw-product-card">
+                      <div className="aw-card-img"><IconPhoneCard /></div>
+                      <div className="aw-card-body">
+                        <div className="aw-card-name" style={{ color: '#94a3b8' }}>No products available</div>
+                      </div>
                     </div>
-                    <div className="aw-card-footer">
-                      <span className="aw-stock-dot">In Stock</span>
-                      <button className="aw-view-btn">View Options</button>
+                  ))
+                : featured.map((p) => (
+                    <div
+                      key={p.modelCode}
+                      className="aw-product-card"
+                      onClick={() => navigate(`/catalog/${encodeURIComponent(p.modelCode)}`)}
+                    >
+                      <div className="aw-card-img">
+                        {p.image
+                          ? <img src={p.image} alt={p.name} />
+                          : <IconDeviceCard category={p.category} />}
+                      </div>
+                      <div className="aw-card-body">
+                        <div className="aw-card-meta">
+                          <span className="aw-card-meta-tag">{p.brand}</span>
+                          <span className="aw-card-meta-tag">{p.category}</span>
+                        </div>
+                        <div className="aw-card-name">{p.name}</div>
+                        <div className="aw-card-grades">
+                          {p.grades.slice(0, 3).map((g: string) => (
+                            <span key={g} className={`aw-grade-pill aw-grade-${GRADE_CLASS[g] || 'ca'}`}>
+                              {GRADE_LABELS[g] || g}
+                            </span>
+                          ))}
+                        </div>
+                        <div className="aw-card-footer">
+                          <span className="aw-stock-dot">{p.totalStock.toLocaleString()} in stock</span>
+                          <button className="aw-view-btn" onClick={e => { e.stopPropagation(); navigate(`/catalog/${encodeURIComponent(p.modelCode)}`) }}>
+                            View Options
+                          </button>
+                        </div>
+                      </div>
                     </div>
-                  </div>
-                </div>
-              ))}
+                  ))
+              }
             </div>
           </div>
         </div>
