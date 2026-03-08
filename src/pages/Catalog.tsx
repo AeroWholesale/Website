@@ -160,7 +160,13 @@ export default function Catalog() {
 
   const [searchInput, setSearchInput] = useState('')
   const [search, setSearch] = useState('')
-  const [category, setCategory] = useState('')
+
+  // Read category from URL query param on mount (set by home page category cards)
+  const [category, setCategory] = useState(() => {
+    const params = new URLSearchParams(window.location.search)
+    return params.get('category') || ''
+  })
+
   const [brands, setBrands] = useState<string[]>([])
   const [grades, setGrades] = useState<string[]>([])
   const [storages, setStorages] = useState<string[]>([])
@@ -233,8 +239,8 @@ export default function Catalog() {
 
         <div className="aw-cat-header">
           <div className="aw-cat-header-inner">
-            <div className="aw-cat-breadcrumb"><span onClick={() => navigate('/')}>Home</span> › Catalog</div>
-            <div className="aw-cat-title">Product Catalog</div>
+            <div className="aw-cat-breadcrumb"><span onClick={() => navigate('/')}>Home</span> › {category ? <><span onClick={() => setCategory('')}>Catalog</span> › {category}</> : 'Catalog'}</div>
+            <div className="aw-cat-title">{category ? `${category}` : 'Product Catalog'}</div>
             <div className="aw-cat-subtitle">
               {data ? `${data.total} products in stock · Updated hourly from live inventory` : 'Loading inventory...'}
             </div>
