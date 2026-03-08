@@ -219,8 +219,6 @@ export default function Catalog() {
 
   const hasFilters = category || brands.length || grades.length || storages.length || carriers.length || search
 
-  const noImg = 'https://bi.cwa.sellercloud.com/images/NoImageAvailable.gif'
-
   const sortGrades = (g: string[]) => [...g].sort((a, b) => {
     const ai = GRADE_ORDER.indexOf(a), bi = GRADE_ORDER.indexOf(b)
     return (ai === -1 ? 99 : ai) - (bi === -1 ? 99 : bi)
@@ -363,7 +361,9 @@ export default function Catalog() {
                   {data.products.map(p => (
                     <div key={p.modelCode} className="aw-product-card" onClick={() => goToProduct(p.modelCode)}>
                       <div className="aw-card-img">
-                        <IconDevice category={p.category} />
+                        {p.image
+                          ? <img src={p.image} alt={p.name} />
+                          : <IconDevice category={p.category} />}
                         {p.totalStock >= 10 && <div className="aw-card-badge">{p.totalStock} in stock</div>}
                       </div>
                       <div className="aw-card-body">
