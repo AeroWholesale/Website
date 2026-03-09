@@ -124,13 +124,13 @@ export default function Enterprise() {
             </div>
             <div className="ent-hero-stats">
               {[
-                ['10M+', 'In annual device volume'],
+                ['40-60%', 'Avg savings vs. new retail'],
                 ['48hr', 'Average fulfillment time'],
                 ['4', 'Condition grades available'],
                 ['100%', 'IMEI verified inventory'],
               ].map(([val, label]) => (
                 <div key={label} className="ent-hero-stat">
-                  <div className="ent-hero-stat-val">{val.replace(/\d+/, m => `<span>${m}</span>`)}<span style={{display:'none'}}/>{val}</div>
+                  <div className="ent-hero-stat-val">{val}</div>
                   <div className="ent-hero-stat-label">{label}</div>
                 </div>
               ))}
