@@ -118,7 +118,7 @@ export default function Wholesale() {
             </div>
             <div className="ws-hero-stats">
               {[
-                ['$10M+', 'Annual volume'],
+                ['40-60%', 'Avg savings vs. new retail'],
                 ['Apple & Samsung', 'Primary brands'],
                 ['48hr', 'Fulfillment SLA'],
                 ['4 Grades', 'Condition tiers'],
