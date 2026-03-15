@@ -136,6 +136,9 @@ export default function Admin() {
   const [famSearch,setFamSearch]             = useState('')
   const [photoModal,setPhotoModal]           = useState<any>(null)
   const [photoUrl,setPhotoUrl]               = useState('')
+  const [createFamModal,setCreateFamModal]   = useState(false)
+  const [createFamForm,setCreateFamForm]     = useState({modelCode:'',name:'',brand:'Apple',category:'Phones',visible:true})
+  const [createFamSaving,setCreateFamSaving] = useState(false)
 
   // Pricing
   const [pricingData,setPricingData]     = useState<any>(null)
@@ -316,6 +319,29 @@ export default function Admin() {
       const r=await fetch('/api/sc/admin-families',{method:'PATCH',headers:{'Content-Type':'application/json'},body:JSON.stringify({type:'rename',id,name:n})})
       if(r.ok){setFamiliesData((p:any)=>p?{...p,families:p.families.map((f:any)=>f.id===id?{...f,name:n}:f)}:p);showToast('Renamed')}
     }catch{showToast('Rename failed',true)}
+  }
+
+  const createFamily = async () => {
+    const { modelCode, name, brand, category, visible } = createFamForm
+    if (!modelCode.trim() || !name.trim()) { showToast('Model code and name required', true); return }
+    setCreateFamSaving(true)
+    try {
+      const r = await fetch('/api/sc/admin-families', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ modelCode: modelCode.trim().toUpperCase(), name: name.trim(), brand, category, visible })
+      })
+      if (r.ok) {
+        showToast('Family created')
+        setCreateFamModal(false)
+        setCreateFamForm({ modelCode: '', name: '', brand: 'Apple', category: 'Phones', visible: true })
+        fetchFamilies()
+      } else {
+        const d = await r.json()
+        showToast(d.error || 'Create failed', true)
+      }
+    } catch { showToast('Create failed', true) }
+    finally { setCreateFamSaving(false) }
   }
 
   const exportFamilies = () => {
@@ -714,6 +740,7 @@ export default function Admin() {
                     <div key={cat} onClick={()=>setFamCat(cat)} style={{fontSize:12,fontWeight:600,padding:'5px 12px',borderRadius:6,cursor:'pointer',color:famCat===cat?C.text:C.dim,background:famCat===cat?C.faint:'transparent'}}>{cat==='all'?'All':cat}</div>
                   ))}
                 </div>
+                <button style={btn('primary')} onClick={()=>setCreateFamModal(true)}>+ Create Family</button>
                 <button style={btn('blue')} onClick={exportFamilies}>⬇ Export CSV</button>
                 <button style={btn('ghost')} onClick={fetchFamilies}>↻ Refresh</button>
               </div>
@@ -1024,6 +1051,49 @@ export default function Admin() {
             }}>Save Photo</button>
             {photoUrl&&<button style={btn('red')} onClick={()=>setPhotoUrl('')}>Remove</button>}
             <button style={{...btn('ghost'),marginLeft:'auto'}} onClick={()=>setPhotoModal(null)}>Cancel</button>
+          </div>
+        </div>
+      </div>}
+
+      {createFamModal&&<div style={overlay()} onClick={()=>setCreateFamModal(false)}>
+        <div style={{...modal(),width:480}} onClick={e=>e.stopPropagation()}>
+          <div style={{fontSize:18,fontWeight:800,color:C.text,marginBottom:4}}>Create New Family</div>
+          <div style={{fontSize:12,color:C.sub,marginBottom:20}}>The model code must match the middle segment of your SKUs exactly.</div>
+          <div style={{marginBottom:14}}>
+            <div style={mlabel()}>Model Code <span style={{color:'#ef4444'}}>*</span></div>
+            <input style={inp()} placeholder="e.g. SA-GXC7P-G766" value={createFamForm.modelCode} onChange={e=>setCreateFamForm(p=>({...p,modelCode:e.target.value}))}/>
+            <div style={{fontSize:11,color:C.dim,marginTop:4}}>From SKU: PA:SA-GXC7P-G766-HSO-UN-128-BLA-CA+</div>
+          </div>
+          <div style={{marginBottom:14}}>
+            <div style={mlabel()}>Display Name <span style={{color:'#ef4444'}}>*</span></div>
+            <input style={inp()} placeholder="e.g. Samsung Galaxy S25+" value={createFamForm.name} onChange={e=>setCreateFamForm(p=>({...p,name:e.target.value}))}/>
+          </div>
+          <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:14,marginBottom:14}}>
+            <div>
+              <div style={mlabel()}>Brand</div>
+              <select style={inp()} value={createFamForm.brand} onChange={e=>setCreateFamForm(p=>({...p,brand:e.target.value}))}>
+                {['Apple','Samsung','Google','Motorola','Nokia','Other'].map(b=><option key={b}>{b}</option>)}
+              </select>
+            </div>
+            <div>
+              <div style={mlabel()}>Category</div>
+              <select style={inp()} value={createFamForm.category} onChange={e=>setCreateFamForm(p=>({...p,category:e.target.value}))}>
+                {['Phones','Tablets','Laptops','Wearables','Accessories'].map(c=><option key={c}>{c}</option>)}
+              </select>
+            </div>
+          </div>
+          <div style={{display:'flex',alignItems:'center',gap:10,marginBottom:20}}>
+            <div style={mlabel()}>Visible on site</div>
+            <div onClick={()=>setCreateFamForm(p=>({...p,visible:!p.visible}))} style={{width:36,height:20,borderRadius:10,background:createFamForm.visible?'#166534':'#334155',position:'relative',cursor:'pointer'}}>
+              <div style={{width:14,height:14,borderRadius:'50%',background:createFamForm.visible?'#22c55e':'#64748b',position:'absolute',top:3,left:createFamForm.visible?19:3,transition:'left .15s'}}/>
+            </div>
+            <span style={{fontSize:12,color:C.sub}}>{createFamForm.visible?'Yes — will appear in catalog':'No — hidden until enabled'}</span>
+          </div>
+          <div style={{display:'flex',gap:8,paddingTop:20,borderTop:'1px solid '+C.border}}>
+            <button style={btn('primary')} disabled={createFamSaving||!createFamForm.modelCode||!createFamForm.name} onClick={createFamily}>
+              {createFamSaving?'Creating...':'Create Family'}
+            </button>
+            <button style={{...btn('ghost'),marginLeft:'auto'}} onClick={()=>setCreateFamModal(false)}>Cancel</button>
           </div>
         </div>
       </div>}
