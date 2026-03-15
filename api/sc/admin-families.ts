@@ -5,8 +5,10 @@ import { Pool } from '@neondatabase/serverless'
  * Admin Families API
  * GET  /api/sc/admin-families              — list all families with SKU counts
  * GET  /api/sc/admin-families?family=CODE  — single family with all SKUs
+ * POST /api/sc/admin-families              — create new family
+ *   Body: { modelCode, name, brand, category, visible }
  * PATCH /api/sc/admin-families
- *   Body: { type: 'family', id, visible?, image_url? }  ← image_url now supported
+ *   Body: { type: 'family', id, visible?, image_url? }
  *   Body: { type: 'sku', sku, hidden }
  *   Body: { type: 'bulk-hide', modelCode }
  *   Body: { type: 'rename', id, name }
@@ -15,6 +17,27 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   const pool = new Pool({ connectionString: process.env.DATABASE_URL })
 
   try {
+
+    // ── POST — Create new family ───────────────────────────────────────
+    if (req.method === 'POST') {
+      const { modelCode, name, brand, category, visible } = req.body || {}
+      if (!modelCode || !name) {
+        res.status(400).json({ error: 'modelCode and name required' }); return
+      }
+      const existing = await pool.query(
+        'SELECT id FROM product_families WHERE model_code = $1',
+        [modelCode]
+      )
+      if (existing.rows.length > 0) {
+        res.status(400).json({ error: 'A family with this model code already exists' }); return
+      }
+      await pool.query(
+        `INSERT INTO product_families (model_code, name, brand, category, visible, created_at, updated_at)
+         VALUES ($1, $2, $3, $4, $5, NOW(), NOW())`,
+        [modelCode, name, brand || 'Apple', category || 'Phones', visible !== false]
+      )
+      res.status(200).json({ success: true }); return
+    }
 
     // ── PATCH ─────────────────────────────────────────────────────────
     if (req.method === 'PATCH') {
@@ -26,7 +49,6 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
           res.status(400).json({ error: 'id required' }); return
         }
 
-        // Build dynamic SET clause — only update fields that were provided
         const setClauses: string[] = ['updated_at = NOW()']
         const values: any[] = []
 
@@ -36,7 +58,6 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         }
 
         if (image_url !== undefined) {
-          // Empty string clears the photo; null also clears it
           values.push(image_url === '' ? null : image_url)
           setClauses.push(`image_url = $${values.length}`)
         }
@@ -133,7 +154,6 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         [`%${familyCode}%`]
       )
 
-      // Grade multipliers — category-aware with fallback
       let gradeRows: any[] = []
       try {
         const r = await pool.query(
@@ -147,7 +167,6 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         gradeRows = r.rows.map((row: any) => ({ ...row, category: null }))
       }
 
-      // Build category-aware gradeMap
       const gradeMap: Record<string, { multiplier: number; label: string }> = {}
       const famCategory = fam.category || 'Phones'
       for (const g of gradeRows) {
@@ -156,7 +175,6 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
           gradeMap[g.grade_code] = { multiplier: parseFloat(g.multiplier), label: g.label }
         }
       }
-      // Fallback: if no category match, use any
       if (Object.keys(gradeMap).length === 0) {
         for (const g of gradeRows) {
           if (!gradeMap[g.grade_code]) {
@@ -235,9 +253,9 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
              COUNT(p.id) as sku_count,
              COALESCE(SUM(p.quantity), 0) as total_stock,
              COALESCE(SUM(p.available_quantity), 0) as total_avail,
-             COUNT(p.id) FILTER (WHERE p.hidden_from_site = true) as hidden_count,
-             COUNT(p.id) FILTER (WHERE p.grade = 'INTAKE') as intake_count,
-             COUNT(p.id) FILTER (WHERE p.hidden_from_site = false AND p.grade != 'INTAKE' AND p.is_active = true) as visible_count
+             COUNT(CASE WHEN p.hidden_from_site = true THEN 1 END) as hidden_count,
+             COUNT(CASE WHEN p.grade = 'INTAKE' THEN 1 END) as intake_count,
+             COUNT(CASE WHEN p.hidden_from_site = false AND p.grade != 'INTAKE' AND p.is_active = true THEN 1 END) as visible_count
       FROM product_families pf
       LEFT JOIN products p ON p.sku LIKE '%' || pf.model_code || '%'
       GROUP BY pf.model_code
@@ -292,7 +310,6 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     const allBrands = [...new Set(familiesResult.rows.map(f => f.brand))].sort()
     const allCategories = [...new Set(familiesResult.rows.map(f => f.category))].sort()
 
-    // Unmapped SKUs — products with no matching family
     const unmappedResult = await pool.query(`
       SELECT p.sku, p.model, p.brand, p.grade, p.quantity
       FROM products p
