@@ -1,16 +1,20 @@
 {
   "buildCommand": "vite build",
   "outputDirectory": "dist",
+  "redirects": [
+    { "source": "/industries/business", "destination": "/buyers/enterprise", "permanent": true },
+    { "source": "/industries/education", "destination": "/buyers/enterprise", "permanent": true },
+    { "source": "/industries/medical", "destination": "/industries/healthcare", "permanent": true },
+    { "source": "/shipping", "destination": "/contact", "permanent": true },
+    { "source": "/warranty", "destination": "/contact", "permanent": true },
+    { "source": "/returns", "destination": "/contact", "permanent": true },
+    { "source": "/quote-request", "destination": "/apply", "permanent": true },
+    { "source": "/register", "destination": "/apply", "permanent": true }
+  ],
   "rewrites": [
-    {
-      "source": "/:path*",
-      "destination": "/index.html"
-    }
+    { "source": "/:path*", "destination": "/index.html" }
   ],
   "crons": [
-    {
-      "path": "/api/cron/sync-inventory",
-      "schedule": "0 * * * *"
-    }
+    { "path": "/api/cron/sync-inventory", "schedule": "0 * * * *" }
   ]
 }
