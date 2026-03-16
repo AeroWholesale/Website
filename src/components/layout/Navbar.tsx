@@ -91,7 +91,7 @@ export default function Navbar() {
                   key={link.label}
                   className="relative"
                   onMouseEnter={() => setBuyersOpen(true)}
-                  onMouseLeave={() => setBuyersOpen(false)}
+                  onMouseLeave={() => setTimeout(() => setBuyersOpen(false), 150)}
                 >
                   <button
                     className={cn(
