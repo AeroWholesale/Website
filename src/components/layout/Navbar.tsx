@@ -12,6 +12,7 @@ const navLinks = [
       { label: 'Enterprise', href: '/buyers/enterprise', icon: Building2, desc: 'High-volume deployments' },
       { label: 'Wholesale', href: '/buyers/wholesale', icon: Package, desc: 'Bulk purchasing programs' },
       { label: 'Resellers', href: '/buyers/resellers', icon: ShoppingBag, desc: 'Reseller partnerships' },
+      { label: 'Healthcare', href: '/industries/healthcare', icon: Building2, desc: 'Hospitals & clinics' },
     ],
   },
   { label: 'Grading Standards', href: '/grading' },
