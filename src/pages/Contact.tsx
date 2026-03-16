@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { useLocation } from 'wouter'
+import { trackFormSubmission } from '@/lib/event-tracker'
 
 const css = `
   @import url('https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600;9..40,700;9..40,800;9..40,900&display=swap');
@@ -98,6 +99,10 @@ export default function Contact() {
         body: JSON.stringify(form),
       })
       if (res.ok) {
+        // Track contact form submission
+        trackFormSubmission('contact_form', {
+          company: form.company,
+        })
         setSubmitted(true)
       }
     } catch {

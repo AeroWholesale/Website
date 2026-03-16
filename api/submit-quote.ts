@@ -28,6 +28,9 @@ async function ensureTable() {
       notes         TEXT,
       total_units   INTEGER NOT NULL DEFAULT 0,
       total_value   NUMERIC(10,2) NOT NULL DEFAULT 0,
+      utm_source    TEXT,
+      utm_medium    TEXT,
+      utm_campaign  TEXT,
       status        TEXT NOT NULL DEFAULT 'pending',
       decline_reason TEXT,
       created_at    TIMESTAMPTZ NOT NULL DEFAULT NOW(),
@@ -71,7 +74,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
   // ── POST ──────────────────────────────────────────────────────────────
   if (req.method === 'POST') {
-    const { items, notes, dealerEmail, dealerName, companyName } = req.body || {}
+    const { items, notes, dealerEmail, dealerName, companyName, utm_source, utm_medium, utm_campaign } = req.body || {}
 
     if (!items?.length || !dealerEmail || !dealerName || !companyName) {
       return res.status(400).json({ error: 'Missing required fields' })
@@ -83,10 +86,10 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
     await sql`
       INSERT INTO quote_requests
-        (ref_number, dealer_email, dealer_name, company_name, items, notes, total_units, total_value)
+        (ref_number, dealer_email, dealer_name, company_name, items, notes, total_units, total_value, utm_source, utm_medium, utm_campaign)
       VALUES
         (${refNumber}, ${dealerEmail}, ${dealerName}, ${companyName},
-         ${JSON.stringify(items)}, ${notes || null}, ${totalUnits}, ${totalValue})
+         ${JSON.stringify(items)}, ${notes || null}, ${totalUnits}, ${totalValue}, ${utm_source || null}, ${utm_medium || null}, ${utm_campaign || null})
     `
 
     const emailData: QuoteEmailData = {
@@ -137,7 +140,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     }
 
     if (status === 'confirmed') {
-      sendQuoteConfirmedEmail(emailData).catch(err =>
+      sendQuoteConfirmedEmail(emailData, q.id).catch(err =>
         console.error('[quote-emails] confirmed email failed:', err)
       )
     } else if (status === 'processing') {

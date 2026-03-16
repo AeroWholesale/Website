@@ -1,5 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useLocation } from 'wouter'
+import { trackFormSubmission } from '@/lib/event-tracker'
+import { getUTMObject } from '@/lib/utm-parser'
 
 const css = `
   @import url('https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600;9..40,700;9..40,800;9..40,900&display=swap');
@@ -185,11 +187,19 @@ export default function Quote() {
           dealerEmail: email,
           dealerName: contactName,
           companyName,
+          ...getUTMObject(), // Include UTM parameters
         }),
       })
 
       const data = await res.json()
       if (res.ok && data.refNumber) {
+        // Track successful quote submission
+        trackFormSubmission('quote_request', {
+          quote_value: totalValue,
+          unit_count: cart.reduce((s, i) => s + i.qty, 0),
+          line_items: cart.length,
+          company_name: companyName,
+        })
         setRefNumber(data.refNumber)
         setSubmitted(true)
         localStorage.removeItem('aw-quote-cart')
