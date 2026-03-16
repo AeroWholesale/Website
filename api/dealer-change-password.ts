@@ -1,6 +1,6 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node'
 import { Pool } from '@neondatabase/serverless'
-import bcrypt from 'bcrypt'
+import crypto from 'crypto'
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' })
@@ -17,9 +17,9 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     )
     if (!rows.length) return res.status(401).json({ error: 'Invalid or expired session' })
     const user = rows[0]
-    const isValidPassword = await bcrypt.compare(currentPassword, user.password_hash)
-    if (!isValidPassword) return res.status(401).json({ error: 'Current password is incorrect' })
-    const newHash = await bcrypt.hash(newPassword, 10)
+    const currentHash = crypto.createHash('sha256').update(currentPassword).digest('hex')
+    if (currentHash !== user.password_hash) return res.status(401).json({ error: 'Current password is incorrect' })
+    const newHash = crypto.createHash('sha256').update(newPassword).digest('hex')
     await pool.query('UPDATE users SET password_hash = $1 WHERE id = $2', [newHash, user.id])
     res.status(200).json({ success: true })
   } catch (err) {

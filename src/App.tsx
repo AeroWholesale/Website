@@ -18,14 +18,6 @@ import Portal from '@/pages/Portal'
 import ForgotPassword from '@/pages/ForgotPassword'
 import ResetPassword from '@/pages/ResetPassword'
 import Quote from '@/pages/Quote'
-import QuotePayment from '@/pages/QuotePayment'
-import QuotePaymentSuccess from '@/pages/QuotePaymentSuccess'
-import QuotePaymentCancel from '@/pages/QuotePaymentCancel'
-import WholesaleIPads from '@/pages/landing/WholesaleIPads'
-import BulkIPhones from '@/pages/landing/BulkIPhones'
-import TabletsForBusiness from '@/pages/landing/TabletsForBusiness'
-import AppleDevicesForBusiness from '@/pages/landing/AppleDevicesForBusiness'
-import BulkIPadsForBusiness from '@/pages/landing/BulkIPadsForBusiness'
 
 export default function App() {
   return (
@@ -35,9 +27,6 @@ export default function App() {
       <Route path="/terms-accept" component={TermsAccept} />
       <Route path="/forgot-password" component={ForgotPassword} />
       <Route path="/reset-password" component={ResetPassword} />
-      <Route path="/quote-payment" component={QuotePayment} />
-      <Route path="/quote-payment-success" component={QuotePaymentSuccess} />
-      <Route path="/quote-payment-cancel" component={QuotePaymentCancel} />
       <Route>
         <Layout>
           <Switch>
@@ -50,11 +39,6 @@ export default function App() {
             <Route path="/login" component={Login} />
             <Route path="/portal" component={Portal} />
             <Route path="/quote" component={Quote} />
-            <Route path="/wholesale-ipads" component={WholesaleIPads} />
-            <Route path="/bulk-iphones" component={BulkIPhones} />
-            <Route path="/tablets-for-business" component={TabletsForBusiness} />
-            <Route path="/apple-devices-for-business" component={AppleDevicesForBusiness} />
-            <Route path="/bulk-ipads-for-business" component={BulkIPadsForBusiness} />
             <Route path="/buyers/enterprise" component={Enterprise} />
             <Route path="/buyers/wholesale" component={Wholesale} />
             <Route path="/buyers/resellers" component={Resellers} />

@@ -1,7 +1,5 @@
 import { useState, useRef } from 'react'
 import { useLocation } from 'wouter'
-import { trackFormSubmission } from '@/lib/event-tracker'
-import { getUTMObject } from '@/lib/utm-parser'
 
 const css = `
   @import url('https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600;9..40,700;9..40,800;9..40,900&display=swap');
@@ -199,12 +197,6 @@ export default function Apply() {
         fd.append(k, v as string)
       })
 
-      // Append UTM parameters
-      const utmParams = getUTMObject()
-      Object.entries(utmParams).forEach(([k, v]) => {
-        if (v) fd.append(k, v as string)
-      })
-
       // Append files (only the ones that were actually selected)
       Object.entries(files).forEach(([key, file]) => {
         if (file) fd.append(key, file, file.name)
@@ -217,14 +209,6 @@ export default function Apply() {
       })
 
       if (res.ok) {
-        // Track successful application submission
-        trackFormSubmission('wholesale_application', {
-          company_name: form.companyName,
-          account_type: form.accountType,
-          monthly_volume: form.monthlyVolume,
-          product_categories: categories.join(', '),
-          state: form.state,
-        })
         setSubmitted(true)
       } else {
         const data = await res.json().catch(() => ({}))

@@ -24,7 +24,6 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         company_name TEXT, website TEXT, ein TEXT, state TEXT, city TEXT,
         years_in_business TEXT, account_type TEXT, monthly_volume TEXT,
         product_categories TEXT, sales_channel TEXT, heard_about TEXT, notes TEXT,
-        utm_source TEXT, utm_medium TEXT, utm_campaign TEXT,
         status TEXT DEFAULT 'pending',
         created_at TIMESTAMPTZ DEFAULT NOW()
       )
@@ -62,17 +61,14 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         first_name, last_name, email, phone, job_title,
         company_name, website, ein, state, city,
         years_in_business, account_type, monthly_volume,
-        product_categories, sales_channel, heard_about, notes,
-        utm_source, utm_medium, utm_campaign,
-        status
-      ) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20,'pending')
+        product_categories, sales_channel, heard_about, notes, status
+      ) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,'pending')
       RETURNING id
     `, [
       firstName, lastName, email, g('phone'), g('jobTitle'),
       companyName, g('website'), g('ein'), g('state'), g('city'),
       g('yearsInBusiness'), g('accountType'), g('monthlyVolume'),
-      g('productCategories'), g('salesChannel'), g('heardAbout'), g('notes'),
-      g('utm_source'), g('utm_medium'), g('utm_campaign')
+      g('productCategories'), g('salesChannel'), g('heardAbout'), g('notes')
     ])
 
     const appId = rows[0].id

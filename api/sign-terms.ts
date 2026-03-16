@@ -1,7 +1,6 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node'
 import { Pool } from '@neondatabase/serverless'
 import crypto from 'crypto'
-import bcrypt from 'bcrypt'
 
 function generatePassword() {
   const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789'
@@ -42,7 +41,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     const existing = await pool.query('SELECT id FROM users WHERE email = $1', [app.email])
     if (existing.rows.length) return res.status(400).json({ error: 'Account already exists' })
     const tempPassword = generatePassword()
-    const hash = await bcrypt.hash(tempPassword, 10)
+    const hash = crypto.createHash('sha256').update(tempPassword).digest('hex')
     await pool.query(
       'INSERT INTO users (email, password_hash, first_name, last_name, company_name, account_type, application_id) VALUES ($1,$2,$3,$4,$5,$6,$7)',
       [app.email, hash, app.first_name, app.last_name, app.company_name, app.account_type, app.id]

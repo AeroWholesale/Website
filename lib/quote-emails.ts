@@ -166,11 +166,7 @@ export async function sendInternalQuoteAlert(data: QuoteEmailData): Promise<void
 
 // ── EMAIL 2: Dealer confirmation ──────────────────────────────────────────────
 
-export async function sendQuoteConfirmedEmail(data: QuoteEmailData, quoteId?: number): Promise<void> {
-  const paymentUrl = quoteId
-    ? `${process.env.NEXT_PUBLIC_SITE_URL || 'https://aerowholesale.com'}/quote-payment?id=${quoteId}`
-    : null
-
+export async function sendQuoteConfirmedEmail(data: QuoteEmailData): Promise<void> {
   const html = emailWrapper(`
     <p style="font-size:15px;margin:0 0 6px;">Hi ${data.dealerName.split(' ')[0]},</p>
     <p style="font-size:15px;line-height:1.6;margin:0 0 20px;">
@@ -186,16 +182,14 @@ export async function sendQuoteConfirmedEmail(data: QuoteEmailData, quoteId?: nu
 
     <div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;padding:14px 18px;margin-bottom:20px;">
       <div style="display:flex;justify-content:space-between;font-size:14px;font-weight:800;color:#132347;">
-        <span>Total Amount Due (${data.totalUnits} units)</span>
+        <span>Estimated Total (${data.totalUnits} units)</span>
         <span style="color:#c2410c;">$${data.totalValue.toLocaleString('en-US', { minimumFractionDigits: 2 })}</span>
       </div>
       <p style="font-size:12px;color:#94a3b8;margin:8px 0 0;line-height:1.5;">Final pricing confirmed at time of fulfillment. Subject to availability.</p>
     </div>
 
-    ${paymentUrl ? ctaButton('Proceed to Payment →', paymentUrl) : ''}
-
     <p style="font-size:14px;line-height:1.6;margin:0 0 8px;color:#475569;">
-      ${paymentUrl ? 'Click the button above to securely process your payment.' : 'A member of our team will reach out shortly with payment instructions.'} If you have any questions, reply directly to this email.
+      A member of our team will reach out shortly with next steps for payment and shipping. If you have any questions, reply directly to this email.
     </p>
   `)
 
