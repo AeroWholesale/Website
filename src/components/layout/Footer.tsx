@@ -98,10 +98,10 @@ export default function Footer() {
             © 2026 AeroWholesale. All rights reserved.
           </p>
           <div className="flex items-center gap-6">
-            <Link href="/privacy" className="text-xs text-blue-300 hover:text-[#0d9488] transition-colors">
+            <Link to="/privacy" className="text-xs text-blue-300 hover:text-[#0d9488] transition-colors">
               Privacy Policy
             </Link>
-            <Link href="/terms" className="text-xs text-blue-300 hover:text-[#0d9488] transition-colors">
+            <Link to="/terms" className="text-xs text-blue-300 hover:text-[#0d9488] transition-colors">
               Terms of Service
             </Link>
           </div>

@@ -74,7 +74,7 @@ export default function Navbar() {
         <div className="flex items-center justify-between h-16">
 
           {/* Logo */}
-          <Link href="/" className="select-none">
+          <Link to="/" className="select-none">
             <span
               style={{ fontFamily: "'DM Sans', sans-serif" }}
               className="text-xl font-bold text-[#1B2E5E] tracking-tight"
@@ -115,7 +115,7 @@ export default function Navbar() {
                     {link.dropdown.map((item) => (
                       <Link
                         key={item.href}
-                        href={item.href}
+                        to={item.href}
                         className="flex items-center gap-3 px-4 py-3 hover:bg-gray-50 transition-colors group"
                       >
                         <item.icon className="w-4 h-4 text-[#1B2E5E] shrink-0" />
@@ -130,7 +130,7 @@ export default function Navbar() {
               ) : (
                 <Link
                   key={link.href}
-                  href={link.href!}
+                  to={link.href!}
                   className={cn(
                     'px-3 py-1.5 rounded-md text-sm font-medium transition-all duration-150',
                     location.pathname === link.href
@@ -151,7 +151,7 @@ export default function Navbar() {
               <>
                 {/* My Account */}
                 <Link
-                  href="/portal"
+                  to="/portal"
                   className="px-4 py-1.5 text-sm font-medium text-[#1B2E5E] hover:text-[#ea580c] transition-colors"
                   style={{ fontFamily: "'DM Sans', sans-serif" }}
                 >
@@ -166,7 +166,7 @@ export default function Navbar() {
                 </button>
                 {/* Quote Cart with count */}
                 <Link
-                  href="/quote"
+                  to="/quote"
                   className="flex items-center gap-2 px-4 py-2 rounded-md text-sm font-semibold bg-[#ea580c] text-white hover:bg-[#c2410c] transition-all duration-150"
                   style={{ fontFamily: "'DM Sans', sans-serif" }}
                 >
@@ -181,7 +181,7 @@ export default function Navbar() {
             ) : (
               <>
                 <Link
-                  href="/login"
+                  to="/login"
                   className="px-4 py-1.5 text-sm font-medium text-gray-600 hover:text-[#1B2E5E] transition-colors"
                   style={{ fontFamily: "'DM Sans', sans-serif" }}
                 >
@@ -189,14 +189,14 @@ export default function Navbar() {
                 </Link>
                 {/* Non-logged-in: Request a Quote goes to /login */}
                 <Link
-                  href="/login?reason=quote"
+                  to="/login?reason=quote"
                   className="px-4 py-2 rounded-md text-sm font-semibold bg-[#ea580c] text-white hover:bg-[#c2410c] transition-all duration-150"
                   style={{ fontFamily: "'DM Sans', sans-serif" }}
                 >
                   Request a Quote
                 </Link>
                 <Link
-                  href="/apply"
+                  to="/apply"
                   className="px-4 py-2 rounded-md text-sm font-semibold bg-[#1B2E5E] text-white hover:bg-[#152448] transition-all duration-150"
                   style={{ fontFamily: "'DM Sans', sans-serif" }}
                 >
@@ -232,7 +232,7 @@ export default function Navbar() {
                 {link.dropdown.map((item) => (
                   <Link
                     key={item.href}
-                    href={item.href}
+                    to={item.href}
                     className="flex items-center gap-3 px-4 py-2.5 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-50 hover:text-[#1B2E5E] transition-colors"
                     style={{ fontFamily: "'DM Sans', sans-serif" }}
                   >
@@ -244,7 +244,7 @@ export default function Navbar() {
             ) : (
               <Link
                 key={link.href}
-                href={link.href!}
+                to={link.href!}
                 className={cn(
                   'block px-3 py-2.5 rounded-lg text-sm font-medium transition-colors',
                   location.pathname === link.href
@@ -260,14 +260,14 @@ export default function Navbar() {
           <div className="pt-3 border-t border-gray-100 space-y-2">
             {dealerUser ? (
               <>
-                <Link href="/portal" className="block px-3 py-2.5 text-sm font-medium text-[#1B2E5E]" style={{ fontFamily: "'DM Sans', sans-serif" }}>
+                <Link to="/portal" className="block px-3 py-2.5 text-sm font-medium text-[#1B2E5E]" style={{ fontFamily: "'DM Sans', sans-serif" }}>
                   My Account
                 </Link>
                 <button onClick={handleSignOut} className="block w-full text-left px-3 py-2.5 text-sm font-medium text-red-600" style={{ fontFamily: "'DM Sans', sans-serif", background: 'none', border: 'none', cursor: 'pointer' }}>
                   Sign Out
                 </button>
                 <Link
-                  href="/quote"
+                  to="/quote"
                   className="flex items-center justify-center gap-2 w-full text-center px-4 py-2.5 rounded-md text-sm font-semibold bg-[#ea580c] text-white"
                   style={{ fontFamily: "'DM Sans', sans-serif" }}
                 >
@@ -281,18 +281,18 @@ export default function Navbar() {
               </>
             ) : (
               <>
-                <Link href="/login" className="block px-3 py-2.5 text-sm font-medium text-gray-600 hover:text-[#1B2E5E]" style={{ fontFamily: "'DM Sans', sans-serif" }}>
+                <Link to="/login" className="block px-3 py-2.5 text-sm font-medium text-gray-600 hover:text-[#1B2E5E]" style={{ fontFamily: "'DM Sans', sans-serif" }}>
                   Login
                 </Link>
                 <Link
-                  href="/login?reason=quote"
+                  to="/login?reason=quote"
                   className="block w-full text-center px-4 py-2.5 rounded-md text-sm font-semibold bg-[#ea580c] text-white"
                   style={{ fontFamily: "'DM Sans', sans-serif" }}
                 >
                   Request a Quote
                 </Link>
                 <Link
-                  href="/apply"
+                  to="/apply"
                   className="block w-full text-center px-4 py-2.5 rounded-md text-sm font-semibold bg-[#1B2E5E] text-white"
                   style={{ fontFamily: "'DM Sans', sans-serif" }}
                 >
