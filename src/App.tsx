@@ -13,6 +13,7 @@ import TermsAccept from '@/pages/TermsAccept'
 import Enterprise from '@/pages/buyers/Enterprise'
 import Wholesale from '@/pages/buyers/Wholesale'
 import Resellers from '@/pages/buyers/Resellers'
+import Healthcare from '@/pages/Healthcare'
 import ProductDetail from '@/pages/ProductDetail'
 import Portal from '@/pages/Portal'
 import ForgotPassword from '@/pages/ForgotPassword'
@@ -42,6 +43,7 @@ export default function App() {
             <Route path="/buyers/enterprise" component={Enterprise} />
             <Route path="/buyers/wholesale" component={Wholesale} />
             <Route path="/buyers/resellers" component={Resellers} />
+            <Route path="/industries/healthcare" component={Healthcare} />
             <Route path="/catalog/:rest*" component={ProductDetail} />
             <Route>
               <div className="max-w-7xl mx-auto px-4 py-20 text-center">
