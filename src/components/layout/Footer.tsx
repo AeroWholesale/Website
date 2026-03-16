@@ -1,4 +1,4 @@
-import { Link } from 'wouter'
+import { Link } from 'react-router-dom'
 import { Mail, Clock } from 'lucide-react'
 
 export default function Footer() {

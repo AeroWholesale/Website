@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { Link, useLocation } from 'wouter'
+import { Link, useLocation } from 'react-router-dom'
 import { Menu, X, ChevronDown, Building2, Package, ShoppingBag } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
@@ -20,7 +20,7 @@ const navLinks = [
 ]
 
 export default function Navbar() {
-  const [location] = useLocation()
+  const location = useLocation()
   const [scrolled, setScrolled] = useState(false)
   const [mobileOpen, setMobileOpen] = useState(false)
   const [buyersOpen, setBuyersOpen] = useState(false)
@@ -132,7 +132,7 @@ export default function Navbar() {
                   href={link.href!}
                   className={cn(
                     'px-3 py-1.5 rounded-md text-sm font-medium transition-all duration-150',
-                    location === link.href
+                    location.pathname === link.href
                       ? 'text-[#1B2E5E] bg-gray-100'
                       : 'text-gray-600 hover:text-[#1B2E5E] hover:bg-gray-100'
                   )}
@@ -246,7 +246,7 @@ export default function Navbar() {
                 href={link.href!}
                 className={cn(
                   'block px-3 py-2.5 rounded-lg text-sm font-medium transition-colors',
-                  location === link.href
+                  location.pathname === link.href
                     ? 'bg-gray-100 text-[#1B2E5E]'
                     : 'text-gray-600 hover:bg-gray-50 hover:text-[#1B2E5E]'
                 )}

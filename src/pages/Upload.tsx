@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { useParams } from 'wouter'
+import { useParams } from 'react-router-dom'
 
 const css = ".aw-upload{font-family:DM Sans,sans-serif;background:#f8fafc;min-height:100vh}" +
 ".aw-upload-header{background:#132347;padding:32px 40px;text-align:center}" +

@@ -1,4 +1,4 @@
-import { useLocation } from 'wouter'
+import { useNavigate } from 'react-router-dom'
 
 const css = `
   @import url('https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600;9..40,700;9..40,800;9..40,900&display=swap');
@@ -111,7 +111,7 @@ const css = `
 `
 
 export default function Healthcare() {
-  const [, navigate] = useLocation()
+  const navigate = useNavigate()
 
   return (
     <>
@@ -283,19 +283,19 @@ export default function Healthcare() {
             <p className="hc-section-sub">Our in-house grading system is consistent across every shipment. Healthcare IT teams typically order Excellent or Premium grade for patient-facing devices.</p>
             <div className="hc-grades">
               <div className="hc-grade hc-grade-premium">
-                <div className="hc-grade-label">CAP — Premium</div>
+                <div className="hc-grade-label">Premium</div>
                 <div className="hc-grade-name">Premium Grade</div>
                 <div className="hc-grade-desc">Like-new condition. No visible scratches or scuffs. Perfect for patient-facing or executive use where appearance matters.</div>
                 <div className="hc-grade-rec">Recommended: Patient-facing</div>
               </div>
               <div className="hc-grade hc-grade-excellent">
-                <div className="hc-grade-label">CA+ — Excellent</div>
+                <div className="hc-grade-label">Excellent</div>
                 <div className="hc-grade-name">Excellent Grade</div>
                 <div className="hc-grade-desc">Near-perfect condition with minimal light wear only visible under close inspection. Ideal for clinical staff devices.</div>
                 <div className="hc-grade-rec">Recommended: Clinical staff</div>
               </div>
               <div className="hc-grade hc-grade-good">
-                <div className="hc-grade-label">CA — Good</div>
+                <div className="hc-grade-label">Good</div>
                 <div className="hc-grade-name">Good Grade</div>
                 <div className="hc-grade-desc">Fully functional with light cosmetic wear. Great for back-office, admin, or home health field workers where cost matters most.</div>
                 <div className="hc-grade-rec">Recommended: Field / back office</div>

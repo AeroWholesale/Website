@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { useLocation } from 'wouter'
+import { useNavigate } from 'react-router-dom'
 
 // ── INLINE STYLES ────────────────────────────────────────────────────────
 const css = `
@@ -278,7 +278,7 @@ const IconDeviceCard = ({ category }: { category?: string }) => {
 }
 
 export default function Home() {
-  const [, navigate] = useLocation()
+  const navigate = useNavigate()
   const [featured, setFeatured] = useState<any[]>([])
   const [featuredLoading, setFeaturedLoading] = useState(true)
 

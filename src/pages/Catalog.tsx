@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react'
-import { useLocation } from 'wouter'
+import { useNavigate } from 'react-router-dom'
 
 const css = `
   @import url('https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600;9..40,700;9..40,800;9..40,900&display=swap');
@@ -192,7 +192,7 @@ interface ApiResponse {
 }
 
 export default function Catalog() {
-  const [, navigate] = useLocation()
+  const navigate = useNavigate()
   const [data, setData] = useState<ApiResponse | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')

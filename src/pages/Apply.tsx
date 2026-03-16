@@ -1,5 +1,5 @@
 import { useState, useRef } from 'react'
-import { useLocation } from 'wouter'
+import { useNavigate } from 'react-router-dom'
 
 const css = `
   @import url('https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600;9..40,700;9..40,800;9..40,900&display=swap');
@@ -153,7 +153,7 @@ const UPLOAD_SLOTS = [
 ]
 
 export default function Apply() {
-  const [, navigate] = useLocation()
+  const navigate = useNavigate()
   const [form, setForm] = useState({
     firstName: '', lastName: '', email: '', phone: '', jobTitle: '',
     companyName: '', website: '', ein: '', state: '', city: '', yearsInBusiness: '',

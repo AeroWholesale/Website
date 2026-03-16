@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { useLocation } from 'wouter'
+import { useNavigate } from 'react-router-dom'
 
 const css = `
   @import url('https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600;9..40,700;9..40,800;9..40,900&display=swap');
@@ -124,7 +124,7 @@ type CartItem = {
 }
 
 export default function Quote() {
-  const [, navigate] = useLocation()
+  const navigate = useNavigate()
   const [cart, setCart] = useState<CartItem[]>([])
   const [notes, setNotes] = useState('')
   const [submitting, setSubmitting] = useState(false)

@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { useLocation, useParams } from 'wouter'
+import { useNavigate, useParams } from 'react-router-dom'
 
 const css = `
   @import url('https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600;9..40,700;9..40,800;9..40,900&display=swap');
@@ -103,7 +103,7 @@ const IconDevice = ({ category }: { category?: string }) => {
 }
 
 export default function ProductDetail() {
-  const [, navigate] = useLocation()
+  const navigate = useNavigate()
   const [product, setProduct] = useState<any>(null)
   const [loading, setLoading] = useState(true)
   const [toast, setToast] = useState('')
