@@ -1,6 +1,7 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node'
 import { Pool } from '@neondatabase/serverless'
 import crypto from 'crypto'
+import bcrypt from 'bcryptjs'
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' })
@@ -8,13 +9,14 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   if (!email || !password) return res.status(400).json({ error: 'Missing email or password' })
   const pool = new Pool({ connectionString: process.env.DATABASE_URL })
   try {
-    const hash = crypto.createHash('sha256').update(password).digest('hex')
     const { rows } = await pool.query(
-      'SELECT id, email, first_name, last_name, company_name, account_type, active FROM users WHERE email = $1 AND password_hash = $2',
-      [email.toLowerCase().trim(), hash]
+      'SELECT id, email, first_name, last_name, company_name, account_type, active, password_hash FROM users WHERE email = $1',
+      [email.toLowerCase().trim()]
     )
     if (!rows.length) return res.status(401).json({ error: 'Invalid email or password' })
     const user = rows[0]
+    const valid = await bcrypt.compare(password, user.password_hash)
+    if (!valid) return res.status(401).json({ error: 'Invalid email or password' })
     if (!user.active) return res.status(403).json({ error: 'Account is inactive. Contact sales@aerowholesale.com.' })
     await pool.query(`CREATE TABLE IF NOT EXISTS sessions (
       id SERIAL PRIMARY KEY,
@@ -30,7 +32,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       user: { id: user.id, email: user.email, firstName: user.first_name, lastName: user.last_name, companyName: user.company_name, accountType: user.account_type }
     })
   } catch (err) {
-    res.status(500).json({ error: String(err) })
+    res.status(500).json({ error: 'Internal server error' })
   } finally {
     await pool.end()
   }
